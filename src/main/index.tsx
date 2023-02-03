@@ -252,6 +252,7 @@ export class ImageBlock extends Module implements PageBlock {
   }
 
   private async onChangedImage(control: Control, files: any[]) {
+    // TODO
     if (files && files[0]) {
       this.data.url = (await this.uploader.toBase64(files[0])) as string
     }
@@ -261,6 +262,7 @@ export class ImageBlock extends Module implements PageBlock {
   }
 
   private onRemovedImage(control: Control, file: File) {
+    // TODO
     this.data.url = this.edtLink.value || ''
     this._oldURl = this.edtLink.value || ''
   }
