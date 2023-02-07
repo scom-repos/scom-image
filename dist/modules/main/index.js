@@ -91,6 +91,30 @@ define("@image/main", ["require", "exports", "@ijstech/components", "@image/main
             },
         },
     };
+    const settingSchema = {
+        type: 'object',
+        properties: {
+            "url": {
+                type: 'string'
+            },
+            "altText": {
+                type: 'string'
+            },
+            "backgroundColor": {
+                type: 'string'
+            },
+            "height": {
+                type: 'number',
+                default: 100
+            },
+            "width": {
+                type: 'number'
+            },
+            "link": {
+                type: 'string'
+            }
+        }
+    };
     let ImageBlock = class ImageBlock extends components_2.Module {
         constructor() {
             super(...arguments);
@@ -98,8 +122,16 @@ define("@image/main", ["require", "exports", "@ijstech/components", "@image/main
                 url: '',
                 altText: '',
                 backgroundColor: '',
-                height: 0,
-                width: 0,
+                height: 100,
+                width: 'auto',
+                link: ''
+            };
+            this.oldData = {
+                url: '',
+                altText: '',
+                backgroundColor: '',
+                height: 100,
+                width: 'auto',
                 link: ''
             };
             this._oldX = 0;
@@ -116,12 +148,13 @@ define("@image/main", ["require", "exports", "@ijstech/components", "@image/main
         getConfigSchema() {
             return configSchema;
         }
-        async getData() {
+        getData() {
             return this.data;
         }
         async setData(value) {
-            console.log('set data', value);
+            this.oldData = this.data;
             this.data = value;
+            console.log(this.oldData, this.data);
             const uploader = document.getElementById('uploader');
             const imageElm = uploader === null || uploader === void 0 ? void 0 : uploader.getElementsByTagName('img')[0];
             if (imageElm)
@@ -280,6 +313,22 @@ define("@image/main", ["require", "exports", "@ijstech/components", "@image/main
                         }
                     }
                 },
+                {
+                    name: 'Settings',
+                    icon: 'cog',
+                    command: (builder, userInputData) => {
+                        return {
+                            execute: () => {
+                                this.setData(userInputData);
+                            },
+                            undo: () => {
+                                this.setData(this.oldData);
+                            },
+                            redo: () => { }
+                        };
+                    },
+                    userInputDataSchema: settingSchema
+                }
             ];
             return actions;
         }
@@ -292,6 +341,7 @@ define("@image/main", ["require", "exports", "@ijstech/components", "@image/main
             this.linkStack.visible = true;
         }
         async onChangedImage(control, files) {
+            // TODO
             if (files && files[0]) {
                 this.data.url = (await this.uploader.toBase64(files[0]));
             }
@@ -300,6 +350,7 @@ define("@image/main", ["require", "exports", "@ijstech/components", "@image/main
             this.setData(Object.assign({}, this.data));
         }
         onRemovedImage(control, file) {
+            // TODO
             this.data.url = this.edtLink.value || '';
             this._oldURl = this.edtLink.value || '';
         }

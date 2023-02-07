@@ -6,20 +6,10 @@ import {
   Upload,
   Control,
   customModule,
-  Modal,
-  HStack,
   Label,
 } from '@ijstech/components'
 import { IImage, PageBlock } from '@image/global'
 import './index.css'
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      ['i-section-image']: ImageBlock
-    }
-  }
-}
 
 const configSchema = {
   type: 'object',
@@ -38,14 +28,47 @@ const configSchema = {
   },
 }
 
+const settingSchema = {
+  type: 'object',
+  properties: {
+    "url": {
+      type: 'string'
+    },
+    "altText": {
+      type: 'string'
+    },
+    "backgroundColor": {
+      type: 'string'
+    },
+    "height": {
+      type: 'number',
+      default: 100
+    },
+    "width": {
+      type: 'number'
+    },
+    "link": {
+      type: 'string'
+    }
+  }
+}
+
 @customModule
 export class ImageBlock extends Module implements PageBlock {
   private data: IImage = {
     url: '',
     altText: '',
     backgroundColor: '',
-    height: 0,
-    width: 0,
+    height: 100,
+    width: 200,
+    link: ''
+  }
+  private oldData: IImage = {
+    url: '',
+    altText: '',
+    backgroundColor: '',
+    height: 100,
+    width: 200,
     link: ''
   }
   private uploader: Upload
@@ -72,12 +95,12 @@ export class ImageBlock extends Module implements PageBlock {
     return configSchema
   }
 
-  async getData() {
+  getData() {
     return this.data
   }
 
   async setData(value: IImage) {
-    console.log('set data', value)
+    this.oldData = this.data
     this.data = value
 
     const uploader = document.getElementById('uploader')
@@ -239,6 +262,22 @@ export class ImageBlock extends Module implements PageBlock {
           }
         }
       },
+      {
+        name: 'Settings',
+        icon: 'cog',
+        command: (builder: any, userInputData: any) => {
+          return {
+            execute: () => {
+              this.setData(userInputData);
+            },
+            undo: () => {
+              this.setData(this.oldData);
+            },
+            redo: () => {}
+          }
+        },
+        userInputDataSchema: settingSchema as any
+      }
     ]
     return actions
   }

@@ -56,7 +56,7 @@ export interface IImage {
 	url: string;
 	altText: string;
   backgroundColor: string;
-  height: number;
-  width: number;
+  height: number | string;
+  width: number | string;
 	link: string;
 }
