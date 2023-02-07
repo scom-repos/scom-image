@@ -1,0 +1,15 @@
+{
+  "name": "@image/main",
+  "version": "0.1.0",
+  "env": "",
+  "moduleDir": "src",
+  "main": "@image/main",
+  "modules": {
+    "@image/main": {
+      "path": "main"
+    },
+    "@image/global": {
+      "path": "global"
+    }
+  }
+}
