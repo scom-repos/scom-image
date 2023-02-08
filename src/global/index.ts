@@ -1,31 +1,16 @@
+import { IDataSchema } from "@ijstech/components";
+
 export interface ICommand {
   execute(): void;
   undo(): void;
   redo(): void;
 }
 
-interface IJSONSchema { // TODO: move to use in components
-  type: 'integer' | 'number' | 'boolean' | 'string' | 'object';
-  format?: 'date' | 'time' | 'date-time';
-  enum?: string[];
-  oneOf?: { const: string, title: string }[];
-  required?: string[];
-  properties?: {
-    [key: string]: IJSONSchema
-  };
-  minLength?: number;
-  maxLength?: number;
-  minimum?: number;
-  maximum?: number;
-  default?: string | number;
-  description?: string;
-}
-
 export interface IPageBlockAction {
 	name: string;
 	icon: string;
 	command: (builder: any, userInputData: any) => ICommand;
-	userInputDataSchema: IJSONSchema;
+	userInputDataSchema: IDataSchema;
 }
 
 export interface PageBlock {
