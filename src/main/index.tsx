@@ -7,8 +7,7 @@ import {
   Control,
   customModule,
   Label,
-  IDataSchema,
-  DataSchemaValidator,
+  IDataSchema
 } from '@ijstech/components'
 import { IImage, PageBlock } from '@image/global'
 import './index.css'
@@ -81,6 +80,13 @@ const cropSchema =  {
   ]
 }
 
+interface ICropData {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 @customModule
 export class ImageBlock extends Module implements PageBlock {
   private data: IImage = {
@@ -106,13 +112,16 @@ export class ImageBlock extends Module implements PageBlock {
   private pnlImage: Panel
   private imgLink: Label
 
-  private _oldX: number = 0
-  private _oldY: number = 0
-  private _oldWidth: number = 0
-  private _oldHeight: number = 0
+  private newCropData: ICropData
+  private oldCropData: ICropData
+  private originalUrl: string = ''
+  private isReset: boolean = false
+
+
   private _oldLink: string = ''
   private _oldURl: string = ''
   private _oldAltText: string = ''
+
   tag: any
 
   init() {
@@ -159,13 +168,6 @@ export class ImageBlock extends Module implements PageBlock {
     this.tag = value
   }
 
-  private saveImgData(x: number, y: number, width: number, height: number) {
-    this._oldX = x;
-    this._oldY = y;
-    this._oldWidth = width;
-    this._oldHeight = height;
-  }
-
   getActions() {
     const actions = [
       {
@@ -175,16 +177,23 @@ export class ImageBlock extends Module implements PageBlock {
           return {
             execute: () => {
               if (!userInputData) return;
-              const { x, y, width, height } = this.img.getBoundingClientRect();
-              this.saveImgData(x, y, width, height);
-              const { x: newX, y: newY, width: newWidth, height: newHeight } = userInputData;
-              this.onCrop(newX, newY, newWidth, newHeight);
+              if (!this.isReset)
+                this.oldCropData = this.newCropData;
+              this.newCropData = userInputData;
+              this.onCrop(this.newCropData);
+              builder.setData(this.data);
+              this.isReset = false;
             },
             undo: () => {
               if (!userInputData) return;
-              const { x, y, width, height } = this.img.getBoundingClientRect();
-              this.onCrop(this._oldX, this._oldY, this._oldWidth, this._oldHeight);
-              this.saveImgData(x, y, width, height);
+              if (!this.oldCropData) {
+                this.img.url = this.data.url = this.originalUrl;
+                this.isReset = true;
+              } else {
+                this.onCrop(this.oldCropData);
+                this.isReset = false;
+              }
+              builder.setData(this.data);
             },
             redo: () => {}
           }
@@ -201,9 +210,7 @@ export class ImageBlock extends Module implements PageBlock {
       //         this.data.link = userInputData;
       //       },
       //       undo: () => {
-      //         const _oldLink = this.data.link;
       //         this.data.link = this._oldLink;
-      //         this._oldLink = _oldLink;
       //       },
       //       redo: () => {}
       //     }
@@ -222,9 +229,7 @@ export class ImageBlock extends Module implements PageBlock {
       //         this.data.url = userInputData;
       //       },
       //       undo: () => {
-      //         const _oldURl = this.data.url;
       //         this.data.url = this._oldURl;
-      //         this._oldURl = _oldURl;
       //       },
       //       redo: () => {}
       //     }
@@ -244,10 +249,7 @@ export class ImageBlock extends Module implements PageBlock {
       //         this.img.setAttribute('alt', userInputData.description);
       //       },
       //       undo: () => {
-      //         const oldAltText = this.data.altText;
-      //         this.img.setAttribute('alt', this._oldAltText);
       //         this.data.altText = this._oldAltText;
-      //         this._oldAltText = oldAltText;
       //       },
       //       redo: () => {}
       //     }
@@ -268,12 +270,12 @@ export class ImageBlock extends Module implements PageBlock {
         command: (builder: any, userInputData: any) => {
           return {
             execute: () => {
-              const validationResult = DataSchemaValidator.validate(userInputData, settingSchema as IDataSchema, { changing: false });
-              console.log(validationResult);
               this.setData(userInputData);
+              builder.setData(userInputData);
             },
             undo: () => {
               this.setData(this.oldData);
+              builder.setData(this.oldData);
             },
             redo: () => {}
           }
@@ -288,30 +290,13 @@ export class ImageBlock extends Module implements PageBlock {
     return !!value.url;
   }
 
-  private async onChangedImage(control: Control, files: any[]) {
-    // TODO
-    if (files && files[0]) {
-      this.data.url = (await this.uploader.toBase64(files[0])) as string
-    }
-    let img_uploader = this.uploader.getElementsByTagName('img')[0]
-    this._oldURl = img_uploader.src
-    this.setData({...this.data})
-  }
-
-  private onRemovedImage(control: Control, file: File) {
-    // TODO
-    this.data.url = this.edtLink.value || ''
-    this._oldURl = this.edtLink.value || ''
-  }
-
-  private onCrop(newX: number, newY: number, newWidth: number, newHeight: number) {
+  private onCrop(data: ICropData) {
+    const { x: newX, y: newY, width: newWidth, height: newHeight } = data;
     let img_uploader = this.uploader.getElementsByTagName('img')[0]
 
     // originalImage in form of img
     const originalImage = document.createElement('img')
-    if (this.img.url != undefined && this.img.url != null)
-      originalImage.src = this.img.url
-    else originalImage.src = img_uploader.src || this.data.url
+    originalImage.src = img_uploader.src || this.data.url
 
     // create a new empty canvas
     let canvas = document.createElement('canvas')
@@ -341,14 +326,32 @@ export class ImageBlock extends Module implements PageBlock {
       newWidth,
       newHeight
     )
+    this.img.url = canvas!.toDataURL();
+    this.data.url = canvas!.toDataURL();
+  }
 
-    this.img.url = canvas!.toDataURL()
-    img_uploader.src = canvas!.toDataURL()
+  private async onChangedImage(control: Control, files: any[]) {
+    let newUrl = ''
+    this._oldURl = this.data.url;
+    if (files && files[0]) {
+      newUrl = (await this.uploader.toBase64(files[0])) as string
+      this.originalUrl = newUrl
+    }
+    this.setData({...this.data, url: newUrl})
+    const builder = this.parent.closest('ide-toolbar') as any
+    if (builder) builder.setData({...this.data, url: newUrl})
+  }
+
+  private onRemovedImage(control: Control, file: File) {
+    this.data.url = this.edtLink.value || ''
+    this._oldURl = this.edtLink.value || ''
   }
 
   private onChangedLink(source: Control) {
-    const url = (source as Input).value
-    this.setData({...this.data, url})
+    const newUrl = (source as Input).value
+    this.setData({...this.data, url: newUrl})
+    const builder = this.parent.closest('ide-toolbar') as any
+    if (builder) builder.setData({...this.data, url: newUrl})
   }
 
   render() {
