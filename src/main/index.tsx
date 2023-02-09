@@ -7,9 +7,11 @@ import {
   Control,
   customModule,
   Label,
-  IDataSchema
+  IDataSchema,
+  Container,
 } from '@ijstech/components'
 import { IImage, PageBlock } from '@image/global'
+import { getIPFSGatewayUrl, setDataFromSCConfig } from '@image/store'
 import './index.css'
 
 const configSchema = {
@@ -123,7 +125,14 @@ export class ImageBlock extends Module implements PageBlock {
   private _oldAltText: string = ''
 
   tag: any
-
+  
+  constructor(parent?: Container, options?: any) {
+    super(parent, options);
+    if (options) {
+      setDataFromSCConfig(options);
+    }
+  }
+  
   init() {
     super.init()
   }
@@ -149,7 +158,13 @@ export class ImageBlock extends Module implements PageBlock {
     this.uploader.visible = false
     this.linkStack.visible = false
     this.img.visible = true
-    this.img.url = value.url
+    if (value.url?.startsWith('ipfs://')) {
+      const ipfsGatewayUrl = getIPFSGatewayUrl();
+      this.img.url = value.url.replace('ipfs://', ipfsGatewayUrl);
+    }
+    else {
+      this.img.url = value.url
+    }
     this.img.display = 'flex'
     this.img.width = value.width
     this.img.height = value.height
@@ -360,7 +375,7 @@ export class ImageBlock extends Module implements PageBlock {
         <i-vstack id={'pnlImage'}>
           <i-upload
             id={'uploader'}
-            multiple={true}
+            multiple={false}
             height={'100%'}
             onChanged={this.onChangedImage}
             onRemoved={this.onRemovedImage}
