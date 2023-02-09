@@ -196,7 +196,7 @@ export class ImageBlock extends Module implements PageBlock {
                 this.oldCropData = this.newCropData;
               this.newCropData = userInputData;
               this.onCrop(this.newCropData);
-              builder.setData(this.data);
+              if (builder?.setData) builder.setData(this.data);
               this.isReset = false;
             },
             undo: () => {
@@ -208,7 +208,7 @@ export class ImageBlock extends Module implements PageBlock {
                 this.onCrop(this.oldCropData);
                 this.isReset = false;
               }
-              builder.setData(this.data);
+              if (builder?.setData) builder.setData(this.data);
             },
             redo: () => {}
           }
@@ -286,11 +286,11 @@ export class ImageBlock extends Module implements PageBlock {
           return {
             execute: () => {
               this.setData(userInputData);
-              builder.setData(userInputData);
+              if (builder?.setData) builder.setData(userInputData);
             },
             undo: () => {
               this.setData(this.oldData);
-              builder.setData(this.oldData);
+              if (builder?.setData) builder.setData(this.oldData);
             },
             redo: () => {}
           }
@@ -364,6 +364,7 @@ export class ImageBlock extends Module implements PageBlock {
 
   private onChangedLink(source: Control) {
     const newUrl = (source as Input).value
+    this.originalUrl = newUrl
     this.setData({...this.data, url: newUrl})
     const builder = this.parent.closest('ide-toolbar') as any
     if (builder) builder.setData({...this.data, url: newUrl})
