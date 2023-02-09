@@ -7,6 +7,8 @@ import {
   Control,
   customModule,
   Label,
+  IDataSchema,
+  DataSchemaValidator,
 } from '@ijstech/components'
 import { IImage, PageBlock } from '@image/global'
 import './index.css'
@@ -29,28 +31,54 @@ const configSchema = {
 }
 
 const settingSchema = {
-  type: 'object',
-  properties: {
+  "type": "object",
+  "properties": {
     "url": {
-      type: 'string'
+      "type": "string",
+      "minLength": 1
     },
     "altText": {
-      type: 'string'
+      "type": "string"
     },
     "backgroundColor": {
-      type: 'string'
+      "type": "string"
     },
     "height": {
-      type: 'number',
-      default: 100
+      "type": "integer",
+      "default": 100
     },
     "width": {
-      type: 'number'
+      "type": "integer"
     },
     "link": {
-      type: 'string'
+      "type": "string"
     }
-  }
+  },
+  "required": [
+    "url"
+  ]
+}
+
+const cropSchema =  {
+  "type": "object",
+  "properties": {
+    "x": {
+      "type": "integer"
+    },
+    "y": {
+      "type": "integer"
+    },
+    "width": {
+      "type": "integer"
+    },
+    "height": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "x",
+    "y"
+  ]
 }
 
 @customModule
@@ -59,7 +87,7 @@ export class ImageBlock extends Module implements PageBlock {
     url: '',
     altText: '',
     backgroundColor: '',
-    height: 100,
+    height: 'auto',
     width: 200,
     link: ''
   }
@@ -67,7 +95,7 @@ export class ImageBlock extends Module implements PageBlock {
     url: '',
     altText: '',
     backgroundColor: '',
-    height: 100,
+    height: 'auto',
     width: 200,
     link: ''
   }
@@ -100,6 +128,7 @@ export class ImageBlock extends Module implements PageBlock {
   }
 
   async setData(value: IImage) {
+    if (!this.validate(value)) return
     this.oldData = this.data
     this.data = value
 
@@ -112,7 +141,14 @@ export class ImageBlock extends Module implements PageBlock {
     this.linkStack.visible = false
     this.img.visible = true
     this.img.url = value.url
+    this.img.display = 'flex'
+    this.img.width = value.width
+    this.img.height = value.height
     this.img.setAttribute('alt', value.altText || '')
+    // if (value.backgroundColor)
+    //   this.pnlImage.background.color = value.backgroundColor;
+    // if (value.url)
+    //   this.imgLink.link = new Link(this, { href: url, target: '_blank' })
   }
 
   getTag() {
@@ -121,26 +157,6 @@ export class ImageBlock extends Module implements PageBlock {
 
   async setTag(value: any) {
     this.tag = value
-    if (this.img) {
-      this.img.display = 'flex'
-      this.img.width = this.tag.width
-      this.img.height = this.tag.height
-      switch (this.tag.align) {
-        case 'left':
-          this.img.margin = { right: 'auto' }
-          break
-        case 'center':
-          this.img.margin = { left: 'auto', right: 'auto' }
-          break
-        case 'right':
-          this.img.margin = { left: 'auto' }
-          break
-      }
-    }
-    // if (backgroundColor)
-    //     this.pnlImage.background.color = backgroundColor;
-    // if (url)
-    //     this.imgLink.link = new Link(this, { href: url, target: '_blank' })
   }
 
   private saveImgData(x: number, y: number, width: number, height: number) {
@@ -173,101 +189,87 @@ export class ImageBlock extends Module implements PageBlock {
             redo: () => {}
           }
         },
-        userInputDataSchema: {
-          type: 'object' as any,
-          properties: {
-            "x": {
-              type: 'number' as any
-            },
-            "y": {
-              type: 'number' as any
-            },
-            "width": {
-              type: 'number' as any
-            },
-            "height": {
-              type: 'number' as any
-            }
-          },
-        },
+        userInputDataSchema: cropSchema as IDataSchema
       },
-      {
-        name: 'Insert Link',
-        icon: 'link',
-        command: (builder: any, userInputData: any) => {
-          return {
-            execute: () => {
-              this._oldLink = this.data.link;
-              this.data.link = userInputData;
-            },
-            undo: () => {
-              const _oldLink = this.data.link;
-              this.data.link = this._oldLink;
-              this._oldLink = _oldLink;
-            },
-            redo: () => {}
-          }
-        },
-        userInputDataSchema: {
-          type: 'string' as any,
-        },
-      },
-      {
-        name: 'Replace image',
-        icon: 'pencil-alt',
-        command: (builder: any, userInputData: any) => {
-          return {
-            execute: () => {
-              this._oldURl = this.data.url;
-              this.data.url = userInputData;
-            },
-            undo: () => {
-              const _oldURl = this.data.url;
-              this.data.url = this._oldURl;
-              this._oldURl = _oldURl;
-            },
-            redo: () => {}
-          }
-        },
-        userInputDataSchema: {
-          type: 'string' as any,
-        },
-      },
-      {
-        name: 'Add alt text',
-        icon: 'plus',
-        command: (builder: any, userInputData: any) => {
-          return {
-            execute: () => {
-              this._oldAltText = this.img.getAttribute('alt');
-              this.data.altText = userInputData.description;
-              this.img.setAttribute('alt', userInputData.description);
-            },
-            undo: () => {
-              const oldAltText = this.data.altText;
-              this.img.setAttribute('alt', this._oldAltText);
-              this.data.altText = this._oldAltText;
-              this._oldAltText = oldAltText;
-            },
-            redo: () => {}
-          }
-        },
-        userInputDataSchema: {
-          type: 'object' as any,
-          description: 'Alt text is accessed by screen readers for people who might have trouble seeing your content',
-          properties: {
-            "description": {
-              type: 'string' as any
-            }
-          }
-        }
-      },
+      // {
+      //   name: 'Insert Link',
+      //   icon: 'link',
+      //   command: (builder: any, userInputData: any) => {
+      //     return {
+      //       execute: () => {
+      //         this._oldLink = this.data.link;
+      //         this.data.link = userInputData;
+      //       },
+      //       undo: () => {
+      //         const _oldLink = this.data.link;
+      //         this.data.link = this._oldLink;
+      //         this._oldLink = _oldLink;
+      //       },
+      //       redo: () => {}
+      //     }
+      //   },
+      //   userInputDataSchema: {
+      //     type: 'string' as any,
+      //   },
+      // },
+      // {
+      //   name: 'Replace image',
+      //   icon: 'pencil-alt',
+      //   command: (builder: any, userInputData: any) => {
+      //     return {
+      //       execute: () => {
+      //         this._oldURl = this.data.url;
+      //         this.data.url = userInputData;
+      //       },
+      //       undo: () => {
+      //         const _oldURl = this.data.url;
+      //         this.data.url = this._oldURl;
+      //         this._oldURl = _oldURl;
+      //       },
+      //       redo: () => {}
+      //     }
+      //   },
+      //   userInputDataSchema: {
+      //     type: 'string' as any,
+      //   },
+      // },
+      // {
+      //   name: 'Add alt text',
+      //   icon: 'plus',
+      //   command: (builder: any, userInputData: any) => {
+      //     return {
+      //       execute: () => {
+      //         this._oldAltText = this.img.getAttribute('alt');
+      //         this.data.altText = userInputData.description;
+      //         this.img.setAttribute('alt', userInputData.description);
+      //       },
+      //       undo: () => {
+      //         const oldAltText = this.data.altText;
+      //         this.img.setAttribute('alt', this._oldAltText);
+      //         this.data.altText = this._oldAltText;
+      //         this._oldAltText = oldAltText;
+      //       },
+      //       redo: () => {}
+      //     }
+      //   },
+      //   userInputDataSchema: {
+      //     type: 'object' as any,
+      //     description: 'Alt text is accessed by screen readers for people who might have trouble seeing your content',
+      //     properties: {
+      //       "description": {
+      //         type: 'string' as any
+      //       }
+      //     }
+      //   }
+      // },
       {
         name: 'Settings',
         icon: 'cog',
         command: (builder: any, userInputData: any) => {
           return {
             execute: () => {
+              const validationResult = DataSchemaValidator.validate(userInputData, settingSchema as IDataSchema, { changing: false });
+              console.log(validationResult);
               this.setData(userInputData);
             },
             undo: () => {
@@ -276,18 +278,14 @@ export class ImageBlock extends Module implements PageBlock {
             redo: () => {}
           }
         },
-        userInputDataSchema: settingSchema as any
+        userInputDataSchema: settingSchema as IDataSchema
       }
     ]
     return actions
   }
 
-  async edit() {
-    if (!this.uploader) return
-    this._oldURl = this.img.url
-    this.img.visible = false
-    this.uploader.visible = true
-    this.linkStack.visible = true
+  validate(value: IImage): boolean {
+    return !!value.url;
   }
 
   private async onChangedImage(control: Control, files: any[]) {
