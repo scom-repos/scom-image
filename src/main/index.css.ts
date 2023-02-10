@@ -1,4 +1,5 @@
 import { Styles } from '@ijstech/components';
+const Theme = Styles.Theme.ThemeVars;
 
 Styles.cssRule('#pnlImage', {
   $nest: {
@@ -12,6 +13,9 @@ Styles.cssRule('#pnlImage', {
     },
     '#imgLink span': {
       display: 'block'
+    },
+    '#edtLink input': {
+      border: `1px solid ${Theme.divider}`
     },
     ".angle": {
       zIndex: '200',

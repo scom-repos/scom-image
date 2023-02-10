@@ -11,6 +11,9 @@
     "@image/global": {
       "path": "global"
     },
+    "@image/command": {
+      "path": "command"
+    },
     "@image/store": {
       "path": "store"
     }
