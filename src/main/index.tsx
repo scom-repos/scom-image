@@ -165,7 +165,6 @@ export class ImageBlock extends Module implements PageBlock {
     else {
       this.img.url = value.url
     }
-    this.img.display = 'flex'
     this.img.width = value.width
     this.img.height = value.height
     const imgElm = this.img.querySelector('img')
