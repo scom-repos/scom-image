@@ -165,10 +165,11 @@ export class ImageBlock extends Module implements PageBlock {
     else {
       this.img.url = value.url
     }
-    this.img.display = 'flex'
     this.img.width = value.width
     this.img.height = value.height
-    this.img.setAttribute('alt', value.altText || '')
+    const imgElm = this.img.querySelector('img')
+    imgElm && imgElm.setAttribute('alt', value.altText || '')
+
     // if (value.backgroundColor)
     //   this.pnlImage.background.color = value.backgroundColor;
     // if (value.url)
