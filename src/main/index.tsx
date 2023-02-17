@@ -165,6 +165,7 @@ export class ImageBlock extends Module implements PageBlock {
     else {
       this.img.url = value.url
     }
+    this.img.display = 'block';
     this.img.width = value.width
     this.img.height = value.height
     const imgElm = this.img.querySelector('img')
@@ -386,7 +387,6 @@ export class ImageBlock extends Module implements PageBlock {
             <i-image
               id={'img'}
               visible={false}
-              margin={{ bottom: '1rem' }}
               maxHeight="100%" maxWidth="100%"
               class="custom-img"
             ></i-image>
