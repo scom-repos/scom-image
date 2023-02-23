@@ -129,7 +129,7 @@ export class ImageBlock extends Module implements PageBlock {
   init() {
     super.init()
     this.setTag({
-      width: 200,
+      width: '100%',
       height: 'auto'
     })
   }
