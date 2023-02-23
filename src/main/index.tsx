@@ -22,13 +22,9 @@ const configSchema = {
       type: 'string',
     },
     height: {
-      type: 'string',
-    },
-    position: {
-      type: 'string',
-      enum: ['left', 'center', 'right'],
-    },
-  },
+      type: 'string'
+    }
+  }
 }
 
 const settingSchema = {
@@ -42,15 +38,16 @@ const settingSchema = {
       "type": "string"
     },
     "backgroundColor": {
-      "type": "string"
+      "type": "string",
+      "format": "color"
     },
-    "height": {
-      "type": "integer",
-      "default": 100
-    },
-    "width": {
-      "type": "integer"
-    },
+    // "height": {
+    //   "type": "integer",
+    //   "default": 100
+    // },
+    // "width": {
+    //   "type": "integer"
+    // },
     "link": {
       "type": "string"
     }
@@ -95,16 +92,12 @@ export class ImageBlock extends Module implements PageBlock {
     url: '',
     altText: '',
     backgroundColor: '',
-    height: 'auto',
-    width: 200,
     link: ''
   }
   private oldData: IImage = {
     url: '',
     altText: '',
     backgroundColor: '',
-    height: 'auto',
-    width: 200,
     link: ''
   }
   private uploader: Upload
@@ -135,6 +128,10 @@ export class ImageBlock extends Module implements PageBlock {
   
   init() {
     super.init()
+    this.setTag({
+      width: 200,
+      height: 'auto'
+    })
   }
 
   getConfigSchema() {
@@ -165,9 +162,11 @@ export class ImageBlock extends Module implements PageBlock {
     else {
       this.img.url = value.url
     }
-    this.img.display = 'block';
-    this.img.width = value.width
-    this.img.height = value.height
+    if (this.tag.width || this.tag.height) {
+      this.img.display = "block";
+      this.tag.width && (this.img.width = this.tag.width);
+      this.tag.width && (this.img.height = this.tag.height);
+    }
     const imgElm = this.img.querySelector('img')
     imgElm && imgElm.setAttribute('alt', value.altText || '')
 
@@ -182,7 +181,12 @@ export class ImageBlock extends Module implements PageBlock {
   }
 
   async setTag(value: any) {
-    this.tag = value
+    this.tag = value;
+    if (this.img) {
+      this.img.display = "block";
+      this.img.width = this.tag.width;
+      this.img.height = this.tag.height;
+    }
   }
 
   getActions() {
