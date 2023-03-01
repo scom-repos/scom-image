@@ -1,0 +1,32 @@
+{
+    "name": "@image/main",
+    "version": "0.1.0",
+    "env": "",
+    "moduleDir": "modules",
+    "main": "@image/main",
+    "modules": {
+        "@image/main": {
+            "path": "main",
+            "dependencies": [
+                "@image/global",
+                "@image/store"
+            ]
+        },
+        "@image/global": {
+            "path": "global",
+            "dependencies": []
+        },
+        "@image/command": {
+            "path": "command",
+            "dependencies": [
+                "@image/global"
+            ]
+        },
+        "@image/store": {
+            "path": "store",
+            "dependencies": []
+        }
+    },
+    "ipfsGatewayUrl": "https://ipfs.scom.dev/ipfs/",
+    "dependencies": {}
+}
