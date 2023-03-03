@@ -184,6 +184,8 @@ define("@image/main", ["require", "exports", "@ijstech/components", "@image/stor
                 return;
             this.oldData = this.data;
             this.data = value;
+            if (!this.originalUrl)
+                this.originalUrl = this.data.url;
             const uploader = document.getElementById('uploader');
             const imageElm = uploader === null || uploader === void 0 ? void 0 : uploader.getElementsByTagName('img')[0];
             if (imageElm)
@@ -207,10 +209,11 @@ define("@image/main", ["require", "exports", "@ijstech/components", "@image/stor
             }
             const imgElm = this.img.querySelector('img');
             imgElm && imgElm.setAttribute('alt', value.altText || '');
-            // if (value.backgroundColor)
-            //   this.pnlImage.background.color = value.backgroundColor;
-            // if (value.url)
-            //   this.imgLink.link = new Link(this, { href: url, target: '_blank' })
+            this.pnlImage.background.color = value.backgroundColor || '';
+            if (value.link)
+                this.imgLink.link = new components_2.Link(this, { href: value.link, target: '_blank' });
+            else
+                this.imgLink.link = new components_2.Link(this, { target: '_self' });
         }
         getTag() {
             return this.tag;
@@ -330,14 +333,14 @@ define("@image/main", ["require", "exports", "@ijstech/components", "@image/stor
                     command: (builder, userInputData) => {
                         return {
                             execute: () => {
-                                this.setData(userInputData);
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData(userInputData);
+                                this.setData(userInputData);
                             },
                             undo: () => {
-                                this.setData(this.oldData);
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData(this.oldData);
+                                this.setData(this.oldData);
                             },
                             redo: () => { }
                         };
@@ -355,7 +358,7 @@ define("@image/main", ["require", "exports", "@ijstech/components", "@image/stor
             let img_uploader = this.uploader.getElementsByTagName('img')[0];
             // originalImage in form of img
             const originalImage = document.createElement('img');
-            originalImage.src = img_uploader.src || this.data.url;
+            originalImage.src = (img_uploader === null || img_uploader === void 0 ? void 0 : img_uploader.src) || this.data.url;
             // create a new empty canvas
             let canvas = document.createElement('canvas');
             canvas.height = window.innerHeight;
