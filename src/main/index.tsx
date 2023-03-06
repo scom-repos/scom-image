@@ -9,6 +9,7 @@ import {
   Label,
   IDataSchema,
   Container,
+  Link,
 } from '@ijstech/components'
 import { IImage, PageBlock } from '@image/global'
 import { getIPFSGatewayUrl, setDataFromSCConfig } from '@image/store'
@@ -146,6 +147,7 @@ export class ImageBlock extends Module implements PageBlock {
     if (!this.validate(value)) return
     this.oldData = this.data
     this.data = value
+    if (!this.originalUrl) this.originalUrl = this.data.url;
 
     const uploader = document.getElementById('uploader')
     const imageElm = uploader?.getElementsByTagName('img')[0]
@@ -170,10 +172,11 @@ export class ImageBlock extends Module implements PageBlock {
     const imgElm = this.img.querySelector('img')
     imgElm && imgElm.setAttribute('alt', value.altText || '')
 
-    // if (value.backgroundColor)
-    //   this.pnlImage.background.color = value.backgroundColor;
-    // if (value.url)
-    //   this.imgLink.link = new Link(this, { href: url, target: '_blank' })
+    this.pnlImage.background.color = value.backgroundColor || '';
+    if (value.link)
+      this.imgLink.link = new Link(this, { href: value.link, target: '_blank' })
+    else
+      this.imgLink.link = new Link(this, { target: '_self' });
   }
 
   getTag() {
@@ -291,12 +294,12 @@ export class ImageBlock extends Module implements PageBlock {
         command: (builder: any, userInputData: any) => {
           return {
             execute: () => {
-              this.setData(userInputData);
               if (builder?.setData) builder.setData(userInputData);
+              this.setData(userInputData);
             },
             undo: () => {
-              this.setData(this.oldData);
               if (builder?.setData) builder.setData(this.oldData);
+              this.setData(this.oldData);
             },
             redo: () => {}
           }
@@ -317,7 +320,7 @@ export class ImageBlock extends Module implements PageBlock {
 
     // originalImage in form of img
     const originalImage = document.createElement('img')
-    originalImage.src = img_uploader.src || this.data.url
+    originalImage.src = img_uploader?.src || this.data.url
 
     // create a new empty canvas
     let canvas = document.createElement('canvas')
