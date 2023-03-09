@@ -1,8 +1,8 @@
-define("@image/store", ["require", "exports"], function (require, exports) {
+define("@pageblock-image/store", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getIPFSGatewayUrl = exports.setIPFSGatewayUrl = exports.setDataFromSCConfig = exports.state = void 0;
-    ///<amd-module name='@image/store'/> 
+    ///<amd-module name='@pageblock-image/store'/> 
     exports.state = {
         ipfsGatewayUrl: ""
     };

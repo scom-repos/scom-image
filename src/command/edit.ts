@@ -1,5 +1,5 @@
 import { Image } from "@ijstech/components";
-import { ICommand } from "@image/global";
+import { ICommand } from "@pageblock-image/global";
 
 export class EditCommand implements ICommand {
   private element: Image;

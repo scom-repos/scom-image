@@ -1,4 +1,4 @@
-define("@image/command/edit.ts", ["require", "exports"], function (require, exports) {
+define("@pageblock-image/command/edit.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.EditCommand = void 0;
@@ -18,7 +18,7 @@ define("@image/command/edit.ts", ["require", "exports"], function (require, expo
     }
     exports.EditCommand = EditCommand;
 });
-define("@image/command", ["require", "exports", "@image/command/edit.ts"], function (require, exports, edit_1) {
+define("@pageblock-image/command", ["require", "exports", "@pageblock-image/command/edit.ts"], function (require, exports, edit_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.EditCommand = void 0;

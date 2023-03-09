@@ -11,8 +11,8 @@ import {
   Container,
   Link,
 } from '@ijstech/components'
-import { IImage, PageBlock } from '@image/global'
-import { getIPFSGatewayUrl, setDataFromSCConfig } from '@image/store'
+import { IImage, PageBlock } from '@pageblock-image/global'
+import { getIPFSGatewayUrl, setDataFromSCConfig } from '@pageblock-image/store'
 import './index.css'
 
 const configSchema = {

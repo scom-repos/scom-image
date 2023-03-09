@@ -13,7 +13,7 @@
     "baseUrl": ".",
     "paths": {
       "@ijstech/components": ["node_modules/@ijstech/components"],
-      "@image/*": ["src/*"],
+      "@pageblock-image/*": ["src/*"],
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

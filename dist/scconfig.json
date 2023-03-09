@@ -1,28 +1,28 @@
 {
-    "name": "@image/main",
+    "name": "@pageblock-image/main",
     "version": "0.1.0",
     "env": "",
     "moduleDir": "modules",
-    "main": "@image/main",
+    "main": "@pageblock-image/main",
     "modules": {
-        "@image/main": {
+        "@pageblock-image/main": {
             "path": "main",
             "dependencies": [
-                "@image/global",
-                "@image/store"
+                "@pageblock-image/global",
+                "@pageblock-image/store"
             ]
         },
-        "@image/global": {
+        "@pageblock-image/global": {
             "path": "global",
             "dependencies": []
         },
-        "@image/command": {
+        "@pageblock-image/command": {
             "path": "command",
             "dependencies": [
-                "@image/global"
+                "@pageblock-image/global"
             ]
         },
-        "@image/store": {
+        "@pageblock-image/store": {
             "path": "store",
             "dependencies": []
         }

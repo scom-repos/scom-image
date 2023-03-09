@@ -1,20 +1,20 @@
 {
-  "name": "@image/main",
+  "name": "@pageblock-image/main",
   "version": "0.1.0",
   "env": "",
   "moduleDir": "src",
-  "main": "@image/main",
+  "main": "@pageblock-image/main",
   "modules": {
-    "@image/main": {
+    "@pageblock-image/main": {
       "path": "main"
     },
-    "@image/global": {
+    "@pageblock-image/global": {
       "path": "global"
     },
-    "@image/command": {
+    "@pageblock-image/command": {
       "path": "command"
     },
-    "@image/store": {
+    "@pageblock-image/store": {
       "path": "store"
     }
   },
