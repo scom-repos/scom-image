@@ -1,1 +1,0 @@
-export { EditCommand } from './edit';
