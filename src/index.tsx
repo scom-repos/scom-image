@@ -131,6 +131,7 @@ export default class ScomImage extends Module implements PageBlock {
   private originalUrl: string = ''
   private isReset: boolean = false
   private _oldURl: string = ''
+  private isInitedLink: boolean = false
 
   tag: any
 
@@ -148,18 +149,13 @@ export default class ScomImage extends Module implements PageBlock {
     super(parent, options);
     if (scconfig)
       setDataFromSCConfig(scconfig);
-    if (options.url) this.data.url = options.url;
-    if (options.altText !== undefined) this.data.altText = options.altText;
-    if (options.link !== undefined) this.data.link = options.link;
   }
   
-  async init() {
+  init() {
     super.init()
     this.setTag({width: '100%', height: 'auto'});
-    this.data.url = this.getAttribute('url', true);
-    this.data.altText = this.getAttribute('altText', true);
-    this.data.link = this.getAttribute('link', true);
-    this.data.url && await this.updateImg();
+    this.url = this.getAttribute('url', true);
+    this.altText = this.getAttribute('altText', true);
   }
 
   static async create(options?: ScomImageElement, parent?: Container){
@@ -172,13 +168,13 @@ export default class ScomImage extends Module implements PageBlock {
     return this.data.url ?? '';
   }
   set url(value: string) {
-    this.data.url = value;
-    // if (this.data.url?.startsWith('ipfs://')) {
-    //   const ipfsGatewayUrl = getIPFSGatewayUrl()
-    //   this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
-    // } else {
-    //   this.img.url = this.data.url
-    // }
+    this.data.url = value || '';
+    if (this.data.url?.startsWith('ipfs://')) {
+      const ipfsGatewayUrl = getIPFSGatewayUrl()
+      this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
+    } else {
+      this.img.url = this.data.url
+    }
   }
 
   get altText() {
@@ -186,8 +182,8 @@ export default class ScomImage extends Module implements PageBlock {
   }
   set altText(value: string) {
     this.data.altText = value;
-    // const imgElm = this.img.querySelector('img')
-    // imgElm && imgElm.setAttribute('alt', this.data.altText || '')
+    const imgElm = this.img.querySelector('img')
+    imgElm && imgElm.setAttribute('alt', this.data.altText || '')
   }
 
   get link() {
@@ -195,10 +191,7 @@ export default class ScomImage extends Module implements PageBlock {
   }
   set link(value: string) {
     this.data.link = value;
-    // if (value)
-    //   this.imgLink.link = new Link(this, { href: this.data.link, target: '_blank' })
-    // else
-    //   this.imgLink.link = new Link(this, { target: '_self' })
+    this.setLink();
   }
 
   getConfigSchema() {
@@ -226,10 +219,6 @@ export default class ScomImage extends Module implements PageBlock {
     }
     const imgElm = this.img.querySelector('img')
     imgElm && imgElm.setAttribute('alt', this.data.altText || '')
-    if (this.data.link)
-      this.imgLink.link = await Link.create({ href: this.data.link, target: '_blank' })
-    else
-      this.imgLink.link = await Link.create({ target: '_self' })
   }
 
   async setData(value: IImage) {
@@ -244,6 +233,23 @@ export default class ScomImage extends Module implements PageBlock {
     else this.edtLink.value = value.url
     this.updateImg()
     this.pnlImage.background.color = value.backgroundColor || ''
+  }
+
+  private async setLink() {
+    if (this.data.link)
+      this.imgLink.link = await Link.create({ href: this.data.link, target: '_blank' })
+    else
+      this.imgLink.link = await Link.create({ target: '_self' })
+  }
+
+  async connectedCallback() {
+    super.connectedCallback();
+    if (!this.isConnected) return;
+    const link = this.data.link || this.getAttribute('link', true);
+    if (link !== undefined && !this.isInitedLink) {
+      this.isInitedLink = true;
+      this.link = link;
+    }
   }
 
   getTag() {
