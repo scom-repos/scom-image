@@ -212,22 +212,15 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             this.originalUrl = '';
             this.isReset = false;
             this._oldURl = '';
+            this.isInitedLink = false;
             if (scconfig_json_1.default)
                 store_1.setDataFromSCConfig(scconfig_json_1.default);
-            if (options.url)
-                this.data.url = options.url;
-            if (options.altText !== undefined)
-                this.data.altText = options.altText;
-            if (options.link !== undefined)
-                this.data.link = options.link;
         }
-        async init() {
+        init() {
             super.init();
             this.setTag({ width: '100%', height: 'auto' });
-            this.data.url = this.getAttribute('url', true);
-            this.data.altText = this.getAttribute('altText', true);
-            this.data.link = this.getAttribute('link', true);
-            this.data.url && await this.updateImg();
+            this.url = this.getAttribute('url', true);
+            this.altText = this.getAttribute('altText', true);
         }
         static async create(options, parent) {
             let self = new this(parent, options);
@@ -239,13 +232,15 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             return (_a = this.data.url) !== null && _a !== void 0 ? _a : '';
         }
         set url(value) {
-            this.data.url = value;
-            // if (this.data.url?.startsWith('ipfs://')) {
-            //   const ipfsGatewayUrl = getIPFSGatewayUrl()
-            //   this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
-            // } else {
-            //   this.img.url = this.data.url
-            // }
+            var _a;
+            this.data.url = value || '';
+            if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
+                const ipfsGatewayUrl = store_1.getIPFSGatewayUrl();
+                this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
+            }
+            else {
+                this.img.url = this.data.url;
+            }
         }
         get altText() {
             var _a;
@@ -253,8 +248,8 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         set altText(value) {
             this.data.altText = value;
-            // const imgElm = this.img.querySelector('img')
-            // imgElm && imgElm.setAttribute('alt', this.data.altText || '')
+            const imgElm = this.img.querySelector('img');
+            imgElm && imgElm.setAttribute('alt', this.data.altText || '');
         }
         get link() {
             var _a;
@@ -262,10 +257,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         set link(value) {
             this.data.link = value;
-            // if (value)
-            //   this.imgLink.link = new Link(this, { href: this.data.link, target: '_blank' })
-            // else
-            //   this.imgLink.link = new Link(this, { target: '_self' })
+            this.setLink();
         }
         getConfigSchema() {
             return configSchema;
@@ -292,10 +284,6 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             }
             const imgElm = this.img.querySelector('img');
             imgElm && imgElm.setAttribute('alt', this.data.altText || '');
-            if (this.data.link)
-                this.imgLink.link = await components_2.Link.create({ href: this.data.link, target: '_blank' });
-            else
-                this.imgLink.link = await components_2.Link.create({ target: '_self' });
         }
         async setData(value) {
             if (!this.checkValidation(value))
@@ -312,6 +300,22 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 this.edtLink.value = value.url;
             this.updateImg();
             this.pnlImage.background.color = value.backgroundColor || '';
+        }
+        async setLink() {
+            if (this.data.link)
+                this.imgLink.link = await components_2.Link.create({ href: this.data.link, target: '_blank' });
+            else
+                this.imgLink.link = await components_2.Link.create({ target: '_self' });
+        }
+        async connectedCallback() {
+            super.connectedCallback();
+            if (!this.isConnected)
+                return;
+            const link = this.data.link || this.getAttribute('link', true);
+            if (link !== undefined && !this.isInitedLink) {
+                this.isInitedLink = true;
+                this.link = link;
+            }
         }
         getTag() {
             return this.tag;

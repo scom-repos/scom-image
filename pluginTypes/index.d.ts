@@ -103,6 +103,7 @@ declare module "@scom/scom-image" {
         private originalUrl;
         private isReset;
         private _oldURl;
+        private isInitedLink;
         tag: any;
         readonly onConfirm: () => Promise<void>;
         readonly onDiscard: () => Promise<void>;
@@ -113,7 +114,7 @@ declare module "@scom/scom-image" {
         confirm: () => Promise<void>;
         discard: () => Promise<void>;
         constructor(parent?: Container, options?: any);
-        init(): Promise<void>;
+        init(): void;
         static create(options?: ScomImageElement, parent?: Container): Promise<ScomImage>;
         get url(): string;
         set url(value: string);
@@ -136,6 +137,8 @@ declare module "@scom/scom-image" {
         getData(): IImage;
         private updateImg;
         setData(value: IImage): Promise<void>;
+        private setLink;
+        connectedCallback(): Promise<void>;
         getTag(): any;
         setTag(value: any): Promise<void>;
         getActions(): {

@@ -14,10 +14,13 @@ export default class Module1 extends Module {
         this.imageEl = await ScomImage.create({
            url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/681px-Placeholder_view_vector.svg.png',
            altText: 'placeholder',
-           link: 'https://www.google.com/',
+           link: 'https://translate.google.com/',
            width: 300,
            height: 200
         });
+        this.imageEl.link = 'https://www.google.com/'
+        this.imageEl.altText = '123'
+        this.imageEl.url ="https://hips.hearstapps.com/hmg-prod/images/summer-flowers-star-flower-1648071187.jpg"
         this.mainStack.appendChild(this.imageEl);
     }
 
