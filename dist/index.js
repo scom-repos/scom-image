@@ -183,12 +183,18 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         set url(value) {
             var _a;
-            this.data.url = value || '';
+            this.data.url = value;
+            if (!value) {
+                this.toggleEditMode(true);
+                this.img.url = '';
+                return;
+            }
+            this.toggleEditMode(false);
             if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
                 const ipfsGatewayUrl = store_1.getIPFSGatewayUrl();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
-            else {
+            else if (value) {
                 this.img.url = this.data.url;
             }
         }
@@ -209,6 +215,11 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             this.data.link = value;
             this.setLink();
         }
+        toggleEditMode(value) {
+            this.uploader.visible = value;
+            this.linkStack.visible = value;
+            this.imgLink.visible = !value;
+        }
         getConfigSchema() {
             return configSchema;
         }
@@ -217,9 +228,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         async updateImg() {
             var _a;
-            this.uploader.visible = false;
-            this.linkStack.visible = false;
-            this.imgLink.visible = true;
+            this.toggleEditMode(false);
             if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
                 const ipfsGatewayUrl = store_1.getIPFSGatewayUrl();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);

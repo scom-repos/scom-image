@@ -122,6 +122,7 @@ declare module "@scom/scom-image" {
         set altText(value: string);
         get link(): string;
         set link(value: string);
+        private toggleEditMode;
         getConfigSchema(): {
             type: string;
             required: any[];

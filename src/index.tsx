@@ -116,11 +116,17 @@ export default class ScomImage extends Module implements PageBlock {
     return this.data.url ?? '';
   }
   set url(value: string) {
-    this.data.url = value || '';
+    this.data.url = value;
+    if (!value) {
+      this.toggleEditMode(true)
+      this.img.url = ''
+      return
+    }
+    this.toggleEditMode(false)
     if (this.data.url?.startsWith('ipfs://')) {
       const ipfsGatewayUrl = getIPFSGatewayUrl()
       this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
-    } else {
+    } else if (value) {
       this.img.url = this.data.url
     }
   }
@@ -142,6 +148,12 @@ export default class ScomImage extends Module implements PageBlock {
     this.setLink();
   }
 
+  private toggleEditMode(value: boolean) {
+    this.uploader.visible = value
+    this.linkStack.visible = value
+    this.imgLink.visible = !value
+  }
+
   getConfigSchema() {
     return configSchema
   }
@@ -151,9 +163,7 @@ export default class ScomImage extends Module implements PageBlock {
   }
 
   private async updateImg() {
-    this.uploader.visible = false
-    this.linkStack.visible = false
-    this.imgLink.visible = true
+    this.toggleEditMode(false)
     if (this.data.url?.startsWith('ipfs://')) {
       const ipfsGatewayUrl = getIPFSGatewayUrl()
       this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
