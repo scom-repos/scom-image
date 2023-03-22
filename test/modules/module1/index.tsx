@@ -18,9 +18,9 @@ export default class Module1 extends Module {
            width: 300,
            height: 200
         });
-        this.imageEl.link = 'https://www.google.com/'
-        this.imageEl.altText = '123'
-        this.imageEl.url ="https://hips.hearstapps.com/hmg-prod/images/summer-flowers-star-flower-1648071187.jpg"
+        // this.imageEl.link = 'https://www.google.com/'
+        // this.imageEl.altText = '123'
+        // this.imageEl.url ="https://hips.hearstapps.com/hmg-prod/images/summer-flowers-star-flower-1648071187.jpg"
         this.mainStack.appendChild(this.imageEl);
     }
 
