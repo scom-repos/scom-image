@@ -1,15 +1,22 @@
-## Step 1: Install packages
-run the following commands:
+# Setup and Installation for Local Testing
+To get started with testing locally, follow these steps:
+
+#### 1: Install the required packages using the following command:
+
 ```sh
 docker-compose up install
 ```
-## Step 2: Build and bundle library
+
+#### 2: Build and bundle the library using the following command:
+
 ```sh
 docker-compose up build
 ```
 
-## Step 3: Run a dev server
+#### 4. Run a development server using the following command:
+
 ```sh
-docker-compose up -d serve
+docker-compose up test
 ```
-Access the dev server via http://127.0.0.1:8080/
+
+You can access the development server via http://127.0.0.1:8035/.
