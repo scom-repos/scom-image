@@ -144,56 +144,6 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             }
         }
     };
-    const settingSchema = {
-        "type": "object",
-        "properties": {
-            "url": {
-                "type": "string",
-                "minLength": 1
-            },
-            "altText": {
-                "type": "string"
-            },
-            "backgroundColor": {
-                "type": "string",
-                "format": "color"
-            },
-            // "height": {
-            //   "type": "integer",
-            //   "default": 100
-            // },
-            // "width": {
-            //   "type": "integer"
-            // },
-            "link": {
-                "type": "string"
-            }
-        },
-        "required": [
-            "url"
-        ]
-    };
-    const cropSchema = {
-        "type": "object",
-        "properties": {
-            "x": {
-                "type": "integer"
-            },
-            "y": {
-                "type": "integer"
-            },
-            "width": {
-                "type": "integer"
-            },
-            "height": {
-                "type": "integer"
-            }
-        },
-        "required": [
-            "x",
-            "y"
-        ]
-    };
     let ScomImage = class ScomImage extends components_2.Module {
         constructor(parent, options) {
             super(parent, options);
@@ -328,7 +278,78 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 this.img.height = this.tag.height;
             }
         }
+        getEmbedderActions() {
+            const propertiesSchema = {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "minLength": 1,
+                        required: true
+                    },
+                    "altText": {
+                        "type": "string"
+                    },
+                    "link": {
+                        "type": "string"
+                    }
+                }
+            };
+            const themeSchema = {
+                type: 'object',
+                properties: {
+                    backgroundColor: {
+                        type: 'string',
+                        format: 'color',
+                        readOnly: true
+                    },
+                    width: {
+                        type: 'string',
+                        readOnly: true
+                    },
+                    height: {
+                        type: 'string',
+                        readOnly: true
+                    }
+                }
+            };
+            return this._getActions(propertiesSchema, themeSchema);
+        }
         getActions() {
+            const propertiesSchema = {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "minLength": 1,
+                        required: true
+                    },
+                    "altText": {
+                        "type": "string"
+                    },
+                    "link": {
+                        "type": "string"
+                    }
+                }
+            };
+            const themeSchema = {
+                type: 'object',
+                properties: {
+                    backgroundColor: {
+                        type: 'string',
+                        format: 'color'
+                    },
+                    width: {
+                        type: 'string'
+                    },
+                    height: {
+                        type: 'string'
+                    }
+                }
+            };
+            return this._getActions(propertiesSchema, themeSchema);
+        }
+        _getActions(settingSchema, themeSchema) {
             const actions = [
                 {
                     name: 'Crop (Enter)',
@@ -363,72 +384,26 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                             redo: () => { }
                         };
                     },
-                    userInputDataSchema: cropSchema
+                    userInputDataSchema: {
+                        "type": "object",
+                        "properties": {
+                            "x": {
+                                "type": "integer",
+                                "required": true
+                            },
+                            "y": {
+                                "type": "integer",
+                                "required": true
+                            },
+                            "width": {
+                                "type": "integer"
+                            },
+                            "height": {
+                                "type": "integer"
+                            }
+                        }
+                    }
                 },
-                // {
-                //   name: 'Insert Link',
-                //   icon: 'link',
-                //   command: (builder: any, userInputData: any) => {
-                //     return {
-                //       execute: () => {
-                //         this._oldLink = this.data.link;
-                //         this.data.link = userInputData;
-                //       },
-                //       undo: () => {
-                //         this.data.link = this._oldLink;
-                //       },
-                //       redo: () => {}
-                //     }
-                //   },
-                //   userInputDataSchema: {
-                //     type: 'string' as any,
-                //   },
-                // },
-                // {
-                //   name: 'Replace image',
-                //   icon: 'pencil-alt',
-                //   command: (builder: any, userInputData: any) => {
-                //     return {
-                //       execute: () => {
-                //         this._oldURl = this.data.url;
-                //         this.data.url = userInputData;
-                //       },
-                //       undo: () => {
-                //         this.data.url = this._oldURl;
-                //       },
-                //       redo: () => {}
-                //     }
-                //   },
-                //   userInputDataSchema: {
-                //     type: 'string' as any,
-                //   },
-                // },
-                // {
-                //   name: 'Add alt text',
-                //   icon: 'plus',
-                //   command: (builder: any, userInputData: any) => {
-                //     return {
-                //       execute: () => {
-                //         this._oldAltText = this.img.getAttribute('alt');
-                //         this.data.altText = userInputData.description;
-                //         this.img.setAttribute('alt', userInputData.description);
-                //       },
-                //       undo: () => {
-                //         this.data.altText = this._oldAltText;
-                //       },
-                //       redo: () => {}
-                //     }
-                //   },
-                //   userInputDataSchema: {
-                //     type: 'object' as any,
-                //     description: 'Alt text is accessed by screen readers for people who might have trouble seeing your content',
-                //     properties: {
-                //       "description": {
-                //         type: 'string' as any
-                //       }
-                //     }
-                //   }
-                // },
                 {
                     name: 'Settings',
                     icon: 'cog',
