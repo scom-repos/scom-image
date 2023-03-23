@@ -122,6 +122,7 @@ declare module "@scom/scom-image" {
         set altText(value: string);
         get link(): string;
         set link(value: string);
+        private toggleEditMode;
         getConfigSchema(): {
             type: string;
             required: any[];
@@ -141,7 +142,27 @@ declare module "@scom/scom-image" {
         connectedCallback(): Promise<void>;
         getTag(): any;
         setTag(value: any): Promise<void>;
+        getEmbedderActions(): {
+            name: string;
+            icon: string;
+            command: (builder: any, userInputData: any) => {
+                execute: () => void;
+                undo: () => void;
+                redo: () => void;
+            };
+            userInputDataSchema: IDataSchema;
+        }[];
         getActions(): {
+            name: string;
+            icon: string;
+            command: (builder: any, userInputData: any) => {
+                execute: () => void;
+                undo: () => void;
+                redo: () => void;
+            };
+            userInputDataSchema: IDataSchema;
+        }[];
+        _getActions(settingSchema: IDataSchema, themeSchema: IDataSchema): {
             name: string;
             icon: string;
             command: (builder: any, userInputData: any) => {
