@@ -226,7 +226,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         getData() {
             return this.data;
         }
-        async updateImg() {
+        updateImg() {
             var _a;
             this.toggleEditMode(false);
             if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
@@ -259,6 +259,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 this.edtLink.value = value.url;
             this.updateImg();
             this.pnlImage.background.color = value.backgroundColor || '';
+            this.setLink();
         }
         async setLink() {
             if (this.data.link)
