@@ -162,7 +162,7 @@ export default class ScomImage extends Module implements PageBlock {
     return this.data
   }
 
-  private async updateImg() {
+  private updateImg() {
     this.toggleEditMode(false)
     if (this.data.url?.startsWith('ipfs://')) {
       const ipfsGatewayUrl = getIPFSGatewayUrl()
@@ -191,6 +191,7 @@ export default class ScomImage extends Module implements PageBlock {
     else this.edtLink.value = value.url
     this.updateImg()
     this.pnlImage.background.color = value.backgroundColor || ''
+    this.setLink();
   }
 
   private async setLink() {
