@@ -13,23 +13,23 @@ import {
   ControlElement,
   customElements
 } from '@ijstech/components'
-import { IImage, PageBlock } from './interface'
+import { IImage } from './interface'
 import { getIPFSGatewayUrl, setDataFromSCConfig } from './store'
 import './index.css'
 import scconfig from './scconfig.json';
 
-const configSchema = {
-  type: 'object',
-  required: [],
-  properties: {
-    width: {
-      type: 'string',
-    },
-    height: {
-      type: 'string'
-    }
-  }
-}
+// const configSchema = {
+//   type: 'object',
+//   required: [],
+//   properties: {
+//     width: {
+//       type: 'string',
+//     },
+//     height: {
+//       type: 'string'
+//     }
+//   }
+// }
 
 interface ICropData {
   x: number;
@@ -54,7 +54,7 @@ declare global {
 
 @customModule
 @customElements('i-scom-image')
-export default class ScomImage extends Module implements PageBlock {
+export default class ScomImage extends Module {
   private data: IImage = {
     url: '',
     altText: '',
@@ -154,11 +154,34 @@ export default class ScomImage extends Module implements PageBlock {
     this.imgLink.visible = !value
   }
 
-  getConfigSchema() {
-    return configSchema
+  getConfigurators() {
+    return [
+      {
+        name: 'Builder Configurator',
+        target: 'Builders',
+        getActions: this.getActions.bind(this),
+        getData: this.getData.bind(this),
+        setData: this.setData.bind(this),
+        getTag: this.getTag.bind(this),
+        setTag: this.setTag.bind(this)
+      },
+      {
+        name: 'Emdedder Configurator',
+        target: 'Embedders',
+        getActions: this.getEmbedderActions.bind(this),
+        getData: this.getData.bind(this),
+        setData: this.setData.bind(this),
+        getTag: this.getTag.bind(this),
+        setTag: this.setTag.bind(this)
+      }
+    ]
   }
 
-  getData() {
+  // getConfigSchema() {
+  //   return configSchema
+  // }
+
+  private getData() {
     return this.data
   }
 
@@ -179,7 +202,7 @@ export default class ScomImage extends Module implements PageBlock {
     imgElm && imgElm.setAttribute('alt', this.data.altText || '')
   }
 
-  async setData(value: IImage) {
+  private async setData(value: IImage) {
     if (!this.checkValidation(value)) return
     this.oldData = this.data
     this.data = value
@@ -211,11 +234,11 @@ export default class ScomImage extends Module implements PageBlock {
     }
   }
 
-  getTag() {
+  private getTag() {
     return this.tag
   }
 
-  async setTag(value: any) {
+  private async setTag(value: any) {
     this.tag = value;
     if (this.img) {
       this.img.display = "block";
@@ -224,14 +247,13 @@ export default class ScomImage extends Module implements PageBlock {
     }
   }
 
-  getEmbedderActions() {
+  private getEmbedderActions() {
     const propertiesSchema: IDataSchema = {
       "type": "object",
+      required: ["url"],
       "properties": {
         "url": {
-          "type": "string",
-          "minLength": 1,
-          required: true
+          "type": "string"
         },
         "altText": {
           "type": "string"
@@ -264,14 +286,13 @@ export default class ScomImage extends Module implements PageBlock {
     return this._getActions(propertiesSchema, themeSchema);
   }
 
-  getActions() {
+  private getActions() {
     const propertiesSchema: IDataSchema = {
       "type": "object",
+      required: ["url"],
       "properties": {
         "url": {
-          "type": "string",
-          "minLength": 1,
-          required: true
+          "type": "string"
         },
         "altText": {
           "type": "string"
@@ -302,7 +323,7 @@ export default class ScomImage extends Module implements PageBlock {
   }
 
 
-  _getActions(settingSchema: IDataSchema, themeSchema: IDataSchema) {
+  private _getActions(settingSchema: IDataSchema, themeSchema: IDataSchema) {
     const actions = [
       {
         name: 'Crop (Enter)',
@@ -334,14 +355,13 @@ export default class ScomImage extends Module implements PageBlock {
         },
         userInputDataSchema: {
           "type": "object",
+          required: ["x", "y"],
           "properties": {
             "x": {
-              "type": "integer",
-              "required": true
+              "type": "integer"
             },
             "y": {
-              "type": "integer",
-              "required": true
+              "type": "integer"
             },
             "width": {
               "type": "integer"
@@ -374,7 +394,7 @@ export default class ScomImage extends Module implements PageBlock {
     return actions
   }
 
-  checkValidation(value: IImage): boolean {
+  private checkValidation(value: IImage): boolean {
     return !!value.url;
   }
 
