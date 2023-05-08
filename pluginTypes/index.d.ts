@@ -74,8 +74,7 @@ declare module "@scom/scom-image/scconfig.json.ts" {
 }
 /// <amd-module name="@scom/scom-image" />
 declare module "@scom/scom-image" {
-    import { Module, IDataSchema, Container, ControlElement } from '@ijstech/components';
-    import { IImage, PageBlock } from "@scom/scom-image/interface.ts";
+    import { Module, Container, ControlElement } from '@ijstech/components';
     import "@scom/scom-image/index.css.ts";
     interface ScomImageElement extends ControlElement {
         url: string;
@@ -89,7 +88,7 @@ declare module "@scom/scom-image" {
             }
         }
     }
-    export default class ScomImage extends Module implements PageBlock {
+    export default class ScomImage extends Module {
         private data;
         private oldData;
         private uploader;
@@ -123,56 +122,26 @@ declare module "@scom/scom-image" {
         get link(): string;
         set link(value: string);
         private toggleEditMode;
-        getConfigSchema(): {
-            type: string;
-            required: any[];
-            properties: {
-                width: {
-                    type: string;
-                };
-                height: {
-                    type: string;
-                };
-            };
-        };
-        getData(): IImage;
+        getConfigurators(): {
+            name: string;
+            target: string;
+            getActions: any;
+            getData: any;
+            setData: any;
+            getTag: any;
+            setTag: any;
+        }[];
+        private getData;
         private updateImg;
-        setData(value: IImage): Promise<void>;
+        private setData;
         private setLink;
         connectedCallback(): Promise<void>;
-        getTag(): any;
-        setTag(value: any): Promise<void>;
-        getEmbedderActions(): {
-            name: string;
-            icon: string;
-            command: (builder: any, userInputData: any) => {
-                execute: () => void;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: IDataSchema;
-        }[];
-        getActions(): {
-            name: string;
-            icon: string;
-            command: (builder: any, userInputData: any) => {
-                execute: () => void;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: IDataSchema;
-        }[];
-        _getActions(settingSchema: IDataSchema, themeSchema: IDataSchema): {
-            name: string;
-            icon: string;
-            command: (builder: any, userInputData: any) => {
-                execute: () => void;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: IDataSchema;
-        }[];
-        checkValidation(value: IImage): boolean;
+        private getTag;
+        private setTag;
+        private getEmbedderActions;
+        private getActions;
+        private _getActions;
+        private checkValidation;
         private onCrop;
         private onChangedImage;
         private onRemovedImage;

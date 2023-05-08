@@ -132,18 +132,6 @@ define("@scom/scom-image/scconfig.json.ts", ["require", "exports"], function (re
 define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/store.ts", "@scom/scom-image/scconfig.json.ts", "@scom/scom-image/index.css.ts"], function (require, exports, components_2, store_1, scconfig_json_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const configSchema = {
-        type: 'object',
-        required: [],
-        properties: {
-            width: {
-                type: 'string',
-            },
-            height: {
-                type: 'string'
-            }
-        }
-    };
     let ScomImage = class ScomImage extends components_2.Module {
         constructor(parent, options) {
             super(parent, options);
@@ -220,9 +208,31 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             this.linkStack.visible = value;
             this.imgLink.visible = !value;
         }
-        getConfigSchema() {
-            return configSchema;
+        getConfigurators() {
+            return [
+                {
+                    name: 'Builder Configurator',
+                    target: 'Builders',
+                    getActions: this.getActions.bind(this),
+                    getData: this.getData.bind(this),
+                    setData: this.setData.bind(this),
+                    getTag: this.getTag.bind(this),
+                    setTag: this.setTag.bind(this)
+                },
+                {
+                    name: 'Emdedder Configurator',
+                    target: 'Embedders',
+                    getActions: this.getEmbedderActions.bind(this),
+                    getData: this.getData.bind(this),
+                    setData: this.setData.bind(this),
+                    getTag: this.getTag.bind(this),
+                    setTag: this.setTag.bind(this)
+                }
+            ];
         }
+        // getConfigSchema() {
+        //   return configSchema
+        // }
         getData() {
             return this.data;
         }
@@ -291,11 +301,10 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         getEmbedderActions() {
             const propertiesSchema = {
                 "type": "object",
+                required: ["url"],
                 "properties": {
                     "url": {
-                        "type": "string",
-                        "minLength": 1,
-                        required: true
+                        "type": "string"
                     },
                     "altText": {
                         "type": "string"
@@ -328,11 +337,10 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         getActions() {
             const propertiesSchema = {
                 "type": "object",
+                required: ["url"],
                 "properties": {
                     "url": {
-                        "type": "string",
-                        "minLength": 1,
-                        required: true
+                        "type": "string"
                     },
                     "altText": {
                         "type": "string"
@@ -396,14 +404,13 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     },
                     userInputDataSchema: {
                         "type": "object",
+                        required: ["x", "y"],
                         "properties": {
                             "x": {
-                                "type": "integer",
-                                "required": true
+                                "type": "integer"
                             },
                             "y": {
-                                "type": "integer",
-                                "required": true
+                                "type": "integer"
                             },
                             "width": {
                                 "type": "integer"
