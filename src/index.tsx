@@ -15,21 +15,8 @@ import {
 } from '@ijstech/components'
 import { IImage } from './interface'
 import { getIPFSGatewayUrl, setDataFromSCConfig } from './store'
+import configData from './data.json'
 import './index.css'
-import scconfig from './scconfig.json';
-
-// const configSchema = {
-//   type: 'object',
-//   required: [],
-//   properties: {
-//     width: {
-//       type: 'string',
-//     },
-//     height: {
-//       type: 'string'
-//     }
-//   }
-// }
 
 interface ICropData {
   x: number;
@@ -61,12 +48,6 @@ export default class ScomImage extends Module {
     backgroundColor: '',
     link: ''
   }
-  private oldData: IImage = {
-    url: '',
-    altText: '',
-    backgroundColor: '',
-    link: ''
-  }
   private uploader: Upload
   private img: Image
   private linkStack: Panel
@@ -78,7 +59,6 @@ export default class ScomImage extends Module {
   private oldCropData: ICropData
   private originalUrl: string = ''
   private isReset: boolean = false
-  private _oldURl: string = ''
   private isInitedLink: boolean = false
 
   tag: any
@@ -95,8 +75,8 @@ export default class ScomImage extends Module {
 
   constructor(parent?: Container, options?: any) {
     super(parent, options);
-    if (scconfig)
-      setDataFromSCConfig(scconfig);
+    if (configData)
+      setDataFromSCConfig(configData);
   }
   
   init() {
@@ -159,16 +139,23 @@ export default class ScomImage extends Module {
       {
         name: 'Builder Configurator',
         target: 'Builders',
-        getActions: this.getActions.bind(this),
+        getActions: () => {
+          return this._getActions(this.getPropertiesSchema(), this.getThemeSchema());
+        },
         getData: this.getData.bind(this),
-        setData: this.setData.bind(this),
+        setData: async (data: IImage) => {
+          const defaultData = configData.defaultBuilderData;
+          await this.setData({...defaultData, ...data});
+        },
         getTag: this.getTag.bind(this),
         setTag: this.setTag.bind(this)
       },
       {
         name: 'Emdedder Configurator',
         target: 'Embedders',
-        getActions: this.getEmbedderActions.bind(this),
+        getActions: () => {
+          return this._getActions(this.getPropertiesSchema(), this.getThemeSchema(true));
+        },
         getData: this.getData.bind(this),
         setData: this.setData.bind(this),
         getTag: this.getTag.bind(this),
@@ -177,77 +164,7 @@ export default class ScomImage extends Module {
     ]
   }
 
-  // getConfigSchema() {
-  //   return configSchema
-  // }
-
-  private getData() {
-    return this.data
-  }
-
-  private updateImg() {
-    this.toggleEditMode(false)
-    if (this.data.url?.startsWith('ipfs://')) {
-      const ipfsGatewayUrl = getIPFSGatewayUrl()
-      this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
-    } else {
-      this.img.url = this.data.url
-    }
-    if (this.tag.width || this.tag.height) {
-      this.img.display = 'block';
-      this.tag.width && (this.img.width = this.tag.width)
-      this.tag.width && (this.img.height = this.tag.height)
-    }
-    const imgElm = this.img.querySelector('img')
-    imgElm && imgElm.setAttribute('alt', this.data.altText || '')
-  }
-
-  private async setData(value: IImage) {
-    if (!this.checkValidation(value)) return
-    this.oldData = this.data
-    this.data = value
-    if (!this.originalUrl) this.originalUrl = this.data.url
-
-    const uploader = document.getElementById('uploader')
-    const imageElm = uploader?.getElementsByTagName('img')[0]
-    if (imageElm) imageElm.src = value.url
-    else this.edtLink.value = value.url
-    this.updateImg()
-    this.pnlImage.background.color = value.backgroundColor || ''
-    this.setLink();
-  }
-
-  private async setLink() {
-    if (this.data.link)
-      this.imgLink.link = await Link.create({ href: this.data.link, target: '_blank' })
-    else
-      this.imgLink.link = await Link.create({ target: '_self' })
-  }
-
-  async connectedCallback() {
-    super.connectedCallback();
-    if (!this.isConnected) return;
-    const link = this.data.link || this.getAttribute('link', true);
-    if (link !== undefined && !this.isInitedLink) {
-      this.isInitedLink = true;
-      this.link = link;
-    }
-  }
-
-  private getTag() {
-    return this.tag
-  }
-
-  private async setTag(value: any) {
-    this.tag = value;
-    if (this.img) {
-      this.img.display = "block";
-      this.img.width = this.tag.width;
-      this.img.height = this.tag.height;
-    }
-  }
-
-  private getEmbedderActions() {
+  private getPropertiesSchema() {
     const propertiesSchema: IDataSchema = {
       "type": "object",
       required: ["url"],
@@ -264,64 +181,31 @@ export default class ScomImage extends Module {
       }
     };
 
+    return propertiesSchema;
+  }
+
+  private getThemeSchema(readOnly?: boolean) {
     const themeSchema: IDataSchema = {
       type: 'object',
       properties: {
         backgroundColor: {
           type: 'string',
           format: 'color',
-          readOnly: true
+          readOnly
         },
         width: {
           type: 'string',
-          readOnly: true
+          readOnly
         },
         height: {
           type: 'string',
-          readOnly: true
+          readOnly
         }
       }
     }
 
-    return this._getActions(propertiesSchema, themeSchema);
+    return themeSchema;
   }
-
-  private getActions() {
-    const propertiesSchema: IDataSchema = {
-      "type": "object",
-      required: ["url"],
-      "properties": {
-        "url": {
-          "type": "string"
-        },
-        "altText": {
-          "type": "string"
-        },
-        "link": {
-          "type": "string"
-        }
-      }
-    };
-
-    const themeSchema: IDataSchema = {
-      type: 'object',
-      properties: {
-        backgroundColor: {
-          type: 'string',
-          format: 'color'
-        },
-        width: {
-          type: 'string'
-        },
-        height: {
-          type: 'string'
-        }
-      }
-    }
-
-    return this._getActions(propertiesSchema, themeSchema);
-  }
-
 
   private _getActions(settingSchema: IDataSchema, themeSchema: IDataSchema) {
     const actions = [
@@ -376,14 +260,16 @@ export default class ScomImage extends Module {
         name: 'Settings',
         icon: 'cog',
         command: (builder: any, userInputData: any) => {
+          let oldData: IImage = { url: '' };
           return {
             execute: () => {
+              oldData = {...this.data};
               if (builder?.setData) builder.setData(userInputData);
               this.setData(userInputData);
             },
             undo: () => {
-              if (builder?.setData) builder.setData(this.oldData);
-              this.setData(this.oldData);
+              if (builder?.setData) builder.setData(oldData);
+              this.setData(oldData);
             },
             redo: () => {}
           }
@@ -394,8 +280,69 @@ export default class ScomImage extends Module {
     return actions
   }
 
-  private checkValidation(value: IImage): boolean {
-    return !!value.url;
+  private getData() {
+    return this.data
+  }
+
+  private async setData(value: IImage) {
+    if (!value.url) return
+    this.data = value
+    if (!this.originalUrl) this.originalUrl = this.data.url
+
+    const uploader = document.getElementById('uploader')
+    const imageElm = uploader?.getElementsByTagName('img')[0]
+    if (imageElm) imageElm.src = value.url
+    else this.edtLink.value = value.url
+    this.updateImg()
+    this.pnlImage.background.color = value.backgroundColor || ''
+    this.setLink();
+  }
+
+  private updateImg() {
+    this.toggleEditMode(false)
+    if (this.data.url?.startsWith('ipfs://')) {
+      const ipfsGatewayUrl = getIPFSGatewayUrl()
+      this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
+    } else {
+      this.img.url = this.data.url
+    }
+    if (this.tag.width || this.tag.height) {
+      this.img.display = 'block';
+      this.tag.width && (this.img.width = this.tag.width)
+      this.tag.width && (this.img.height = this.tag.height)
+    }
+    const imgElm = this.img.querySelector('img')
+    imgElm && imgElm.setAttribute('alt', this.data.altText || '')
+  }
+
+  private async setLink() {
+    if (this.data.link)
+      this.imgLink.link = await Link.create({ href: this.data.link, target: '_blank' })
+    else
+      this.imgLink.link = await Link.create({ target: '_self' })
+  }
+
+  async connectedCallback() {
+    super.connectedCallback();
+    if (!this.isConnected) return;
+    const link = this.data.link || this.getAttribute('link', true);
+    if (link !== undefined && !this.isInitedLink) {
+      this.isInitedLink = true;
+      this.link = link;
+    }
+  }
+
+  private getTag() {
+    return this.tag
+  }
+
+  private async setTag(value: any) {
+    this.tag = value;
+    if (this.img) {
+      this.img.display = "block";
+      this.img.width = this.tag.width;
+      this.img.height = this.tag.height;
+    }
   }
 
   private onCrop(data: ICropData) {
@@ -440,7 +387,6 @@ export default class ScomImage extends Module {
 
   private async onChangedImage(control: Control, files: any[]) {
     let newUrl = ''
-    this._oldURl = this.data.url;
     if (files && files[0]) {
       newUrl = (await this.uploader.toBase64(files[0])) as string
       this.originalUrl = newUrl
@@ -452,7 +398,6 @@ export default class ScomImage extends Module {
 
   private onRemovedImage(control: Control, file: File) {
     this.data.url = this.edtLink.value || ''
-    this._oldURl = this.edtLink.value || ''
   }
 
   private onChangedLink(source: Control) {
