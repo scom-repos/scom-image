@@ -44,37 +44,21 @@ declare module "@scom/scom-image/store.ts" {
     export const setIPFSGatewayUrl: (url: string) => void;
     export const getIPFSGatewayUrl: () => string;
 }
-/// <amd-module name="@scom/scom-image/index.css.ts" />
-declare module "@scom/scom-image/index.css.ts" { }
-/// <amd-module name="@scom/scom-image/scconfig.json.ts" />
-declare module "@scom/scom-image/scconfig.json.ts" {
+/// <amd-module name="@scom/scom-image/data.json.ts" />
+declare module "@scom/scom-image/data.json.ts" {
     const _default: {
-        name: string;
-        version: string;
-        env: string;
-        moduleDir: string;
-        main: string;
-        modules: {
-            "@pageblock-image/main": {
-                path: string;
-            };
-            "@pageblock-image/global": {
-                path: string;
-            };
-            "@pageblock-image/command": {
-                path: string;
-            };
-            "@pageblock-image/store": {
-                path: string;
-            };
-        };
         ipfsGatewayUrl: string;
+        defaultBuilderData: {
+            url: string;
+        };
     };
     export default _default;
 }
+/// <amd-module name="@scom/scom-image/index.css.ts" />
+declare module "@scom/scom-image/index.css.ts" { }
 /// <amd-module name="@scom/scom-image" />
 declare module "@scom/scom-image" {
-    import { Module, Container, ControlElement } from '@ijstech/components';
+    import { Module, IDataSchema, Container, ControlElement } from '@ijstech/components';
     import "@scom/scom-image/index.css.ts";
     interface ScomImageElement extends ControlElement {
         url: string;
@@ -90,7 +74,6 @@ declare module "@scom/scom-image" {
     }
     export default class ScomImage extends Module {
         private data;
-        private oldData;
         private uploader;
         private img;
         private linkStack;
@@ -101,7 +84,6 @@ declare module "@scom/scom-image" {
         private oldCropData;
         private originalUrl;
         private isReset;
-        private _oldURl;
         private isInitedLink;
         tag: any;
         readonly onConfirm: () => Promise<void>;
@@ -125,23 +107,31 @@ declare module "@scom/scom-image" {
         getConfigurators(): {
             name: string;
             target: string;
-            getActions: any;
+            getActions: () => {
+                name: string;
+                icon: string;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => void;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                userInputDataSchema: IDataSchema;
+            }[];
             getData: any;
             setData: any;
             getTag: any;
             setTag: any;
         }[];
+        private getPropertiesSchema;
+        private getThemeSchema;
+        private _getActions;
         private getData;
-        private updateImg;
         private setData;
+        private updateImg;
         private setLink;
         connectedCallback(): Promise<void>;
         private getTag;
         private setTag;
-        private getEmbedderActions;
-        private getActions;
-        private _getActions;
-        private checkValidation;
         private onCrop;
         private onChangedImage;
         private onRemovedImage;
