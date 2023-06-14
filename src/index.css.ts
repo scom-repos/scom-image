@@ -4,7 +4,7 @@ const Theme = Styles.Theme.ThemeVars;
 Styles.cssRule('#pnlImage', {
   $nest: {
     '.custom-img img': {
-      objectFit: 'cover',
+      objectFit: 'fill',
       objectPosition: 'center',
       width: '100%',
       height: '100%',
