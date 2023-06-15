@@ -61,6 +61,7 @@ declare module "@scom/scom-image" {
     import { Module, IDataSchema, Container, ControlElement } from '@ijstech/components';
     import "@scom/scom-image/index.css.ts";
     interface ScomImageElement extends ControlElement {
+        lazyLoad?: boolean;
         url: string;
         altText?: string;
         link?: string;

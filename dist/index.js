@@ -18,7 +18,7 @@ define("@scom/scom-image/store.ts", ["require", "exports"], function (require, e
     };
     const setDataFromSCConfig = (options) => {
         if (options.ipfsGatewayUrl) {
-            exports.setIPFSGatewayUrl(options.ipfsGatewayUrl);
+            (0, exports.setIPFSGatewayUrl)(options.ipfsGatewayUrl);
         }
     };
     exports.setDataFromSCConfig = setDataFromSCConfig;
@@ -129,13 +129,16 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             this.isReset = false;
             this.isInitedLink = false;
             if (data_json_1.default)
-                store_1.setDataFromSCConfig(data_json_1.default);
+                (0, store_1.setDataFromSCConfig)(data_json_1.default);
         }
         init() {
             super.init();
             this.setTag({ width: '100%', height: 'auto' });
-            this.url = this.getAttribute('url', true);
-            this.altText = this.getAttribute('altText', true);
+            const lazyLoad = this.getAttribute('lazyLoad', true, false);
+            if (!lazyLoad) {
+                this.url = this.getAttribute('url', true);
+                this.altText = this.getAttribute('altText', true);
+            }
         }
         static async create(options, parent) {
             let self = new this(parent, options);
@@ -156,7 +159,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             }
             this.toggleEditMode(false);
             if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = store_1.getIPFSGatewayUrl();
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else if (value) {
@@ -355,7 +358,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             var _a;
             this.toggleEditMode(false);
             if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = store_1.getIPFSGatewayUrl();
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
@@ -454,7 +457,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
     };
     ScomImage = __decorate([
         components_2.customModule,
-        components_2.customElements('i-scom-image')
+        (0, components_2.customElements)('i-scom-image')
     ], ScomImage);
     exports.default = ScomImage;
 });

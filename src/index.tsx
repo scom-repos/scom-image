@@ -26,6 +26,7 @@ interface ICropData {
 }
 
 interface ScomImageElement extends ControlElement {
+  lazyLoad?: boolean;
   url: string;
 	altText?: string;
 	link?: string;
@@ -82,8 +83,11 @@ export default class ScomImage extends Module {
   init() {
     super.init()
     this.setTag({width: '100%', height: 'auto'});
-    this.url = this.getAttribute('url', true);
-    this.altText = this.getAttribute('altText', true);
+    const lazyLoad = this.getAttribute('lazyLoad', true, false);
+    if (!lazyLoad) {
+      this.url = this.getAttribute('url', true);
+      this.altText = this.getAttribute('altText', true);
+    }
   }
 
   static async create(options?: ScomImageElement, parent?: Container){
