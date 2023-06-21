@@ -258,58 +258,53 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         _getActions(settingSchema, themeSchema) {
             const actions = [
-                {
-                    name: 'Crop (Enter)',
-                    icon: 'crop-alt',
-                    command: (builder, userInputData) => {
-                        return {
-                            execute: () => {
-                                if (!userInputData)
-                                    return;
-                                if (!this.isReset)
-                                    this.oldCropData = this.newCropData;
-                                this.newCropData = userInputData;
-                                this.onCrop(this.newCropData);
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
-                                    builder.setData(this.data);
-                                this.isReset = false;
-                            },
-                            undo: () => {
-                                if (!userInputData)
-                                    return;
-                                if (!this.oldCropData) {
-                                    this.img.url = this.data.url = this.originalUrl;
-                                    this.isReset = true;
-                                }
-                                else {
-                                    this.onCrop(this.oldCropData);
-                                    this.isReset = false;
-                                }
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
-                                    builder.setData(this.data);
-                            },
-                            redo: () => { }
-                        };
-                    },
-                    userInputDataSchema: {
-                        "type": "object",
-                        required: ["x", "y"],
-                        "properties": {
-                            "x": {
-                                "type": "integer"
-                            },
-                            "y": {
-                                "type": "integer"
-                            },
-                            "width": {
-                                "type": "integer"
-                            },
-                            "height": {
-                                "type": "integer"
-                            }
-                        }
-                    }
-                },
+                // {
+                //   name: 'Crop (Enter)',
+                //   icon: 'crop-alt',
+                //   command: (builder: any, userInputData: any) => {
+                //     return {
+                //       execute: () => {
+                //         if (!userInputData) return;
+                //         if (!this.isReset)
+                //           this.oldCropData = this.newCropData;
+                //         this.newCropData = userInputData;
+                //         this.onCrop(this.newCropData);
+                //         if (builder?.setData) builder.setData(this.data);
+                //         this.isReset = false;
+                //       },
+                //       undo: () => {
+                //         if (!userInputData) return;
+                //         if (!this.oldCropData) {
+                //           this.img.url = this.data.url = this.originalUrl;
+                //           this.isReset = true;
+                //         } else {
+                //           this.onCrop(this.oldCropData);
+                //           this.isReset = false;
+                //         }
+                //         if (builder?.setData) builder.setData(this.data);
+                //       },
+                //       redo: () => {}
+                //     }
+                //   },
+                //   userInputDataSchema: {
+                //     "type": "object",
+                //     required: ["x", "y"],
+                //     "properties": {
+                //       "x": {
+                //         "type": "integer"
+                //       },
+                //       "y": {
+                //         "type": "integer"
+                //       },
+                //       "width": {
+                //         "type": "integer"
+                //       },
+                //       "height": {
+                //         "type": "integer"
+                //       }
+                //     }
+                //   } as IDataSchema
+                // },
                 {
                     name: 'Settings',
                     icon: 'cog',
