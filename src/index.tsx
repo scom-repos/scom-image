@@ -148,8 +148,9 @@ export default class ScomImage extends Module {
         },
         getData: this.getData.bind(this),
         setData: async (data: IImage) => {
-          const defaultData = configData.defaultBuilderData;
-          await this.setData({...defaultData, ...data});
+          // const defaultData = configData.defaultBuilderData;
+          // await this.setData({...defaultData, ...data});
+          await this.setData({...data})
         },
         getTag: this.getTag.bind(this),
         setTag: this.setTag.bind(this)
@@ -427,6 +428,7 @@ export default class ScomImage extends Module {
           <i-label id="imgLink" display="block" maxHeight="100%" maxWidth="100%">
             <i-image
               id={'img'}
+              fallbackUrl={'https://placehold.co/600x400?text=No+Image'}
               maxHeight="100%" maxWidth="100%"
               linkTo={this.imgLink}
               class="custom-img"
