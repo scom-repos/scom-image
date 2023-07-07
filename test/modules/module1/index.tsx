@@ -11,8 +11,10 @@ export default class Module1 extends Module {
 
     async init() {
         super.init();
+        // Test fallback URL
         this.imageEl = await ScomImage.create({
-           url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/681px-Placeholder_view_vector.svg.png',
+           url: "https://elderscrolls.fandom.com/wiki/Quests_(Dawnguard)",
+           // url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/681px-Placeholder_view_vector.svg.png',
            altText: 'placeholder',
            link: 'https://translate.google.com/',
            width: 300,

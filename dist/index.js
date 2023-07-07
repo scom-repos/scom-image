@@ -36,10 +36,7 @@ define("@scom/scom-image/data.json.ts", ["require", "exports"], function (requir
     Object.defineProperty(exports, "__esModule", { value: true });
     ///<amd-module name='@scom/scom-image/data.json.ts'/> 
     exports.default = {
-        "ipfsGatewayUrl": "https://ipfs.scom.dev/ipfs/",
-        "defaultBuilderData": {
-            "url": "https://placehold.co/600x400.png"
-        }
+        ipfsGatewayUrl: "https://ipfs.scom.dev/ipfs/",
     };
 });
 define("@scom/scom-image/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_1) {
@@ -198,8 +195,9 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     },
                     getData: this.getData.bind(this),
                     setData: async (data) => {
-                        const defaultData = data_json_1.default.defaultBuilderData;
-                        await this.setData(Object.assign(Object.assign({}, defaultData), data));
+                        // const defaultData = configData.defaultBuilderData;
+                        // await this.setData({...defaultData, ...data});
+                        await this.setData(Object.assign({}, data));
                     },
                     getTag: this.getTag.bind(this),
                     setTag: this.setTag.bind(this)
@@ -444,7 +442,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 this.$render("i-vstack", { id: 'pnlImage' },
                     this.$render("i-upload", { id: 'uploader', multiple: false, height: '100%', visible: false, onChanged: this.onChangedImage, onRemoved: this.onRemovedImage }),
                     this.$render("i-label", { id: "imgLink", display: "block", maxHeight: "100%", maxWidth: "100%" },
-                        this.$render("i-image", { id: 'img', maxHeight: "100%", maxWidth: "100%", linkTo: this.imgLink, class: "custom-img" })),
+                        this.$render("i-image", { id: 'img', fallbackUrl: 'https://placehold.co/600x400?text=No+Image', maxHeight: "100%", maxWidth: "100%", linkTo: this.imgLink, class: "custom-img" })),
                     this.$render("i-panel", { id: 'linkStack', visible: false },
                         this.$render("i-label", { caption: 'URL' }),
                         this.$render("i-input", { id: 'edtLink', width: '100%', onChanged: this.onChangedLink.bind(this) })))));

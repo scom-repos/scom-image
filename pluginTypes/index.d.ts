@@ -48,9 +48,6 @@ declare module "@scom/scom-image/store.ts" {
 declare module "@scom/scom-image/data.json.ts" {
     const _default: {
         ipfsGatewayUrl: string;
-        defaultBuilderData: {
-            url: string;
-        };
     };
     export default _default;
 }
