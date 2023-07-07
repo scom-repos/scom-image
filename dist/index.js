@@ -124,7 +124,6 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 link: ''
             };
             this.originalUrl = '';
-            this.isReset = false;
             this.isInitedLink = false;
             if (data_json_1.default)
                 store_1.setDataFromSCConfig(data_json_1.default);
@@ -153,16 +152,14 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             var _a;
             this.data.url = value;
             if (!value) {
-                this.toggleEditMode(true);
-                this.img.url = '';
+                this.img.url = 'https://placehold.co/600x400?text=No+Image';
                 return;
             }
-            this.toggleEditMode(false);
             if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
                 const ipfsGatewayUrl = store_1.getIPFSGatewayUrl();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
-            else if (value) {
+            else {
                 this.img.url = this.data.url;
             }
         }
@@ -181,12 +178,6 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         set link(value) {
             this.data.link = value;
-            this.setLink();
-        }
-        toggleEditMode(value) {
-            this.uploader.visible = value;
-            this.linkStack.visible = value;
-            this.imgLink.visible = !value;
         }
         getConfigurators() {
             return [
@@ -263,53 +254,6 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         _getActions(settingSchema, themeSchema) {
             const actions = [
-                // {
-                //   name: 'Crop (Enter)',
-                //   icon: 'crop-alt',
-                //   command: (builder: any, userInputData: any) => {
-                //     return {
-                //       execute: () => {
-                //         if (!userInputData) return;
-                //         if (!this.isReset)
-                //           this.oldCropData = this.newCropData;
-                //         this.newCropData = userInputData;
-                //         this.onCrop(this.newCropData);
-                //         if (builder?.setData) builder.setData(this.data);
-                //         this.isReset = false;
-                //       },
-                //       undo: () => {
-                //         if (!userInputData) return;
-                //         if (!this.oldCropData) {
-                //           this.img.url = this.data.url = this.originalUrl;
-                //           this.isReset = true;
-                //         } else {
-                //           this.onCrop(this.oldCropData);
-                //           this.isReset = false;
-                //         }
-                //         if (builder?.setData) builder.setData(this.data);
-                //       },
-                //       redo: () => {}
-                //     }
-                //   },
-                //   userInputDataSchema: {
-                //     "type": "object",
-                //     required: ["x", "y"],
-                //     "properties": {
-                //       "x": {
-                //         "type": "integer"
-                //       },
-                //       "y": {
-                //         "type": "integer"
-                //       },
-                //       "width": {
-                //         "type": "integer"
-                //       },
-                //       "height": {
-                //         "type": "integer"
-                //       }
-                //     }
-                //   } as IDataSchema
-                // },
                 {
                     name: 'Settings',
                     icon: 'cog',
@@ -339,24 +283,14 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             return this.data;
         }
         async setData(value) {
-            if (!value.url && !value.cid)
-                return;
             this.data = value;
             if (!this.originalUrl)
                 this.originalUrl = this.data.url;
-            const uploader = document.getElementById('uploader');
-            const imageElm = uploader === null || uploader === void 0 ? void 0 : uploader.getElementsByTagName('img')[0];
-            if (imageElm)
-                imageElm.src = value.url;
-            else
-                this.edtLink.value = value.url;
             this.updateImg();
             this.pnlImage.background.color = value.backgroundColor || '';
-            this.setLink();
         }
         updateImg() {
             var _a;
-            this.toggleEditMode(false);
             if (this.data.cid) {
                 const ipfsGatewayUrl = store_1.getIPFSGatewayUrl();
                 this.img.url = ipfsGatewayUrl + this.data.cid;
@@ -366,7 +300,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
-                this.img.url = this.data.url;
+                this.img.url = this.data.url || 'https://placehold.co/600x400?text=No+Image';
             }
             if (this.tag.width || this.tag.height) {
                 this.img.display = 'block';
@@ -375,12 +309,6 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             }
             const imgElm = this.img.querySelector('img');
             imgElm && imgElm.setAttribute('alt', this.data.altText || '');
-        }
-        async setLink() {
-            if (this.data.link)
-                this.imgLink.link = await components_2.Link.create({ href: this.data.link, target: '_blank' });
-            else
-                this.imgLink.link = await components_2.Link.create({ target: '_self' });
         }
         async connectedCallback() {
             super.connectedCallback();
@@ -403,60 +331,15 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 this.img.height = this.tag.height;
             }
         }
-        onCrop(data) {
-            const { x: newX, y: newY, width: newWidth, height: newHeight } = data;
-            let img_uploader = this.uploader.getElementsByTagName('img')[0];
-            // originalImage in form of img
-            const originalImage = document.createElement('img');
-            originalImage.src = (img_uploader === null || img_uploader === void 0 ? void 0 : img_uploader.src) || this.data.url;
-            // create a new empty canvas
-            let canvas = document.createElement('canvas');
-            canvas.height = window.innerHeight;
-            canvas.width = window.innerWidth;
-            const ctx = canvas.getContext('2d');
-            var ptrn = ctx.createPattern(originalImage, 'no-repeat');
-            ctx.fillStyle = ptrn;
-            // converted the originalImage to canvas
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // set the canvas size to the new width and height
-            canvas.width = newWidth;
-            canvas.height = newHeight;
-            // draw the image
-            ctx.drawImage(originalImage, newX, newY, newWidth, newHeight, 0, 0, newWidth, newHeight);
-            this.img.url = canvas.toDataURL();
-            this.data.url = canvas.toDataURL();
-        }
-        async onChangedImage(control, files) {
-            let newUrl = '';
-            if (files && files[0]) {
-                newUrl = (await this.uploader.toBase64(files[0]));
-                this.originalUrl = newUrl;
-            }
-            this.setData(Object.assign(Object.assign({}, this.data), { url: newUrl }));
-            const builder = this.parent.closest('ide-toolbar');
-            if (builder)
-                builder.setData(Object.assign(Object.assign({}, this.data), { url: newUrl }));
-        }
-        onRemovedImage(control, file) {
-            this.data.url = this.edtLink.value || '';
-        }
-        onChangedLink(source) {
-            const newUrl = source.value;
-            this.originalUrl = newUrl;
-            this.setData(Object.assign(Object.assign({}, this.data), { url: newUrl }));
-            const builder = this.parent.closest('ide-toolbar');
-            if (builder)
-                builder.setData(Object.assign(Object.assign({}, this.data), { url: newUrl }));
+        onImageClick() {
+            if (!this.data.link)
+                return;
+            window.open(this.data.link, '_blank');
         }
         render() {
             return (this.$render("i-panel", null,
                 this.$render("i-vstack", { id: 'pnlImage' },
-                    this.$render("i-upload", { id: 'uploader', multiple: false, height: '100%', visible: false, onChanged: this.onChangedImage, onRemoved: this.onRemovedImage }),
-                    this.$render("i-label", { id: "imgLink", display: "block", maxHeight: "100%", maxWidth: "100%" },
-                        this.$render("i-image", { id: 'img', fallbackUrl: 'https://placehold.co/600x400?text=No+Image', maxHeight: "100%", maxWidth: "100%", linkTo: this.imgLink, class: "custom-img" })),
-                    this.$render("i-panel", { id: 'linkStack', visible: false },
-                        this.$render("i-label", { caption: 'URL' }),
-                        this.$render("i-input", { id: 'edtLink', width: '100%', onChanged: this.onChangedLink.bind(this) })))));
+                    this.$render("i-image", { id: 'img', url: 'https://placehold.co/600x400?text=No+Image', maxHeight: "100%", maxWidth: "100%", class: "custom-img", onClick: this.onImageClick.bind(this) }))));
         }
     };
     ScomImage = __decorate([

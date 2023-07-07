@@ -74,16 +74,9 @@ declare module "@scom/scom-image" {
     }
     export default class ScomImage extends Module {
         private data;
-        private uploader;
         private img;
-        private linkStack;
-        private edtLink;
         private pnlImage;
-        private imgLink;
-        private newCropData;
-        private oldCropData;
         private originalUrl;
-        private isReset;
         private isInitedLink;
         tag: any;
         readonly onConfirm: () => Promise<void>;
@@ -103,7 +96,6 @@ declare module "@scom/scom-image" {
         set altText(value: string);
         get link(): string;
         set link(value: string);
-        private toggleEditMode;
         getConfigurators(): {
             name: string;
             target: string;
@@ -128,14 +120,10 @@ declare module "@scom/scom-image" {
         private getData;
         private setData;
         private updateImg;
-        private setLink;
         connectedCallback(): Promise<void>;
         private getTag;
         private setTag;
-        private onCrop;
-        private onChangedImage;
-        private onRemovedImage;
-        private onChangedLink;
+        private onImageClick;
         render(): any;
     }
 }
