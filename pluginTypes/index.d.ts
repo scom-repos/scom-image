@@ -29,6 +29,7 @@ declare module "@scom/scom-image/interface.ts" {
         discard: () => Promise<void>;
     }
     export interface IImage {
+        cid?: string;
         url: string;
         altText?: string;
         backgroundColor?: string;
@@ -59,6 +60,7 @@ declare module "@scom/scom-image" {
     import "@scom/scom-image/index.css.ts";
     interface ScomImageElement extends ControlElement {
         lazyLoad?: boolean;
+        cid?: string;
         url: string;
         altText?: string;
         link?: string;

@@ -27,6 +27,7 @@ interface ICropData {
 
 interface ScomImageElement extends ControlElement {
   lazyLoad?: boolean;
+  cid?: string;
   url: string;
 	altText?: string;
 	link?: string;
@@ -44,6 +45,7 @@ declare global {
 @customElements('i-scom-image')
 export default class ScomImage extends Module {
   private data: IImage = {
+    cid: '',
     url: '',
     altText: '',
     backgroundColor: '',
@@ -85,7 +87,9 @@ export default class ScomImage extends Module {
     this.setTag({width: '100%', height: 'auto'});
     const lazyLoad = this.getAttribute('lazyLoad', true, false);
     if (!lazyLoad) {
-      this.url = this.getAttribute('url', true);
+      let cid = this.getAttribute('cid', true);
+      const ipfsGatewayUrl = getIPFSGatewayUrl()
+      this.url = this.getAttribute('url', true) || cid ? ipfsGatewayUrl + cid : "";
       this.altText = this.getAttribute('altText', true);
     }
   }
@@ -172,8 +176,12 @@ export default class ScomImage extends Module {
   private getPropertiesSchema() {
     const propertiesSchema: IDataSchema = {
       "type": "object",
-      required: ["url"],
       "properties": {
+        "cid": {
+          title: 'Image',
+          type: 'string',
+          format: 'data-cid'
+        },
         "url": {
           "type": "string"
         },
@@ -290,9 +298,9 @@ export default class ScomImage extends Module {
   }
 
   private async setData(value: IImage) {
-    if (!value.url) return
+    if (!value.url && !value.cid) return
     this.data = value
-    if (!this.originalUrl) this.originalUrl = this.data.url
+    if (!this.originalUrl) this.originalUrl = this.data.url;
 
     const uploader = document.getElementById('uploader')
     const imageElm = uploader?.getElementsByTagName('img')[0]
@@ -305,7 +313,10 @@ export default class ScomImage extends Module {
 
   private updateImg() {
     this.toggleEditMode(false)
-    if (this.data.url?.startsWith('ipfs://')) {
+    if (this.data.cid) {
+      const ipfsGatewayUrl = getIPFSGatewayUrl()
+      this.img.url = ipfsGatewayUrl + this.data.cid;
+    } else if (this.data.url?.startsWith('ipfs://')) {
       const ipfsGatewayUrl = getIPFSGatewayUrl()
       this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
     } else {

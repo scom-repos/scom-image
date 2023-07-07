@@ -37,6 +37,7 @@ export interface PageBlock {
 }
 
 export interface IImage {
+  cid?: string;
 	url: string;
 	altText?: string;
   backgroundColor?: string;
