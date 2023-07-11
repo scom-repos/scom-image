@@ -433,6 +433,7 @@ export default class ScomImage extends Module {
             multiple={false}
             height={'100%'}
             visible={false}
+            minWidth="auto"
             onChanged={this.onChangedImage}
             onRemoved={this.onRemovedImage}
           ></i-upload>

@@ -18,7 +18,7 @@ define("@scom/scom-image/store.ts", ["require", "exports"], function (require, e
     };
     const setDataFromSCConfig = (options) => {
         if (options.ipfsGatewayUrl) {
-            exports.setIPFSGatewayUrl(options.ipfsGatewayUrl);
+            (0, exports.setIPFSGatewayUrl)(options.ipfsGatewayUrl);
         }
     };
     exports.setDataFromSCConfig = setDataFromSCConfig;
@@ -127,7 +127,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             this.isReset = false;
             this.isInitedLink = false;
             if (data_json_1.default)
-                store_1.setDataFromSCConfig(data_json_1.default);
+                (0, store_1.setDataFromSCConfig)(data_json_1.default);
         }
         init() {
             super.init();
@@ -135,7 +135,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             const lazyLoad = this.getAttribute('lazyLoad', true, false);
             if (!lazyLoad) {
                 let cid = this.getAttribute('cid', true);
-                const ipfsGatewayUrl = store_1.getIPFSGatewayUrl();
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
                 this.url = this.getAttribute('url', true) || cid ? ipfsGatewayUrl + cid : "";
                 this.altText = this.getAttribute('altText', true);
             }
@@ -159,7 +159,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             }
             this.toggleEditMode(false);
             if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = store_1.getIPFSGatewayUrl();
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else if (value) {
@@ -358,11 +358,11 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             var _a;
             this.toggleEditMode(false);
             if (this.data.cid) {
-                const ipfsGatewayUrl = store_1.getIPFSGatewayUrl();
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
                 this.img.url = ipfsGatewayUrl + this.data.cid;
             }
             else if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = store_1.getIPFSGatewayUrl();
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
@@ -451,7 +451,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         render() {
             return (this.$render("i-panel", null,
                 this.$render("i-vstack", { id: 'pnlImage' },
-                    this.$render("i-upload", { id: 'uploader', multiple: false, height: '100%', visible: false, onChanged: this.onChangedImage, onRemoved: this.onRemovedImage }),
+                    this.$render("i-upload", { id: 'uploader', multiple: false, height: '100%', visible: false, minWidth: "auto", onChanged: this.onChangedImage, onRemoved: this.onRemovedImage }),
                     this.$render("i-label", { id: "imgLink", display: "block", maxHeight: "100%", maxWidth: "100%" },
                         this.$render("i-image", { id: 'img', fallbackUrl: 'https://placehold.co/600x400?text=No+Image', maxHeight: "100%", maxWidth: "100%", linkTo: this.imgLink, class: "custom-img" })),
                     this.$render("i-panel", { id: 'linkStack', visible: false },
@@ -461,7 +461,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
     };
     ScomImage = __decorate([
         components_2.customModule,
-        components_2.customElements('i-scom-image')
+        (0, components_2.customElements)('i-scom-image')
     ], ScomImage);
     exports.default = ScomImage;
 });
