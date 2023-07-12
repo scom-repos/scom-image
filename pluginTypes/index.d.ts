@@ -44,6 +44,7 @@ declare module "@scom/scom-image/store.ts" {
     export const setDataFromSCConfig: (options: any) => void;
     export const setIPFSGatewayUrl: (url: string) => void;
     export const getIPFSGatewayUrl: () => string;
+    export const getUnsplashPhotos: (params?: any) => Promise<any>;
 }
 /// <amd-module name="@scom/scom-image/data.json.ts" />
 declare module "@scom/scom-image/data.json.ts" {
@@ -105,6 +106,10 @@ declare module "@scom/scom-image/config/index.tsx" {
         private typeStack;
         private unsplashPnl;
         private normalPnl;
+        private imgEl;
+        private pnlEditor;
+        private pnlImage;
+        private replaceBtn;
         private imgUploader;
         private imgLinkInput;
         private goBtn;
@@ -122,12 +127,14 @@ declare module "@scom/scom-image/config/index.tsx" {
         get link(): string;
         set link(value: string);
         private renderType;
-        private renderUI;
-        private renderGrid;
-        private renderUploader;
         private onTypeSelected;
         private onShowType;
+        private renderUI;
+        private updateImg;
+        private getImgSrc;
+        private renderGrid;
         private onSurpriseClicked;
+        private onToggleImage;
         private onGoClicked;
         private onChangedImage;
         private onRemovedImage;
@@ -157,16 +164,9 @@ declare module "@scom/scom-image" {
     }
     export default class ScomImage extends Module {
         private data;
-        private uploader;
         private img;
-        private linkStack;
-        private edtLink;
         private pnlImage;
-        private imgLink;
-        private newCropData;
-        private oldCropData;
         private originalUrl;
-        private isReset;
         private isInitedLink;
         tag: any;
         readonly onConfirm: () => Promise<void>;
@@ -186,7 +186,6 @@ declare module "@scom/scom-image" {
         set altText(value: string);
         get link(): string;
         set link(value: string);
-        private toggleEditMode;
         getConfigurators(): {
             name: string;
             target: string;
@@ -213,14 +212,10 @@ declare module "@scom/scom-image" {
         private getData;
         private setData;
         private updateImg;
-        private setLink;
         connectedCallback(): Promise<void>;
         private getTag;
         private setTag;
-        private onCrop;
-        private onChangedImage;
-        private onRemovedImage;
-        private onChangedLink;
+        private onImageClick;
         render(): any;
     }
 }

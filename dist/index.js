@@ -11,7 +11,7 @@ define("@scom/scom-image/interface.ts", ["require", "exports"], function (requir
 define("@scom/scom-image/store.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.getIPFSGatewayUrl = exports.setIPFSGatewayUrl = exports.setDataFromSCConfig = exports.state = void 0;
+    exports.getUnsplashPhotos = exports.getIPFSGatewayUrl = exports.setIPFSGatewayUrl = exports.setDataFromSCConfig = exports.state = void 0;
     ///<amd-module name='@scom/scom-image/store.ts'/> 
     exports.state = {
         ipfsGatewayUrl: ""
@@ -30,6 +30,20 @@ define("@scom/scom-image/store.ts", ["require", "exports"], function (require, e
         return exports.state.ipfsGatewayUrl;
     };
     exports.getIPFSGatewayUrl = getIPFSGatewayUrl;
+    const getUnsplashPhotos = async (params = {}) => {
+        if (params.count)
+            params.count = 18;
+        params.client_id = 'ylMtikqlCAZdDIxGz-SV15TOfqzf03epdOoE_5hBBUo';
+        const queries = params ? new URLSearchParams(Object.assign({}, params)).toString() : '';
+        try {
+            const response = await fetch(`https://api.unsplash.com/photos?${queries}`);
+            return await response.json();
+        }
+        catch (_a) {
+            return null;
+        }
+    };
+    exports.getUnsplashPhotos = getUnsplashPhotos;
 });
 define("@scom/scom-image/data.json.ts", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -116,12 +130,12 @@ define("@scom/scom-image/config/index.css.ts", ["require", "exports", "@ijstech/
     const Theme = components_2.Styles.Theme.ThemeVars;
     exports.default = components_2.Styles.cssRule('i-scom-image-config', {
         $nest: {
-            '.type-btn:hover': {
+            '.type-item:hover': {
                 background: Theme.action.hover,
-                borderStyle: 'solid'
+                border: `1px solid ${Theme.divider}`
             },
-            '.is-actived > check-icon': {
-                opacity: 1
+            '.is-actived > .check-icon': {
+                opacity: '1 !important'
             },
             '.type-pnl': {
                 $nest: {
@@ -132,22 +146,41 @@ define("@scom/scom-image/config/index.css.ts", ["require", "exports", "@ijstech/
             },
             '.hover-btn:hover': {
                 background: Theme.action.hover,
-                borderStyle: 'solid'
+                border: `1px solid ${Theme.divider}`
             },
-            '#typeButton': {
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1),0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            '.shadow-btn': {
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1),0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                fontWeight: 600
             },
-            '#typeModal .modal': {
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1),0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                padding: '0.5rem',
+            '.shadow-btn:hover': {
+                color: `${Theme.colors.primary.main} !important`
+            },
+            '#typeModal': {
                 $nest: {
-                    '.i-modal_header': {
-                        display: 'none'
+                    '> div': {
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1),0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    },
+                    '.modal': {
+                        padding: '1rem',
+                        marginTop: '0.5rem',
+                        $nest: {
+                            '.i-modal_header': {
+                                display: 'none'
+                            }
+                        }
                     }
                 }
             },
             'i-input input': {
                 padding: '0 10px'
+            },
+            '#searchInput': {
+                border: 'none !important'
+            },
+            '.overflow': {
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
             }
         }
     });
@@ -208,7 +241,8 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             return (_a = this._data.url) !== null && _a !== void 0 ? _a : '';
         }
         set url(value) {
-            this._data.url = value;
+            this._data.url = value !== null && value !== void 0 ? value : '';
+            this.updateImg();
         }
         get altText() {
             var _a;
@@ -229,14 +263,28 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             this.typeStack.clearInnerHTML();
             this.typeStack.appendChild(this.$render("i-label", { caption: 'Image', font: { weight: 600, color: Theme.text.secondary } }));
             for (let type of this.typeList) {
-                const hstack = (this.$render("i-hstack", { verticalAlignment: 'center', gap: "0.5rem", class: `${type.type === this.currentType.type ? 'type-item is-actived' : 'type-item'}`, onClick: (source) => this.onTypeSelected(source, type) },
-                    this.$render("i-icon", { name: "check", width: 16, height: 16, fill: Theme.text.primary, opacity: 0, class: "check-icon" }),
-                    this.$render("i-button", { width: "100%", padding: { top: '0.5rem', bottom: '0.5rem', left: '0.75rem', right: '0.75rem' }, border: { width: '1px', style: 'none', color: Theme.divider, radius: '0.375rem' }, rightIcon: { name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: { left: 'auto' } }, icon: type.icon, caption: type.caption, background: { color: 'transparent' }, class: "type-btn" })));
+                const hstack = (this.$render("i-hstack", { verticalAlignment: 'center', gap: "0.5rem", class: `${type.type === this.currentType.type ? 'type-item is-actived' : 'type-item'}`, padding: { left: '0.5rem', right: '0.5rem' }, onClick: (source) => this.onTypeSelected(source, type) },
+                    this.$render("i-icon", { name: "check", width: 14, height: 14, fill: Theme.text.primary, opacity: 0, class: "check-icon" }),
+                    this.$render("i-button", { width: "100%", padding: { top: '0.5rem', bottom: '0.5rem', left: '0.75rem', right: '0.75rem' }, border: { width: '1px', style: 'none', color: Theme.divider, radius: '0.375rem' }, icon: type.icon, caption: type.caption, background: { color: 'transparent' } })));
                 this.typeStack.appendChild(hstack);
                 this.typeMapper.set(type.type, hstack);
             }
             this.typeButton.caption = this.currentType.caption;
             this.typeButton.icon = await components_4.Icon.create(Object.assign({}, this.currentType.icon));
+        }
+        async onTypeSelected(source, data) {
+            this.typeModal.visible = false;
+            const oldType = this.typeMapper.get(this.currentType.type);
+            if (oldType)
+                oldType.classList.remove('is-actived');
+            this.currentType = Object.assign({}, data);
+            source.classList.add('is-actived');
+            this.typeButton.caption = this.currentType.caption;
+            this.typeButton.icon = await components_4.Icon.create(Object.assign({}, this.currentType.icon));
+            this.renderUI();
+        }
+        onShowType() {
+            this.typeModal.visible = !this.typeModal.visible;
         }
         renderUI() {
             if (this.currentType.type === interface_1.UploadType.UNPLASH) {
@@ -247,42 +295,82 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             else {
                 this.unsplashPnl.visible = false;
                 this.normalPnl.visible = true;
-                this.renderUploader();
+                this.onToggleImage(!!this.data.url);
+            }
+            this.updateImg();
+        }
+        updateImg() {
+            if (this.currentType.type === interface_1.UploadType.UNPLASH) {
+            }
+            else {
+                if (this.data.url) {
+                    const url = this.getImgSrc();
+                    console.log(this.data.url, url);
+                    this.imgEl.url = url;
+                }
+                else {
+                    this.imgUploader.clear();
+                    this.imgLinkInput.value = '';
+                    this.goBtn.enabled = false;
+                }
             }
         }
-        renderGrid() {
+        getImgSrc() {
+            var _a;
+            let url = '';
+            if (this.data.cid) {
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+                url = ipfsGatewayUrl + this.data.cid;
+            }
+            else if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+                url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
+            }
+            else {
+                url = this.data.url || 'https://placehold.co/600x400?text=No+Image';
+            }
+            return url;
+        }
+        async renderGrid() {
             this.imageGrid.clearInnerHTML();
-        }
-        renderUploader() {
-            this.imgUploader.preview(this._data.url);
-            this.goBtn.enabled = !!this._data.url;
-        }
-        onTypeSelected(source, data) {
-            this.typeModal.visible = false;
-            const oldType = this.typeMapper.get(this.currentType.type);
-            if (oldType)
-                oldType.classList.remove('is-actived');
-            this.currentType = Object.assign({}, data);
-            source.classList.add('is-actived');
-            this.renderUI();
-        }
-        onShowType() {
-            this.typeModal.visible = !this.typeModal.visible;
+            const photoList = await (0, store_1.getUnsplashPhotos)();
+            if (photoList.length) {
+                for (let photo of photoList) {
+                    const image = this.$render("i-image", { url: photo.urls.thumb, width: "100%" });
+                    image.setAttribute('alt', photo.alt_description);
+                    this.imageGrid.appendChild(this.$render("i-panel", { border: { radius: '0.25rem' } },
+                        this.$render("i-vstack", { position: 'absolute', width: "100%", height: "100%", left: "0px", bottom: "0px", horizontalAlignment: "end" },
+                            this.$render("i-hstack", { verticalAlignment: "center", gap: "0.25rem", padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }, background: { color: 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 100%)' }, class: "overflow" },
+                                this.$render("i-label", { link: { href: `https://unsplash.com/@${photo.user.username}` } },
+                                    this.$render("i-icon", { name: 'link', width: 12, height: 12, fill: '#fff' })),
+                                this.$render("i-label", { caption: photo.user.name, font: { color: '#fff', size: '0.75rem' } }))),
+                        image));
+                }
+            }
         }
         onSurpriseClicked() { }
-        onGoClicked() { }
+        onToggleImage(value) {
+            this.pnlEditor.visible = !value;
+            this.pnlImage.visible = value;
+        }
+        onGoClicked() {
+            this.url = this.imgLinkInput.value;
+            this.onToggleImage(true);
+        }
         async onChangedImage(control, files) {
             let newUrl = '';
             if (files && files[0]) {
                 newUrl = (await this.imgUploader.toBase64(files[0]));
+                this.onToggleImage(true);
             }
-            this._data.url = newUrl;
+            this.url = newUrl;
         }
         onRemovedImage(control, file) {
-            this._data.url = this.imgLinkInput.value || '';
+            this.url = '';
         }
         onReplaceImage() {
             this.imgUploader.clear();
+            this.url = '';
         }
         onChangedLink() {
             this.goBtn.enabled = this.imgLinkInput.value;
@@ -294,19 +382,15 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
             const url = this.getAttribute('url', true) || cid ? ipfsGatewayUrl + cid : "";
             const altText = this.getAttribute('altText', true);
-            this.data = {
-                url,
-                altText
-            };
-            console.log(this.data);
+            this.data = { url, altText };
         }
         render() {
             return (this.$render("i-panel", null,
                 this.$render("i-vstack", null,
                     this.$render("i-panel", { margin: { bottom: '1.5rem' }, class: "type-pnl" },
-                        this.$render("i-button", { id: "typeButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, background: { color: 'transparent' }, rightIcon: { name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: { left: 'auto' } }, onClick: this.onShowType.bind(this) }),
+                        this.$render("i-button", { id: "typeButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, background: { color: 'transparent' }, rightIcon: { name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: { left: 'auto' } }, onClick: this.onShowType.bind(this), class: "shadow-btn" }),
                         this.$render("i-modal", { id: "typeModal", showBackdrop: false, width: '200px', popupPlacement: "bottomLeft" },
-                            this.$render("i-vstack", { id: "typeStack", gap: "0.5rem" }))),
+                            this.$render("i-vstack", { id: "typeStack", gap: "0.5rem", padding: { left: '1rem', right: '1rem' } }))),
                     this.$render("i-panel", null,
                         this.$render("i-panel", { id: "unsplashPnl", visible: false },
                             this.$render("i-hstack", { gap: 12, verticalAlignment: 'center', justifyContent: "space-between", height: 40, width: "100%", padding: { left: 12, right: 12 }, border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' } },
@@ -315,7 +399,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                                 this.$render("i-button", { icon: { name: 'surprise', width: 16, height: 16, fill: Theme.colors.primary.main }, border: { radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider }, font: { weight: 600 }, background: { color: 'transparent' }, tooltip: { content: 'Surprise me' }, onClick: this.onSurpriseClicked.bind(this), class: "hover-btn" })),
                             this.$render("i-grid-layout", { id: "imageGrid", margin: { top: '1rem' }, templateColumns: ['repeat(3, minmax(0px, 1fr))'], gap: { row: '0.5rem', column: '0.5rem' } })),
                         this.$render("i-panel", { id: "normalPnl", visible: false },
-                            this.$render("i-vstack", { gap: "1rem" },
+                            this.$render("i-vstack", { id: "pnlEditor", gap: "1rem" },
                                 this.$render("i-vstack", { gap: "1rem" },
                                     this.$render("i-label", { caption: 'URL', font: { size: '1.25rem', weight: 'bold' } }),
                                     this.$render("i-hstack", { gap: "0.5rem", verticalAlignment: "center", horizontalAlignment: "space-between" },
@@ -323,8 +407,10 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                                         this.$render("i-button", { id: "goBtn", border: { radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider }, font: { weight: 600 }, background: { color: 'transparent' }, height: "40px", caption: 'Go', enabled: false, onClick: this.onGoClicked.bind(this), class: "hover-btn" }))),
                                 this.$render("i-vstack", { gap: "1rem" },
                                     this.$render("i-label", { caption: 'Upload', font: { size: '1.25rem', weight: 'bold' } }),
-                                    this.$render("i-upload", { id: 'imgUploader', multiple: false, height: '100%', caption: 'Drag a file or click to upload', minWidth: "auto", onChanged: this.onChangedImage, onRemoved: this.onRemovedImage })),
-                                this.$render("i-button", { id: "replaceButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, font: { color: Theme.colors.primary.contrastText }, caption: 'Replace Image', visible: false, onClick: this.onReplaceImage })))))));
+                                    this.$render("i-upload", { id: 'imgUploader', multiple: false, height: '100%', caption: 'Drag a file or click to upload', minWidth: "auto", onChanged: this.onChangedImage, onRemoved: this.onRemovedImage }))),
+                            this.$render("i-vstack", { id: 'pnlImage', gap: "1rem", visible: false },
+                                this.$render("i-image", { id: 'imgEl', url: 'https://placehold.co/600x400?text=No+Image', maxHeight: "100%", maxWidth: "100%", class: "custom-img" }),
+                                this.$render("i-button", { id: "replaceButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, font: { color: Theme.text.primary }, caption: 'Replace Image', background: { color: 'transparent' }, class: "shadow-btn", onClick: this.onReplaceImage })))))));
         }
     };
     ScomImageConfig = __decorate([
@@ -348,7 +434,6 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 link: ''
             };
             this.originalUrl = '';
-            this.isReset = false;
             this.isInitedLink = false;
             if (data_json_1.default)
                 (0, store_2.setDataFromSCConfig)(data_json_1.default);
@@ -377,16 +462,14 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             var _a;
             this.data.url = value;
             if (!value) {
-                this.toggleEditMode(true);
-                this.img.url = '';
+                this.img.url = 'https://placehold.co/600x400?text=No+Image';
                 return;
             }
-            this.toggleEditMode(false);
             if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
                 const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
-            else if (value) {
+            else {
                 this.img.url = this.data.url;
             }
         }
@@ -405,12 +488,6 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         set link(value) {
             this.data.link = value;
-            this.setLink();
-        }
-        toggleEditMode(value) {
-            this.uploader.visible = value;
-            this.linkStack.visible = value;
-            this.imgLink.visible = !value;
         }
         getConfigurators() {
             return [
@@ -487,53 +564,6 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         _getActions(settingSchema, themeSchema) {
             const actions = [
-                // {
-                //   name: 'Crop (Enter)',
-                //   icon: 'crop-alt',
-                //   command: (builder: any, userInputData: any) => {
-                //     return {
-                //       execute: () => {
-                //         if (!userInputData) return;
-                //         if (!this.isReset)
-                //           this.oldCropData = this.newCropData;
-                //         this.newCropData = userInputData;
-                //         this.onCrop(this.newCropData);
-                //         if (builder?.setData) builder.setData(this.data);
-                //         this.isReset = false;
-                //       },
-                //       undo: () => {
-                //         if (!userInputData) return;
-                //         if (!this.oldCropData) {
-                //           this.img.url = this.data.url = this.originalUrl;
-                //           this.isReset = true;
-                //         } else {
-                //           this.onCrop(this.oldCropData);
-                //           this.isReset = false;
-                //         }
-                //         if (builder?.setData) builder.setData(this.data);
-                //       },
-                //       redo: () => {}
-                //     }
-                //   },
-                //   userInputDataSchema: {
-                //     "type": "object",
-                //     required: ["x", "y"],
-                //     "properties": {
-                //       "x": {
-                //         "type": "integer"
-                //       },
-                //       "y": {
-                //         "type": "integer"
-                //       },
-                //       "width": {
-                //         "type": "integer"
-                //       },
-                //       "height": {
-                //         "type": "integer"
-                //       }
-                //     }
-                //   } as IDataSchema
-                // },
                 {
                     name: 'Settings',
                     icon: 'cog',
@@ -585,24 +615,14 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             return this.data;
         }
         async setData(value) {
-            if (!value.url && !value.cid)
-                return;
             this.data = value;
             if (!this.originalUrl)
                 this.originalUrl = this.data.url;
-            const uploader = document.getElementById('uploader');
-            const imageElm = uploader === null || uploader === void 0 ? void 0 : uploader.getElementsByTagName('img')[0];
-            if (imageElm)
-                imageElm.src = value.url;
-            else
-                this.edtLink.value = value.url;
             this.updateImg();
             this.pnlImage.background.color = value.backgroundColor || '';
-            this.setLink();
         }
         updateImg() {
             var _a;
-            this.toggleEditMode(false);
             if (this.data.cid) {
                 const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.img.url = ipfsGatewayUrl + this.data.cid;
@@ -612,7 +632,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
-                this.img.url = this.data.url;
+                this.img.url = this.data.url || 'https://placehold.co/600x400?text=No+Image';
             }
             if (this.tag.width || this.tag.height) {
                 this.img.display = 'block';
@@ -621,12 +641,6 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             }
             const imgElm = this.img.querySelector('img');
             imgElm && imgElm.setAttribute('alt', this.data.altText || '');
-        }
-        async setLink() {
-            if (this.data.link)
-                this.imgLink.link = await components_5.Link.create({ href: this.data.link, target: '_blank' });
-            else
-                this.imgLink.link = await components_5.Link.create({ target: '_self' });
         }
         async connectedCallback() {
             super.connectedCallback();
@@ -649,60 +663,15 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 this.img.height = this.tag.height;
             }
         }
-        onCrop(data) {
-            const { x: newX, y: newY, width: newWidth, height: newHeight } = data;
-            let img_uploader = this.uploader.getElementsByTagName('img')[0];
-            // originalImage in form of img
-            const originalImage = document.createElement('img');
-            originalImage.src = (img_uploader === null || img_uploader === void 0 ? void 0 : img_uploader.src) || this.data.url;
-            // create a new empty canvas
-            let canvas = document.createElement('canvas');
-            canvas.height = window.innerHeight;
-            canvas.width = window.innerWidth;
-            const ctx = canvas.getContext('2d');
-            var ptrn = ctx.createPattern(originalImage, 'no-repeat');
-            ctx.fillStyle = ptrn;
-            // converted the originalImage to canvas
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // set the canvas size to the new width and height
-            canvas.width = newWidth;
-            canvas.height = newHeight;
-            // draw the image
-            ctx.drawImage(originalImage, newX, newY, newWidth, newHeight, 0, 0, newWidth, newHeight);
-            this.img.url = canvas.toDataURL();
-            this.data.url = canvas.toDataURL();
-        }
-        async onChangedImage(control, files) {
-            let newUrl = '';
-            if (files && files[0]) {
-                newUrl = (await this.uploader.toBase64(files[0]));
-                this.originalUrl = newUrl;
-            }
-            this.setData(Object.assign(Object.assign({}, this.data), { url: newUrl }));
-            const builder = this.parent.closest('ide-toolbar');
-            if (builder)
-                builder.setData(Object.assign(Object.assign({}, this.data), { url: newUrl }));
-        }
-        onRemovedImage(control, file) {
-            this.data.url = this.edtLink.value || '';
-        }
-        onChangedLink(source) {
-            const newUrl = source.value;
-            this.originalUrl = newUrl;
-            this.setData(Object.assign(Object.assign({}, this.data), { url: newUrl }));
-            const builder = this.parent.closest('ide-toolbar');
-            if (builder)
-                builder.setData(Object.assign(Object.assign({}, this.data), { url: newUrl }));
+        onImageClick() {
+            if (!this.data.link)
+                return;
+            window.open(this.data.link, '_blank');
         }
         render() {
             return (this.$render("i-panel", null,
                 this.$render("i-vstack", { id: 'pnlImage' },
-                    this.$render("i-upload", { id: 'uploader', multiple: false, height: '100%', visible: false, minWidth: "auto", onChanged: this.onChangedImage, onRemoved: this.onRemovedImage }),
-                    this.$render("i-label", { id: "imgLink", display: "block", maxHeight: "100%", maxWidth: "100%" },
-                        this.$render("i-image", { id: 'img', fallbackUrl: 'https://placehold.co/600x400?text=No+Image', maxHeight: "100%", maxWidth: "100%", linkTo: this.imgLink, class: "custom-img" })),
-                    this.$render("i-panel", { id: 'linkStack', visible: false },
-                        this.$render("i-label", { caption: 'URL' }),
-                        this.$render("i-input", { id: 'edtLink', width: '100%', onChanged: this.onChangedLink.bind(this) })))));
+                    this.$render("i-image", { id: 'img', url: 'https://placehold.co/600x400?text=No+Image', maxHeight: "100%", maxWidth: "100%", class: "custom-img", onClick: this.onImageClick.bind(this) }))));
         }
     };
     ScomImage = __decorate([

@@ -24,19 +24,12 @@ import './index.css'
 import ScomImageConfig from './config/index'
 const Theme = Styles.Theme.ThemeVars
 
-interface ICropData {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 interface ScomImageElement extends ControlElement {
   lazyLoad?: boolean;
   cid?: string;
   url: string;
-	altText?: string;
-	link?: string;
+  altText?: string;
+  link?: string;
 }
 
 declare global {
@@ -57,40 +50,33 @@ export default class ScomImage extends Module {
     backgroundColor: '',
     link: ''
   }
-  private uploader: Upload
-  private img: Image
-  private linkStack: Panel
-  private edtLink: Input
-  private pnlImage: Panel
-  private imgLink: Label
+  private img: Image;
+  private pnlImage: Panel;
 
-  private newCropData: ICropData
-  private oldCropData: ICropData
-  private originalUrl: string = ''
-  private isReset: boolean = false
-  private isInitedLink: boolean = false
+  private originalUrl: string = '';
+  private isInitedLink: boolean = false;
 
-  tag: any
+  tag: any;
 
-  readonly onConfirm: () => Promise<void>
-  readonly onDiscard: () => Promise<void>
-  readonly onEdit: () => Promise<void>
+  readonly onConfirm: () => Promise<void>;
+  readonly onDiscard: () => Promise<void>;
+  readonly onEdit: () => Promise<void>;
 
-  defaultEdit?: boolean
-  validate?: () => boolean
-  edit: () => Promise<void>
-  confirm: () => Promise<void>
-  discard: () => Promise<void>
+  defaultEdit?: boolean;
+  validate?: () => boolean;
+  edit: () => Promise<void>;
+  confirm: () => Promise<void>;
+  discard: () => Promise<void>;
 
   constructor(parent?: Container, options?: any) {
     super(parent, options);
     if (configData)
       setDataFromSCConfig(configData);
   }
-  
+
   init() {
     super.init()
-    this.setTag({width: '100%', height: 'auto'});
+    this.setTag({ width: '100%', height: 'auto' });
     const lazyLoad = this.getAttribute('lazyLoad', true, false);
     if (!lazyLoad) {
       let cid = this.getAttribute('cid', true);
@@ -100,7 +86,7 @@ export default class ScomImage extends Module {
     }
   }
 
-  static async create(options?: ScomImageElement, parent?: Container){
+  static async create(options?: ScomImageElement, parent?: Container) {
     let self = new this(parent, options);
     await self.ready();
     return self;
@@ -112,15 +98,13 @@ export default class ScomImage extends Module {
   set url(value: string) {
     this.data.url = value;
     if (!value) {
-      this.toggleEditMode(true)
-      this.img.url = ''
+      this.img.url = 'https://placehold.co/600x400?text=No+Image'
       return
     }
-    this.toggleEditMode(false)
     if (this.data.url?.startsWith('ipfs://')) {
       const ipfsGatewayUrl = getIPFSGatewayUrl()
       this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
-    } else if (value) {
+    } else {
       this.img.url = this.data.url
     }
   }
@@ -139,13 +123,6 @@ export default class ScomImage extends Module {
   }
   set link(value: string) {
     this.data.link = value;
-    this.setLink();
-  }
-
-  private toggleEditMode(value: boolean) {
-    this.uploader.visible = value
-    this.linkStack.visible = value
-    this.imgLink.visible = !value
   }
 
   getConfigurators() {
@@ -160,7 +137,7 @@ export default class ScomImage extends Module {
         setData: async (data: IImage) => {
           // const defaultData = configData.defaultBuilderData;
           // await this.setData({...defaultData, ...data});
-          await this.setData({...data})
+          await this.setData({ ...data })
         },
         getTag: this.getTag.bind(this),
         setTag: this.setTag.bind(this)
@@ -228,53 +205,6 @@ export default class ScomImage extends Module {
 
   private _getActions(settingSchema: IDataSchema, themeSchema: IDataSchema) {
     const actions = [
-      // {
-      //   name: 'Crop (Enter)',
-      //   icon: 'crop-alt',
-      //   command: (builder: any, userInputData: any) => {
-      //     return {
-      //       execute: () => {
-      //         if (!userInputData) return;
-      //         if (!this.isReset)
-      //           this.oldCropData = this.newCropData;
-      //         this.newCropData = userInputData;
-      //         this.onCrop(this.newCropData);
-      //         if (builder?.setData) builder.setData(this.data);
-      //         this.isReset = false;
-      //       },
-      //       undo: () => {
-      //         if (!userInputData) return;
-      //         if (!this.oldCropData) {
-      //           this.img.url = this.data.url = this.originalUrl;
-      //           this.isReset = true;
-      //         } else {
-      //           this.onCrop(this.oldCropData);
-      //           this.isReset = false;
-      //         }
-      //         if (builder?.setData) builder.setData(this.data);
-      //       },
-      //       redo: () => {}
-      //     }
-      //   },
-      //   userInputDataSchema: {
-      //     "type": "object",
-      //     required: ["x", "y"],
-      //     "properties": {
-      //       "x": {
-      //         "type": "integer"
-      //       },
-      //       "y": {
-      //         "type": "integer"
-      //       },
-      //       "width": {
-      //         "type": "integer"
-      //       },
-      //       "height": {
-      //         "type": "integer"
-      //       }
-      //     }
-      //   } as IDataSchema
-      // },
       {
         name: 'Settings',
         icon: 'cog',
@@ -282,7 +212,7 @@ export default class ScomImage extends Module {
           let oldData: IImage = { url: '' };
           return {
             execute: () => {
-              oldData = {...this.data};
+              oldData = { ...this.data };
               if (builder?.setData) builder.setData(userInputData);
               this.setData(userInputData);
             },
@@ -290,7 +220,7 @@ export default class ScomImage extends Module {
               if (builder?.setData) builder.setData(oldData);
               this.setData(oldData);
             },
-            redo: () => {}
+            redo: () => { }
           }
         },
         customUI: {
@@ -325,21 +255,14 @@ export default class ScomImage extends Module {
   }
 
   private async setData(value: IImage) {
-    if (!value.url && !value.cid) return
     this.data = value
     if (!this.originalUrl) this.originalUrl = this.data.url;
 
-    const uploader = document.getElementById('uploader')
-    const imageElm = uploader?.getElementsByTagName('img')[0]
-    if (imageElm) imageElm.src = value.url
-    else this.edtLink.value = value.url
     this.updateImg()
-    this.pnlImage.background.color = value.backgroundColor || ''
-    this.setLink();
+    this.pnlImage.background.color = value.backgroundColor || '';
   }
 
   private updateImg() {
-    this.toggleEditMode(false)
     if (this.data.cid) {
       const ipfsGatewayUrl = getIPFSGatewayUrl()
       this.img.url = ipfsGatewayUrl + this.data.cid;
@@ -347,7 +270,7 @@ export default class ScomImage extends Module {
       const ipfsGatewayUrl = getIPFSGatewayUrl()
       this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
     } else {
-      this.img.url = this.data.url
+      this.img.url = this.data.url || 'https://placehold.co/600x400?text=No+Image'
     }
     if (this.tag.width || this.tag.height) {
       this.img.display = 'block';
@@ -356,13 +279,6 @@ export default class ScomImage extends Module {
     }
     const imgElm = this.img.querySelector('img')
     imgElm && imgElm.setAttribute('alt', this.data.altText || '')
-  }
-
-  private async setLink() {
-    if (this.data.link)
-      this.imgLink.link = await Link.create({ href: this.data.link, target: '_blank' })
-    else
-      this.imgLink.link = await Link.create({ target: '_self' })
   }
 
   async connectedCallback() {
@@ -387,100 +303,23 @@ export default class ScomImage extends Module {
       this.img.height = this.tag.height;
     }
   }
-
-  private onCrop(data: ICropData) {
-    const { x: newX, y: newY, width: newWidth, height: newHeight } = data;
-    let img_uploader = this.uploader.getElementsByTagName('img')[0]
-
-    // originalImage in form of img
-    const originalImage = document.createElement('img')
-    originalImage.src = img_uploader?.src || this.data.url
-
-    // create a new empty canvas
-    let canvas = document.createElement('canvas')
-    canvas.height = window.innerHeight
-    canvas.width = window.innerWidth
-    const ctx = canvas!.getContext('2d')
-
-    var ptrn = ctx!.createPattern(originalImage, 'no-repeat')
-    ctx!.fillStyle = ptrn!
-
-    // converted the originalImage to canvas
-    ctx!.fillRect(0, 0, canvas.width, canvas.height)
-
-    // set the canvas size to the new width and height
-    canvas.width = newWidth
-    canvas.height = newHeight
-
-    // draw the image
-    ctx!.drawImage(
-      originalImage,
-      newX,
-      newY,
-      newWidth,
-      newHeight,
-      0,
-      0,
-      newWidth,
-      newHeight
-    )
-    this.img.url = canvas!.toDataURL();
-    this.data.url = canvas!.toDataURL();
-  }
-
-  private async onChangedImage(control: Control, files: any[]) {
-    let newUrl = ''
-    if (files && files[0]) {
-      newUrl = (await this.uploader.toBase64(files[0])) as string
-      this.originalUrl = newUrl
-    }
-    this.setData({...this.data, url: newUrl})
-    const builder = this.parent.closest('ide-toolbar') as any
-    if (builder) builder.setData({...this.data, url: newUrl})
-  }
-
-  private onRemovedImage(control: Control, file: File) {
-    this.data.url = this.edtLink.value || ''
-  }
-
-  private onChangedLink(source: Control) {
-    const newUrl = (source as Input).value
-    this.originalUrl = newUrl
-    this.setData({...this.data, url: newUrl})
-    const builder = this.parent.closest('ide-toolbar') as any
-    if (builder) builder.setData({...this.data, url: newUrl})
+  
+  private onImageClick() {
+    if (!this.data.link) return;
+    window.open(this.data.link, '_blank');
   }
 
   render() {
     return (
       <i-panel>
         <i-vstack id={'pnlImage'}>
-          <i-upload
-            id={'uploader'}
-            multiple={false}
-            height={'100%'}
-            visible={false}
-            minWidth="auto"
-            onChanged={this.onChangedImage}
-            onRemoved={this.onRemovedImage}
-          ></i-upload>
-          <i-label id="imgLink" display="block" maxHeight="100%" maxWidth="100%">
-            <i-image
-              id={'img'}
-              fallbackUrl={'https://placehold.co/600x400?text=No+Image'}
-              maxHeight="100%" maxWidth="100%"
-              linkTo={this.imgLink}
-              class="custom-img"
-            ></i-image>
-          </i-label>
-          <i-panel id='linkStack'  visible={false}>
-            <i-label caption='URL'></i-label>
-            <i-input
-              id='edtLink'
-              width='100%'
-              onChanged={this.onChangedLink.bind(this)}
-            ></i-input>
-          </i-panel>
+          <i-image
+            id={'img'}
+            url={'https://placehold.co/600x400?text=No+Image'}
+            maxHeight="100%" maxWidth="100%"
+            class="custom-img"
+            onClick={this.onImageClick.bind(this)}
+          ></i-image>
         </i-vstack>
       </i-panel>
     )
