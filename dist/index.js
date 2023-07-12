@@ -110,10 +110,234 @@ define("@scom/scom-image/index.css.ts", ["require", "exports", "@ijstech/compone
         }
     });
 });
-define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/store.ts", "@scom/scom-image/data.json.ts", "@scom/scom-image/index.css.ts"], function (require, exports, components_2, store_1, data_json_1) {
+define("@scom/scom-image/config/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    let ScomImage = class ScomImage extends components_2.Module {
+    const Theme = components_2.Styles.Theme.ThemeVars;
+    exports.default = components_2.Styles.cssRule('i-scom-image-config', {
+        $nest: {
+            '.type-btn:hover': {
+                background: Theme.action.hover,
+                borderStyle: 'solid'
+            },
+            '.is-actived > check-icon': {
+                opacity: 1
+            },
+            '.type-pnl': {
+                $nest: {
+                    'i-button': {
+                        justifyContent: 'start'
+                    }
+                }
+            },
+            '.hover-btn:hover': {
+                background: Theme.action.hover,
+                borderStyle: 'solid'
+            },
+            '#typeButton': {
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1),0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            },
+            '#typeModal .modal': {
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1),0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                padding: '0.5rem',
+                $nest: {
+                    '.i-modal_header': {
+                        display: 'none'
+                    }
+                }
+            },
+            'i-input input': {
+                padding: '0 10px'
+            }
+        }
+    });
+});
+define("@scom/scom-image/assets.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const moduleDir = components_3.application.currentModuleDir;
+    function fullPath(path) {
+        return `${moduleDir}/${path}`;
+    }
+    ;
+    exports.default = {
+        fullPath
+    };
+});
+define("@scom/scom-image/config/interface.ts", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.UploadType = void 0;
+    ///<amd-module name='@scom/scom-image/config/interface.ts'/> 
+    var UploadType;
+    (function (UploadType) {
+        UploadType["UPLOAD"] = "upload";
+        UploadType["UNPLASH"] = "unsplash";
+    })(UploadType = exports.UploadType || (exports.UploadType = {}));
+});
+define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/assets.ts", "@scom/scom-image/config/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/config/index.css.ts"], function (require, exports, components_4, assets_1, interface_1, store_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Theme = components_4.Styles.Theme.ThemeVars;
+    let ScomImageConfig = class ScomImageConfig extends components_4.Module {
+        constructor(parent, options) {
+            super(parent, options);
+            this.typeList = [
+                {
+                    type: interface_1.UploadType.UPLOAD,
+                    caption: 'Image upload or URL',
+                    icon: { name: 'image', width: 16, height: 16, fill: Theme.colors.primary.main }
+                },
+                {
+                    type: interface_1.UploadType.UNPLASH,
+                    caption: 'Unplash images',
+                    icon: { image: { url: assets_1.default.fullPath('img/unsplash.svg'), width: 16, height: 16 } }
+                }
+            ];
+            this.currentType = this.typeList[0];
+        }
+        get data() {
+            return this._data;
+        }
+        set data(value) {
+            this._data = value;
+            this.renderUI();
+        }
+        get url() {
+            var _a;
+            return (_a = this._data.url) !== null && _a !== void 0 ? _a : '';
+        }
+        set url(value) {
+            this._data.url = value;
+        }
+        get altText() {
+            var _a;
+            return (_a = this._data.altText) !== null && _a !== void 0 ? _a : '';
+        }
+        set altText(value) {
+            this._data.altText = value;
+        }
+        get link() {
+            var _a;
+            return (_a = this._data.link) !== null && _a !== void 0 ? _a : '';
+        }
+        set link(value) {
+            this._data.link = value;
+        }
+        async renderType() {
+            this.typeMapper = new Map();
+            this.typeStack.clearInnerHTML();
+            this.typeStack.appendChild(this.$render("i-label", { caption: 'Image', font: { weight: 600, color: Theme.text.secondary } }));
+            for (let type of this.typeList) {
+                const hstack = (this.$render("i-hstack", { verticalAlignment: 'center', gap: "0.5rem", class: `${type.type === this.currentType.type ? 'type-item is-actived' : 'type-item'}`, onClick: (source) => this.onTypeSelected(source, type) },
+                    this.$render("i-icon", { name: "check", width: 16, height: 16, fill: Theme.text.primary, opacity: 0, class: "check-icon" }),
+                    this.$render("i-button", { width: "100%", padding: { top: '0.5rem', bottom: '0.5rem', left: '0.75rem', right: '0.75rem' }, border: { width: '1px', style: 'none', color: Theme.divider, radius: '0.375rem' }, rightIcon: { name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: { left: 'auto' } }, icon: type.icon, caption: type.caption, background: { color: 'transparent' }, class: "type-btn" })));
+                this.typeStack.appendChild(hstack);
+                this.typeMapper.set(type.type, hstack);
+            }
+            this.typeButton.caption = this.currentType.caption;
+            this.typeButton.icon = await components_4.Icon.create(Object.assign({}, this.currentType.icon));
+        }
+        renderUI() {
+            if (this.currentType.type === interface_1.UploadType.UNPLASH) {
+                this.renderGrid();
+                this.unsplashPnl.visible = true;
+                this.normalPnl.visible = false;
+            }
+            else {
+                this.unsplashPnl.visible = false;
+                this.normalPnl.visible = true;
+                this.renderUploader();
+            }
+        }
+        renderGrid() {
+            this.imageGrid.clearInnerHTML();
+        }
+        renderUploader() {
+            this.imgUploader.preview(this._data.url);
+            this.goBtn.enabled = !!this._data.url;
+        }
+        onTypeSelected(source, data) {
+            this.typeModal.visible = false;
+            const oldType = this.typeMapper.get(this.currentType.type);
+            if (oldType)
+                oldType.classList.remove('is-actived');
+            this.currentType = Object.assign({}, data);
+            source.classList.add('is-actived');
+            this.renderUI();
+        }
+        onShowType() {
+            this.typeModal.visible = !this.typeModal.visible;
+        }
+        onSurpriseClicked() { }
+        onGoClicked() { }
+        async onChangedImage(control, files) {
+            let newUrl = '';
+            if (files && files[0]) {
+                newUrl = (await this.imgUploader.toBase64(files[0]));
+            }
+            this._data.url = newUrl;
+        }
+        onRemovedImage(control, file) {
+            this._data.url = this.imgLinkInput.value || '';
+        }
+        onReplaceImage() {
+            this.imgUploader.clear();
+        }
+        onChangedLink() {
+            this.goBtn.enabled = this.imgLinkInput.value;
+        }
+        init() {
+            super.init();
+            this.renderType();
+            let cid = this.getAttribute('cid', true);
+            const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+            const url = this.getAttribute('url', true) || cid ? ipfsGatewayUrl + cid : "";
+            const altText = this.getAttribute('altText', true);
+            this.data = {
+                url,
+                altText
+            };
+            console.log(this.data);
+        }
+        render() {
+            return (this.$render("i-panel", null,
+                this.$render("i-vstack", null,
+                    this.$render("i-panel", { margin: { bottom: '1.5rem' }, class: "type-pnl" },
+                        this.$render("i-button", { id: "typeButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, background: { color: 'transparent' }, rightIcon: { name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: { left: 'auto' } }, onClick: this.onShowType.bind(this) }),
+                        this.$render("i-modal", { id: "typeModal", showBackdrop: false, width: '200px', popupPlacement: "bottomLeft" },
+                            this.$render("i-vstack", { id: "typeStack", gap: "0.5rem" }))),
+                    this.$render("i-panel", null,
+                        this.$render("i-panel", { id: "unsplashPnl", visible: false },
+                            this.$render("i-hstack", { gap: 12, verticalAlignment: 'center', justifyContent: "space-between", height: 40, width: "100%", padding: { left: 12, right: 12 }, border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' } },
+                                this.$render("i-icon", { name: 'search', width: 16, height: 16, fill: Theme.text.primary }),
+                                this.$render("i-input", { id: "searchInput", placeholder: 'Find an image', border: { style: 'none' }, height: "100%", width: "100%" }),
+                                this.$render("i-button", { icon: { name: 'surprise', width: 16, height: 16, fill: Theme.colors.primary.main }, border: { radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider }, font: { weight: 600 }, background: { color: 'transparent' }, tooltip: { content: 'Surprise me' }, onClick: this.onSurpriseClicked.bind(this), class: "hover-btn" })),
+                            this.$render("i-grid-layout", { id: "imageGrid", margin: { top: '1rem' }, templateColumns: ['repeat(3, minmax(0px, 1fr))'], gap: { row: '0.5rem', column: '0.5rem' } })),
+                        this.$render("i-panel", { id: "normalPnl", visible: false },
+                            this.$render("i-vstack", { gap: "1rem" },
+                                this.$render("i-vstack", { gap: "1rem" },
+                                    this.$render("i-label", { caption: 'URL', font: { size: '1.25rem', weight: 'bold' } }),
+                                    this.$render("i-hstack", { gap: "0.5rem", verticalAlignment: "center", horizontalAlignment: "space-between" },
+                                        this.$render("i-input", { id: 'imgLinkInput', width: '100%', height: 40, border: { radius: '0.375rem' }, placeholder: 'Paste on enter image URL', onChanged: this.onChangedLink.bind(this) }),
+                                        this.$render("i-button", { id: "goBtn", border: { radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider }, font: { weight: 600 }, background: { color: 'transparent' }, height: "40px", caption: 'Go', enabled: false, onClick: this.onGoClicked.bind(this), class: "hover-btn" }))),
+                                this.$render("i-vstack", { gap: "1rem" },
+                                    this.$render("i-label", { caption: 'Upload', font: { size: '1.25rem', weight: 'bold' } }),
+                                    this.$render("i-upload", { id: 'imgUploader', multiple: false, height: '100%', caption: 'Drag a file or click to upload', minWidth: "auto", onChanged: this.onChangedImage, onRemoved: this.onRemovedImage })),
+                                this.$render("i-button", { id: "replaceButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, font: { color: Theme.colors.primary.contrastText }, caption: 'Replace Image', visible: false, onClick: this.onReplaceImage })))))));
+        }
+    };
+    ScomImageConfig = __decorate([
+        components_4.customModule,
+        (0, components_4.customElements)('i-scom-image-config')
+    ], ScomImageConfig);
+    exports.default = ScomImageConfig;
+});
+define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/store.ts", "@scom/scom-image/data.json.ts", "@scom/scom-image/config/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_5, store_2, data_json_1, index_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Theme = components_5.Styles.Theme.ThemeVars;
+    let ScomImage = class ScomImage extends components_5.Module {
         constructor(parent, options) {
             super(parent, options);
             this.data = {
@@ -127,7 +351,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             this.isReset = false;
             this.isInitedLink = false;
             if (data_json_1.default)
-                (0, store_1.setDataFromSCConfig)(data_json_1.default);
+                (0, store_2.setDataFromSCConfig)(data_json_1.default);
         }
         init() {
             super.init();
@@ -135,7 +359,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             const lazyLoad = this.getAttribute('lazyLoad', true, false);
             if (!lazyLoad) {
                 let cid = this.getAttribute('cid', true);
-                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.url = this.getAttribute('url', true) || cid ? ipfsGatewayUrl + cid : "";
                 this.altText = this.getAttribute('altText', true);
             }
@@ -159,7 +383,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             }
             this.toggleEditMode(false);
             if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else if (value) {
@@ -330,7 +554,29 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                             redo: () => { }
                         };
                     },
-                    userInputDataSchema: settingSchema
+                    customUI: {
+                        render: (data, onConfirm) => {
+                            const vstack = new components_5.VStack(null, { gap: '1rem' });
+                            const config = new index_1.default(null, Object.assign({}, this.getData()));
+                            const hstack = new components_5.HStack(null, {
+                                verticalAlignment: 'center',
+                                horizontalAlignment: 'end'
+                            });
+                            const button = new components_5.Button(null, {
+                                caption: 'Confirm',
+                                font: { color: Theme.colors.primary.contrastText }
+                            });
+                            hstack.append(button);
+                            vstack.append(config);
+                            vstack.append(hstack);
+                            button.onClick = async () => {
+                                console.log(config.data);
+                                if (onConfirm)
+                                    onConfirm(true, Object.assign({}, config.data));
+                            };
+                            return vstack;
+                        }
+                    }
                 }
             ];
             return actions;
@@ -358,11 +604,11 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             var _a;
             this.toggleEditMode(false);
             if (this.data.cid) {
-                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.img.url = ipfsGatewayUrl + this.data.cid;
             }
             else if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
@@ -378,9 +624,9 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         async setLink() {
             if (this.data.link)
-                this.imgLink.link = await components_2.Link.create({ href: this.data.link, target: '_blank' });
+                this.imgLink.link = await components_5.Link.create({ href: this.data.link, target: '_blank' });
             else
-                this.imgLink.link = await components_2.Link.create({ target: '_self' });
+                this.imgLink.link = await components_5.Link.create({ target: '_self' });
         }
         async connectedCallback() {
             super.connectedCallback();
@@ -460,8 +706,8 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
     };
     ScomImage = __decorate([
-        components_2.customModule,
-        (0, components_2.customElements)('i-scom-image')
+        components_5.customModule,
+        (0, components_5.customElements)('i-scom-image')
     ], ScomImage);
     exports.default = ScomImage;
 });

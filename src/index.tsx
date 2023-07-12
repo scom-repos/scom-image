@@ -11,12 +11,18 @@ import {
   Container,
   Link,
   ControlElement,
-  customElements
+  customElements,
+  VStack,
+  Button,
+  HStack,
+  Styles
 } from '@ijstech/components'
 import { IImage } from './interface'
 import { getIPFSGatewayUrl, setDataFromSCConfig } from './store'
 import configData from './data.json'
 import './index.css'
+import ScomImageConfig from './config/index'
+const Theme = Styles.Theme.ThemeVars
 
 interface ICropData {
   x: number;
@@ -287,7 +293,28 @@ export default class ScomImage extends Module {
             redo: () => {}
           }
         },
-        userInputDataSchema: settingSchema as IDataSchema
+        customUI: {
+          render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
+            const vstack = new VStack(null, {gap: '1rem'});
+            const config = new ScomImageConfig(null, {...this.getData()});
+            const hstack = new HStack(null, {
+              verticalAlignment: 'center',
+              horizontalAlignment: 'end'
+            });
+            const button = new Button(null, {
+              caption: 'Confirm',
+              font: {color: Theme.colors.primary.contrastText}
+            });
+            hstack.append(button);
+            vstack.append(config);
+            vstack.append(hstack);
+            button.onClick = async () => {
+              console.log(config.data)
+              if (onConfirm) onConfirm(true, {...config.data});
+            }
+            return vstack;
+          }
+        }
       }
     ]
     return actions
