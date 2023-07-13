@@ -8,3 +8,11 @@ export interface IType {
   caption: string;
   icon: any;
 }
+
+export interface IUnsplashPhoto {
+  id: string;
+  slug: string;
+  alt_description: string;
+  user: any;
+  urls: any;
+}

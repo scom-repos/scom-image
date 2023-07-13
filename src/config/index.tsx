@@ -19,16 +19,16 @@ import {
 } from '@ijstech/components'
 import './index.css'
 import assets from '../assets';
-import { IType, UploadType } from './interface';
+import { IType, IUnsplashPhoto, UploadType } from './interface';
 import { IImage } from '../interface';
-import { getIPFSGatewayUrl, getUnsplashPhotos } from '../store';
+import { filterUnsplashPhotos, getIPFSGatewayUrl, getUnsplashPhotos } from '../store';
 const Theme = Styles.Theme.ThemeVars;
 
 interface ScomImageConfigElement extends ControlElement {
   cid?: string;
   url: string;
-	altText?: string;
-	link?: string;
+  photoId?: string;
+  keyword?: string;
 }
 
 declare global {
@@ -43,7 +43,6 @@ declare global {
 @customElements('i-scom-image-config')
 export default class ScomImageConfig extends Module {
   private typeButton: Button;
-  private searchInput: Input;
   private imageGrid: GridLayout;
   private typeModal: Modal;
   private typeStack: VStack;
@@ -52,10 +51,11 @@ export default class ScomImageConfig extends Module {
   private imgEl: Image;
   private pnlEditor: Panel;
   private pnlImage: Panel;
-  private replaceBtn: Button;
   private imgUploader: Upload;
   private imgLinkInput: Input;
-  private goBtn: Button;
+  private goButton: Button;
+  private loadMoreButton: Button;
+  private searchInput: Input;
 
   private typeList = [
     {
@@ -71,7 +71,13 @@ export default class ScomImageConfig extends Module {
   ]
   private currentType = this.typeList[0];
   private typeMapper:  Map<string, HStack>;
+  private photoList: IUnsplashPhoto[] = [];
+  private selectedPhoto: Panel = null;
+  private currentPage: number = 1;
+
   private _data: IImage;
+
+  private searchTimer: any = null;
 
   constructor(parent?: Container, options?: any) {
     super(parent, options);
@@ -117,6 +123,7 @@ export default class ScomImageConfig extends Module {
           verticalAlignment='center' gap="0.5rem"
           class={`${type.type === this.currentType.type ? 'type-item is-actived' : 'type-item'}`}
           padding={{left: '0.5rem', right: '0.5rem'}}
+          border={{radius: '0.375rem'}}
           onClick={(source: Control) => this.onTypeSelected(source, type)}
         >
           <i-icon name="check" width={14} height={14} fill={Theme.text.primary} opacity={0} class="check-icon"></i-icon>
@@ -154,7 +161,8 @@ export default class ScomImageConfig extends Module {
 
   private renderUI() {
     if (this.currentType.type === UploadType.UNPLASH) {
-      this.renderGrid();
+      this.searchInput.value = this.data.keyword || '';
+      this.onFetchPhotos();
       this.unsplashPnl.visible = true;
       this.normalPnl.visible = false;
     } else {
@@ -166,16 +174,14 @@ export default class ScomImageConfig extends Module {
   }
 
   private updateImg() {
-    if (this.currentType.type === UploadType.UNPLASH) {
-    } else {
+    if (this.currentType.type === UploadType.UPLOAD) {
       if (this.data.url) {
         const url = this.getImgSrc();
-        console.log(this.data.url, url)
         this.imgEl.url = url;
       } else {
         this.imgUploader.clear();
         this.imgLinkInput.value = '';
-        this.goBtn.enabled = false;
+        this.goButton.enabled = false;
       }
     }
   }
@@ -194,49 +200,93 @@ export default class ScomImageConfig extends Module {
     return url;
   }
 
-  private async renderGrid() {
-    this.imageGrid.clearInnerHTML();
-    const photoList = await getUnsplashPhotos();
-    console.log(photoList)
-    if (photoList.length) {
-      for (let photo of photoList) {
-        const image = <i-image
-          url={photo.urls.thumb}
-          width="100%"
-        ></i-image>
-        image.setAttribute('alt', photo.alt_description);
-        this.imageGrid.appendChild(
-          <i-panel
+  private async renderGrid(photoList: IUnsplashPhoto[]) {
+    if (!photoList?.length) return;
+    for (let photo of photoList) {
+      this.imageGrid.appendChild(
+        <i-panel
+          border={{radius: '0.25rem'}}
+          height={100}
+          background={{image: photo.urls.thumb}}
+          onClick={(source: Panel) => this.onPhotoSelected(source, photo)}
+          class={`${this._data?.photoId && photo.id === this._data.photoId ? 'image-item img-actived' : 'image-item'}`}
+        >
+          <i-vstack
             border={{radius: '0.25rem'}}
+            position='absolute'
+            width="100%" height="100%"
+            left="0px"
+            bottom="0px"
+            zIndex={90}
+            background={{color: 'rgba(0, 0, 0, 0.5)'}}
+            horizontalAlignment="center" verticalAlignment="center"
+            class="img-fade"
           >
-            <i-vstack
-              position='absolute'
-              width="100%" height="100%"
-              left="0px"
-              bottom="0px"
-              horizontalAlignment="end"
+            <i-icon name="check" fill="#fff" width="14px" height="14px"></i-icon>
+          </i-vstack>
+          <i-vstack
+            position='absolute'
+            width="100%" height="100%"
+            left="0px"
+            bottom="0px"
+            zIndex={99}
+            verticalAlignment="end"
+            class="image-content"
+          >
+            <i-hstack
+              verticalAlignment="center" gap="0.25rem"
+              padding={{top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem'}}
+              background={{color: 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 100%)'}}
+              class="overflow"
             >
-              <i-hstack
-                verticalAlignment="center" gap="0.25rem"
-                padding={{top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem'}}
-                background={{color: 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 100%)'}}
-                class="overflow"
-              >
-                <i-label link={{href: `https://unsplash.com/@${photo.user.username}`}}>
-                  <i-icon name='link' width={12} height={12} fill={'#fff'}></i-icon>
-                </i-label>
-                <i-label caption={photo.user.name} font={{color: '#fff', size: '0.75rem'}}></i-label>
-              </i-hstack>
-            </i-vstack>
-            {image}
-          </i-panel>
-        )
-      }
+              <i-label link={{href: `https://unsplash.com/@${photo.user.username}`}}>
+                <i-icon name='external-link-alt' width={12} height={12} fill={'#fff'}></i-icon>
+              </i-label>
+              <i-label caption={photo.user.name} font={{color: '#fff', size: '0.75rem'}} class="overflow"></i-label>
+            </i-hstack>
+          </i-vstack>
+        </i-panel>
+      )
     }
   }
 
-  private onSurpriseClicked() {}
+  private onPhotoSelected(source: Panel, photo: IUnsplashPhoto) {
+    if (this.selectedPhoto)
+      this.selectedPhoto.classList.remove('img-actived');
+    this.url = photo.urls.regular;
+    this.altText = photo.alt_description;
+    this.data.photoId = photo.id;
+    source.classList.add('img-actived');
+    this.selectedPhoto = source;
+  }
 
+  private async onLoadMore() {
+    ++this.currentPage;
+    const newData = await getUnsplashPhotos({page: this.currentPage});
+    this.renderGrid([...newData]);
+  }
+
+  private onSearchPhoto() {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => this.onFetchPhotos(), 1000)
+  }
+
+  private async onFetchPhotos() {
+    this.data.keyword = this.searchInput.value || '';
+    const response = await filterUnsplashPhotos({query: this.data.keyword});
+    this.imageGrid.clearInnerHTML();
+    this.photoList = response?.results || [];
+    this.renderGrid([...this.photoList]);
+  }
+
+  private async onSurpriseClicked() {
+    const response = await getUnsplashPhotos();
+    this.imageGrid.clearInnerHTML();
+    this.photoList = response || [];
+    this.renderGrid([...this.photoList]);
+  }
+
+  // For uploader
   private onToggleImage(value: boolean) {
     this.pnlEditor.visible = !value;
     this.pnlImage.visible = value;
@@ -256,29 +306,29 @@ export default class ScomImageConfig extends Module {
     this.url = newUrl;
   }
 
-  private onRemovedImage(control: Control, file: File) {
-    this.url = '';
-  }
-
   private onReplaceImage() {
     this.imgUploader.clear();
     this.url = '';
+    this.onToggleImage(false);
   }
 
   private onChangedLink() {
-    this.goBtn.enabled = this.imgLinkInput.value;
+    this.goButton.enabled = this.imgLinkInput.value;
   }
 
-  private onLoadMore() {}
+  disconnectCallback(): void {
+    super.disconnectCallback();
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+  }
 
   init() {
     super.init();
     this.renderType();
-    let cid = this.getAttribute('cid', true);
-    const ipfsGatewayUrl = getIPFSGatewayUrl()
-    const url = this.getAttribute('url', true) || cid ? ipfsGatewayUrl + cid : "";
-    const altText = this.getAttribute('altText', true);
-    this.data = { url, altText };
+    const cid = this.getAttribute('cid', true);
+    const url = this.getAttribute('url', true);
+    const keyword = this.getAttribute('keyword', true);
+    const photoId = this.getAttribute('photoId', true);
+    this.data = { cid, url, keyword, photoId };
   }
 
   render() {
@@ -318,6 +368,7 @@ export default class ScomImageConfig extends Module {
                   placeholder='Find an image'
                   border={{style: 'none'}}
                   height="100%" width="100%"
+                  onKeyUp={this.onSearchPhoto.bind(this)}
                 ></i-input>
                 <i-button
                   icon={{name: 'surprise', width: 16, height: 16, fill: Theme.colors.primary.main}}
@@ -332,20 +383,22 @@ export default class ScomImageConfig extends Module {
               <i-grid-layout
                 id="imageGrid"
                 margin={{top: '1rem'}}
-                templateColumns={['repeat(3, minmax(0px, 1fr))']}
+                templateColumns={['repeat(3, minmax(0px, 122px))']}
+                grid={{horizontalAlignment: 'center'}}
                 gap={{row: '0.5rem', column: '0.5rem'}}
               ></i-grid-layout>
-              <i-button
-                id="loadMoreButton"
-                height={40} width="100%"
-                border={{width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem'}}
-                font={{color: Theme.text.primary}}
-                caption='Load more'
-                background={{color: 'transparent'}}
-                class="shadow-btn"
-                margin={{top: '1rem'}}
-                onClick={this.onLoadMore.bind(this)}
-              ></i-button>
+              <i-hstack horizontalAlignment="center" margin={{top: '1rem'}}>
+                <i-button
+                  id="loadMoreButton"
+                  height={40} width="45%"
+                  border={{width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem'}}
+                  font={{color: Theme.text.primary}}
+                  caption='Load more'
+                  background={{color: 'transparent'}}
+                  class="shadow-btn"
+                  onClick={this.onLoadMore.bind(this)}
+                ></i-button>
+              </i-hstack>
               <i-hstack horizontalAlignment='center' gap="4px" padding={{top: 30, bottom: 10}}>
                 <i-label caption='Photo from'></i-label>
                 <i-label caption='Unplash' link={{href: 'https://unsplash.com/'}}></i-label>
@@ -368,7 +421,7 @@ export default class ScomImageConfig extends Module {
                       onChanged={this.onChangedLink.bind(this)}
                     ></i-input>
                     <i-button
-                      id="goBtn"
+                      id="goButton"
                       border={{radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider}}
                       font={{weight: 600}}
                       background={{color: 'transparent'}}
@@ -389,7 +442,6 @@ export default class ScomImageConfig extends Module {
                     caption='Drag a file or click to upload'
                     minWidth="auto"
                     onChanged={this.onChangedImage}
-                    onRemoved={this.onRemovedImage}
                   ></i-upload>
                 </i-vstack>
               </i-vstack>
@@ -408,7 +460,7 @@ export default class ScomImageConfig extends Module {
                   caption='Replace Image'
                   background={{color: 'transparent'}}
                   class="shadow-btn"
-                  onClick={this.onReplaceImage}
+                  onClick={this.onReplaceImage.bind(this)}
                 ></i-button>
               </i-vstack>
             </i-panel>

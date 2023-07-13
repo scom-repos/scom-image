@@ -34,22 +34,29 @@ declare module "@scom/scom-image/interface.ts" {
         altText?: string;
         backgroundColor?: string;
         link?: string;
+        photoId?: string;
+        keyword?: string;
     }
 }
 /// <amd-module name="@scom/scom-image/store.ts" />
 declare module "@scom/scom-image/store.ts" {
     export const state: {
         ipfsGatewayUrl: string;
+        unsplashApiKey: string;
     };
     export const setDataFromSCConfig: (options: any) => void;
     export const setIPFSGatewayUrl: (url: string) => void;
     export const getIPFSGatewayUrl: () => string;
+    export const setUnsplashApiKey: (key: string) => void;
+    export const getUnsplashApiKey: () => string;
     export const getUnsplashPhotos: (params?: any) => Promise<any>;
+    export const filterUnsplashPhotos: (params?: any) => Promise<any>;
 }
 /// <amd-module name="@scom/scom-image/data.json.ts" />
 declare module "@scom/scom-image/data.json.ts" {
     const _default: {
         ipfsGatewayUrl: string;
+        unsplashApiKey: string;
     };
     export default _default;
 }
@@ -79,6 +86,13 @@ declare module "@scom/scom-image/config/interface.ts" {
         caption: string;
         icon: any;
     }
+    export interface IUnsplashPhoto {
+        id: string;
+        slug: string;
+        alt_description: string;
+        user: any;
+        urls: any;
+    }
 }
 /// <amd-module name="@scom/scom-image/config/index.tsx" />
 declare module "@scom/scom-image/config/index.tsx" {
@@ -88,8 +102,8 @@ declare module "@scom/scom-image/config/index.tsx" {
     interface ScomImageConfigElement extends ControlElement {
         cid?: string;
         url: string;
-        altText?: string;
-        link?: string;
+        photoId?: string;
+        keyword?: string;
     }
     global {
         namespace JSX {
@@ -100,7 +114,6 @@ declare module "@scom/scom-image/config/index.tsx" {
     }
     export default class ScomImageConfig extends Module {
         private typeButton;
-        private searchInput;
         private imageGrid;
         private typeModal;
         private typeStack;
@@ -109,14 +122,19 @@ declare module "@scom/scom-image/config/index.tsx" {
         private imgEl;
         private pnlEditor;
         private pnlImage;
-        private replaceBtn;
         private imgUploader;
         private imgLinkInput;
-        private goBtn;
+        private goButton;
+        private loadMoreButton;
+        private searchInput;
         private typeList;
         private currentType;
         private typeMapper;
+        private photoList;
+        private selectedPhoto;
+        private currentPage;
         private _data;
+        private searchTimer;
         constructor(parent?: Container, options?: any);
         get data(): IImage;
         set data(value: IImage);
@@ -133,13 +151,17 @@ declare module "@scom/scom-image/config/index.tsx" {
         private updateImg;
         private getImgSrc;
         private renderGrid;
+        private onPhotoSelected;
+        private onLoadMore;
+        private onSearchPhoto;
+        private onFetchPhotos;
         private onSurpriseClicked;
         private onToggleImage;
         private onGoClicked;
         private onChangedImage;
-        private onRemovedImage;
         private onReplaceImage;
         private onChangedLink;
+        disconnectCallback(): void;
         init(): void;
         render(): any;
     }
@@ -166,7 +188,6 @@ declare module "@scom/scom-image" {
         private data;
         private img;
         private pnlImage;
-        private originalUrl;
         private isInitedLink;
         tag: any;
         readonly onConfirm: () => Promise<void>;

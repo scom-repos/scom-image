@@ -42,4 +42,6 @@ export interface IImage {
 	altText?: string;
   backgroundColor?: string;
 	link?: string;
+  photoId?: string;
+  keyword?: string;
 }

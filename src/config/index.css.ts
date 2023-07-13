@@ -3,9 +3,13 @@ const Theme = Styles.Theme.ThemeVars;
 
 export default Styles.cssRule('i-scom-image-config', {
   $nest: {
+    '.type-item': {
+      border: `1px solid ${Theme.background.modal}`,
+      transition: 'opacity, border .2s ease-in'
+    },
     '.type-item:hover': {
       background: Theme.action.hover,
-      border: `1px solid ${Theme.divider}`
+      border: `1px solid ${Theme.divider}`,
     },
     '.is-actived > .check-icon': {
       opacity: '1 !important'
@@ -13,9 +17,13 @@ export default Styles.cssRule('i-scom-image-config', {
     '.type-pnl': {
       $nest: {
         'i-button': {
-          justifyContent: 'start'
+          justifyContent: 'start',
+          gap: '0.5rem'
         }
       }
+    },
+    'i-button': {
+      gap: '0.5rem'
     },
     '.hover-btn:hover': {
       background: Theme.action.hover,
@@ -31,7 +39,7 @@ export default Styles.cssRule('i-scom-image-config', {
     '#typeModal': {
       $nest: {
         '> div': {
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1),0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          boxShadow: `0 10px 15px -3px rgba(0, 0, 0, 0.1),0 4px 6px -2px ${Theme.divider}`
         },
         '.modal': {
           padding: '1rem',
@@ -54,6 +62,31 @@ export default Styles.cssRule('i-scom-image-config', {
       whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis'
+    },
+    '.image-item': {
+      cursor: 'pointer',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      $nest: {
+        '.image-content': {
+          opacity: 0,
+          borderBottomLeftRadius: '0.25rem',
+          borderBottomRightRadius: '0.25rem',
+          transition: 'background-color,border-color,color,fill,stroke,opacity,box-shadow,transform .3s ease-in'
+        },
+        '&:hover .image-content': {
+          opacity: 1
+        },
+        '.img-fade': {
+          opacity: 0,
+          borderTopLeftRadius: '0.25rem',
+          borderTopRightRadius: '0.25rem',
+        },
+        '&.img-actived .img-fade': {
+          opacity: 1
+        }
+      }
     }
   }
 })
