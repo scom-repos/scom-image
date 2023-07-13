@@ -1,6 +1,6 @@
 export enum UploadType {
   'UPLOAD' = 'upload',
-  'UNPLASH' = 'unsplash'
+  'UNSPLASH' = 'unsplash'
 }
 
 export interface IType {

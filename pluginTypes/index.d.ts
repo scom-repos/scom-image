@@ -68,19 +68,11 @@ declare module "@scom/scom-image/config/index.css.ts" {
     const _default_1: void;
     export default _default_1;
 }
-/// <amd-module name="@scom/scom-image/assets.ts" />
-declare module "@scom/scom-image/assets.ts" {
-    function fullPath(path: string): string;
-    const _default_2: {
-        fullPath: typeof fullPath;
-    };
-    export default _default_2;
-}
 /// <amd-module name="@scom/scom-image/config/interface.ts" />
 declare module "@scom/scom-image/config/interface.ts" {
     export enum UploadType {
         'UPLOAD' = "upload",
-        'UNPLASH' = "unsplash"
+        'UNSPLASH' = "unsplash"
     }
     export interface IType {
         type: UploadType;
@@ -141,10 +133,6 @@ declare module "@scom/scom-image/config/index.tsx" {
         set data(value: IImage);
         get url(): string;
         set url(value: string);
-        get altText(): string;
-        set altText(value: string);
-        get link(): string;
-        set link(value: string);
         private renderType;
         private onTypeSelected;
         private updateCurrentType;
@@ -157,6 +145,7 @@ declare module "@scom/scom-image/config/index.tsx" {
         private onLoadMore;
         private onSearchPhoto;
         private onFetchPhotos;
+        private renderPlaceholders;
         private onSurpriseClicked;
         private onToggleImage;
         private onGoClicked;
