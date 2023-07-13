@@ -21,7 +21,7 @@ import './index.css'
 import assets from '../assets';
 import { IType, IUnsplashPhoto, UploadType } from './interface';
 import { IImage } from '../interface';
-import { filterUnsplashPhotos, getIPFSGatewayUrl, getUnsplashPhotos } from '../store';
+import { filterUnsplashPhotos, getIPFSGatewayUrl, getRandomKeyword, getUnsplashPhotos } from '../store';
 const Theme = Styles.Theme.ThemeVars;
 
 interface ScomImageConfigElement extends ControlElement {
@@ -66,7 +66,8 @@ export default class ScomImageConfig extends Module {
     {
       type: UploadType.UNPLASH,
       caption: 'Unplash images',
-      icon: {image: {url: assets.fullPath('img/unsplash.svg'),  width: 16, height: 16}}
+      icon: {name: 'images' as any, width: 16, height: 16, fill: Theme.colors.primary.main}
+      // icon: {image: {url: assets.fullPath('img/unsplash.svg'),  width: 16, height: 16}}
     }
   ]
   private currentType = this.typeList[0];
@@ -88,6 +89,7 @@ export default class ScomImageConfig extends Module {
   }
   set data(value: IImage) {
     this._data = value;
+    this.updateCurrentType(this.data.photoId ? this.typeList[1] : this.typeList[0]);
     this.renderUI();
   }
 
@@ -146,13 +148,18 @@ export default class ScomImageConfig extends Module {
 
   private async onTypeSelected(source: Control, data: IType) {
     this.typeModal.visible = false;
+    this.updateCurrentType(data);
+    this.renderUI();
+  }
+
+  private async updateCurrentType(type: IType) {
     const oldType = this.typeMapper.get(this.currentType.type);
     if (oldType) oldType.classList.remove('is-actived');
-    this.currentType = {...data};
-    source.classList.add('is-actived');
+    this.currentType = {...type};
+    const currentType = this.typeMapper.get(this.currentType.type);
+    if (currentType) currentType.classList.add('is-actived');
     this.typeButton.caption = this.currentType.caption;
     this.typeButton.icon = await Icon.create({...this.currentType.icon});
-    this.renderUI();
   }
 
   private onShowType() {
@@ -271,8 +278,8 @@ export default class ScomImageConfig extends Module {
     this.searchTimer = setTimeout(() => this.onFetchPhotos(), 1000)
   }
 
-  private async onFetchPhotos() {
-    this.data.keyword = this.searchInput.value || '';
+  private async onFetchPhotos(keyword?: string) {
+    this.data.keyword = keyword || this.searchInput.value;
     const response = await filterUnsplashPhotos({query: this.data.keyword});
     this.imageGrid.clearInnerHTML();
     this.photoList = response?.results || [];
@@ -280,10 +287,7 @@ export default class ScomImageConfig extends Module {
   }
 
   private async onSurpriseClicked() {
-    const response = await getUnsplashPhotos();
-    this.imageGrid.clearInnerHTML();
-    this.photoList = response || [];
-    this.renderGrid([...this.photoList]);
+    this.onFetchPhotos(getRandomKeyword());
   }
 
   // For uploader
@@ -400,7 +404,7 @@ export default class ScomImageConfig extends Module {
                 ></i-button>
               </i-hstack>
               <i-hstack horizontalAlignment='center' gap="4px" padding={{top: 30, bottom: 10}}>
-                <i-label caption='Photo from'></i-label>
+                <i-label caption='Photos from'></i-label>
                 <i-label caption='Unplash' link={{href: 'https://unsplash.com/'}}></i-label>
               </i-hstack>
             </i-panel>
