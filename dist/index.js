@@ -279,7 +279,7 @@ define("@scom/scom-image/config/interface.ts", ["require", "exports"], function 
     var UploadType;
     (function (UploadType) {
         UploadType["UPLOAD"] = "upload";
-        UploadType["UNPLASH"] = "unsplash";
+        UploadType["UNSPLASH"] = "unsplash";
     })(UploadType = exports.UploadType || (exports.UploadType = {}));
 });
 define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/config/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/config/index.css.ts"], function (require, exports, components_4, interface_1, store_1) {
@@ -296,8 +296,8 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                     icon: { name: 'image', width: 16, height: 16, fill: Theme.colors.primary.main }
                 },
                 {
-                    type: interface_1.UploadType.UNPLASH,
-                    caption: 'Unplash images',
+                    type: interface_1.UploadType.UNSPLASH,
+                    caption: 'Unsplash images',
                     icon: { name: 'images', width: 16, height: 16, fill: Theme.colors.primary.main }
                     // icon: {image: {url: assets.fullPath('img/unsplash.svg'),  width: 16, height: 16}}
                 }
@@ -372,7 +372,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             this.typeModal.visible = !this.typeModal.visible;
         }
         renderUI() {
-            if (this.currentType.type === interface_1.UploadType.UNPLASH) {
+            if (this.currentType.type === interface_1.UploadType.UNSPLASH) {
                 this.searchInput.value = this.data.keyword || '';
                 this.onFetchPhotos();
                 this.unsplashPnl.visible = true;
@@ -515,7 +515,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                                 this.$render("i-button", { id: "loadMoreButton", height: 40, width: "45%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, font: { color: Theme.text.primary }, caption: 'Load more', background: { color: 'transparent' }, class: "shadow-btn", onClick: this.onLoadMore.bind(this) })),
                             this.$render("i-hstack", { horizontalAlignment: 'center', gap: "4px", padding: { top: 30, bottom: 10 } },
                                 this.$render("i-label", { caption: 'Photos from' }),
-                                this.$render("i-label", { caption: 'Unplash', link: { href: 'https://unsplash.com/' } }))),
+                                this.$render("i-label", { caption: 'Unsplash', link: { href: 'https://unsplash.com/' } }))),
                         this.$render("i-panel", { id: "normalPnl", visible: false },
                             this.$render("i-vstack", { id: "pnlEditor", gap: "1rem" },
                                 this.$render("i-vstack", { gap: "1rem" },

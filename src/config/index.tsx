@@ -64,8 +64,8 @@ export default class ScomImageConfig extends Module {
       icon: {name: 'image' as any, width: 16, height: 16, fill: Theme.colors.primary.main}
     },
     {
-      type: UploadType.UNPLASH,
-      caption: 'Unplash images',
+      type: UploadType.UNSPLASH,
+      caption: 'Unsplash images',
       icon: {name: 'images' as any, width: 16, height: 16, fill: Theme.colors.primary.main}
       // icon: {image: {url: assets.fullPath('img/unsplash.svg'),  width: 16, height: 16}}
     }
@@ -167,7 +167,7 @@ export default class ScomImageConfig extends Module {
   }
 
   private renderUI() {
-    if (this.currentType.type === UploadType.UNPLASH) {
+    if (this.currentType.type === UploadType.UNSPLASH) {
       this.searchInput.value = this.data.keyword || '';
       this.onFetchPhotos();
       this.unsplashPnl.visible = true;
@@ -405,7 +405,7 @@ export default class ScomImageConfig extends Module {
               </i-hstack>
               <i-hstack horizontalAlignment='center' gap="4px" padding={{top: 30, bottom: 10}}>
                 <i-label caption='Photos from'></i-label>
-                <i-label caption='Unplash' link={{href: 'https://unsplash.com/'}}></i-label>
+                <i-label caption='Unsplash' link={{href: 'https://unsplash.com/'}}></i-label>
               </i-hstack>
             </i-panel>
             <i-panel id="normalPnl" visible={false}>

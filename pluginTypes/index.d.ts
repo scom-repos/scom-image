@@ -80,7 +80,7 @@ declare module "@scom/scom-image/assets.ts" {
 declare module "@scom/scom-image/config/interface.ts" {
     export enum UploadType {
         'UPLOAD' = "upload",
-        'UNPLASH' = "unsplash"
+        'UNSPLASH' = "unsplash"
     }
     export interface IType {
         type: UploadType;
