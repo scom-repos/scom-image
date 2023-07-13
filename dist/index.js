@@ -11,7 +11,7 @@ define("@scom/scom-image/interface.ts", ["require", "exports"], function (requir
 define("@scom/scom-image/store.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.filterUnsplashPhotos = exports.getUnsplashPhotos = exports.getUnsplashApiKey = exports.setUnsplashApiKey = exports.getIPFSGatewayUrl = exports.setIPFSGatewayUrl = exports.setDataFromSCConfig = exports.state = void 0;
+    exports.getRandomKeyword = exports.filterUnsplashPhotos = exports.getUnsplashPhotos = exports.getUnsplashApiKey = exports.setUnsplashApiKey = exports.getIPFSGatewayUrl = exports.setIPFSGatewayUrl = exports.setDataFromSCConfig = exports.state = void 0;
     ///<amd-module name='@scom/scom-image/store.ts'/> 
     exports.state = {
         ipfsGatewayUrl: "",
@@ -76,6 +76,14 @@ define("@scom/scom-image/store.ts", ["require", "exports"], function (require, e
         }
     };
     exports.filterUnsplashPhotos = filterUnsplashPhotos;
+    const keywords = ['flowers', 'experimental', 'background', 'animals', 'wallpaper', 'nature', 'california', 'water', 'textures'];
+    const getRandomKeyword = () => {
+        const min = 0;
+        const max = keywords.length - 1;
+        const index = Math.floor(Math.random() * (max - min) + min);
+        return keywords[index];
+    };
+    exports.getRandomKeyword = getRandomKeyword;
 });
 define("@scom/scom-image/data.json.ts", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -274,7 +282,7 @@ define("@scom/scom-image/config/interface.ts", ["require", "exports"], function 
         UploadType["UNPLASH"] = "unsplash";
     })(UploadType = exports.UploadType || (exports.UploadType = {}));
 });
-define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/assets.ts", "@scom/scom-image/config/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/config/index.css.ts"], function (require, exports, components_4, assets_1, interface_1, store_1) {
+define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/config/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/config/index.css.ts"], function (require, exports, components_4, interface_1, store_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_4.Styles.Theme.ThemeVars;
@@ -290,7 +298,8 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                 {
                     type: interface_1.UploadType.UNPLASH,
                     caption: 'Unplash images',
-                    icon: { image: { url: assets_1.default.fullPath('img/unsplash.svg'), width: 16, height: 16 } }
+                    icon: { name: 'images', width: 16, height: 16, fill: Theme.colors.primary.main }
+                    // icon: {image: {url: assets.fullPath('img/unsplash.svg'),  width: 16, height: 16}}
                 }
             ];
             this.currentType = this.typeList[0];
@@ -304,6 +313,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         }
         set data(value) {
             this._data = value;
+            this.updateCurrentType(this.data.photoId ? this.typeList[1] : this.typeList[0]);
             this.renderUI();
         }
         get url() {
@@ -344,14 +354,19 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         }
         async onTypeSelected(source, data) {
             this.typeModal.visible = false;
+            this.updateCurrentType(data);
+            this.renderUI();
+        }
+        async updateCurrentType(type) {
             const oldType = this.typeMapper.get(this.currentType.type);
             if (oldType)
                 oldType.classList.remove('is-actived');
-            this.currentType = Object.assign({}, data);
-            source.classList.add('is-actived');
+            this.currentType = Object.assign({}, type);
+            const currentType = this.typeMapper.get(this.currentType.type);
+            if (currentType)
+                currentType.classList.add('is-actived');
             this.typeButton.caption = this.currentType.caption;
             this.typeButton.icon = await components_4.Icon.create(Object.assign({}, this.currentType.icon));
-            this.renderUI();
         }
         onShowType() {
             this.typeModal.visible = !this.typeModal.visible;
@@ -433,18 +448,15 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                 clearTimeout(this.searchTimer);
             this.searchTimer = setTimeout(() => this.onFetchPhotos(), 1000);
         }
-        async onFetchPhotos() {
-            this.data.keyword = this.searchInput.value || '';
+        async onFetchPhotos(keyword) {
+            this.data.keyword = keyword || this.searchInput.value;
             const response = await (0, store_1.filterUnsplashPhotos)({ query: this.data.keyword });
             this.imageGrid.clearInnerHTML();
             this.photoList = (response === null || response === void 0 ? void 0 : response.results) || [];
             this.renderGrid([...this.photoList]);
         }
         async onSurpriseClicked() {
-            const response = await (0, store_1.getUnsplashPhotos)();
-            this.imageGrid.clearInnerHTML();
-            this.photoList = response || [];
-            this.renderGrid([...this.photoList]);
+            this.onFetchPhotos((0, store_1.getRandomKeyword)());
         }
         // For uploader
         onToggleImage(value) {
@@ -502,7 +514,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                             this.$render("i-hstack", { horizontalAlignment: "center", margin: { top: '1rem' } },
                                 this.$render("i-button", { id: "loadMoreButton", height: 40, width: "45%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, font: { color: Theme.text.primary }, caption: 'Load more', background: { color: 'transparent' }, class: "shadow-btn", onClick: this.onLoadMore.bind(this) })),
                             this.$render("i-hstack", { horizontalAlignment: 'center', gap: "4px", padding: { top: 30, bottom: 10 } },
-                                this.$render("i-label", { caption: 'Photo from' }),
+                                this.$render("i-label", { caption: 'Photos from' }),
                                 this.$render("i-label", { caption: 'Unplash', link: { href: 'https://unsplash.com/' } }))),
                         this.$render("i-panel", { id: "normalPnl", visible: false },
                             this.$render("i-vstack", { id: "pnlEditor", gap: "1rem" },
@@ -692,7 +704,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     customUI: {
                         render: (data, onConfirm) => {
                             const vstack = new components_5.VStack(null, { gap: '1rem' });
-                            const config = new index_1.default(null, Object.assign({}, data));
+                            const config = new index_1.default(null, Object.assign({}, this.data));
                             const hstack = new components_5.HStack(null, {
                                 verticalAlignment: 'center',
                                 horizontalAlignment: 'end'

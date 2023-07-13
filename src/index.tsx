@@ -220,7 +220,7 @@ export default class ScomImage extends Module {
         customUI: {
           render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
             const vstack = new VStack(null, {gap: '1rem'});
-            const config = new ScomImageConfig(null, {...data});
+            const config = new ScomImageConfig(null, {...this.data});
             const hstack = new HStack(null, {
               verticalAlignment: 'center',
               horizontalAlignment: 'end'

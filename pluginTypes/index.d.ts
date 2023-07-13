@@ -51,6 +51,7 @@ declare module "@scom/scom-image/store.ts" {
     export const getUnsplashApiKey: () => string;
     export const getUnsplashPhotos: (params?: any) => Promise<any>;
     export const filterUnsplashPhotos: (params?: any) => Promise<any>;
+    export const getRandomKeyword: () => string;
 }
 /// <amd-module name="@scom/scom-image/data.json.ts" />
 declare module "@scom/scom-image/data.json.ts" {
@@ -146,6 +147,7 @@ declare module "@scom/scom-image/config/index.tsx" {
         set link(value: string);
         private renderType;
         private onTypeSelected;
+        private updateCurrentType;
         private onShowType;
         private renderUI;
         private updateImg;

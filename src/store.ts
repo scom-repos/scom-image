@@ -58,3 +58,12 @@ export const filterUnsplashPhotos = async (params: any = {}) => {
     return null
   }
 }
+
+const keywords = ['flowers', 'experimental', 'background', 'animals', 'wallpaper', 'nature', 'california', 'water', 'textures'];
+
+export const getRandomKeyword = () => {
+  const min = 0;
+  const max = keywords.length - 1;
+  const index = Math.floor(Math.random() * (max - min) + min);
+  return keywords[index];
+}
