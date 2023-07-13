@@ -2,21 +2,22 @@ import {
   Module,
   Panel,
   Image,
-  Input,
-  Upload,
-  Control,
   customModule,
-  Label,
   IDataSchema,
   Container,
-  Link,
   ControlElement,
-  customElements
+  customElements,
+  VStack,
+  Button,
+  HStack,
+  Styles
 } from '@ijstech/components'
 import { IImage } from './interface'
 import { getIPFSGatewayUrl, setDataFromSCConfig } from './store'
 import configData from './data.json'
 import './index.css'
+import ScomImageConfig from './config/index'
+const Theme = Styles.Theme.ThemeVars
 
 interface ScomImageElement extends ControlElement {
   lazyLoad?: boolean;
@@ -47,7 +48,6 @@ export default class ScomImage extends Module {
   private img: Image;
   private pnlImage: Panel;
 
-  private originalUrl: string = '';
   private isInitedLink: boolean = false;
 
   tag: any;
@@ -217,7 +217,28 @@ export default class ScomImage extends Module {
             redo: () => { }
           }
         },
-        userInputDataSchema: settingSchema as IDataSchema
+        customUI: {
+          render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
+            const vstack = new VStack(null, {gap: '1rem'});
+            const config = new ScomImageConfig(null, {...data});
+            const hstack = new HStack(null, {
+              verticalAlignment: 'center',
+              horizontalAlignment: 'end'
+            });
+            const button = new Button(null, {
+              caption: 'Confirm',
+              width: '100%',
+              font: {color: Theme.colors.primary.contrastText}
+            });
+            hstack.append(button);
+            vstack.append(config);
+            vstack.append(hstack);
+            button.onClick = async () => {
+              if (onConfirm) onConfirm(true, {...config.data});
+            }
+            return vstack;
+          }
+        }
       }
     ]
     return actions
@@ -228,9 +249,7 @@ export default class ScomImage extends Module {
   }
 
   private async setData(value: IImage) {
-    this.data = value
-    if (!this.originalUrl) this.originalUrl = this.data.url;
-
+    this.data = value;
     this.updateImg()
     this.pnlImage.background.color = value.backgroundColor || '';
   }
