@@ -1,6 +1,15 @@
 import { Styles } from "@ijstech/components";
 const Theme = Styles.Theme.ThemeVars;
 
+const loadingAnim = Styles.keyframes({
+  'from': {
+    backgroundPosition: '0 0'
+  },
+  'to': {
+    backgroundPosition: '1000px 0'
+  }
+})
+
 export default Styles.cssRule('i-scom-image-config', {
   $nest: {
     '.type-item': {
@@ -87,6 +96,12 @@ export default Styles.cssRule('i-scom-image-config', {
           opacity: 1
         }
       }
+    },
+    '.image-placeholder': {
+      backgroundImage: 'linear-gradient(90deg, #e4e4e4 0%, #f1f1f1 40%, #ededed 60%, #e4e4e4 100%)',
+      backgroundPosition: '0px 0px',
+      backgroundRepeat: 'repeat',
+      animation: `${loadingAnim} 5s linear infinite`
     }
   }
 })

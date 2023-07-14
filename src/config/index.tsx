@@ -18,7 +18,6 @@ import {
   Image
 } from '@ijstech/components'
 import './index.css'
-import assets from '../assets';
 import { IType, IUnsplashPhoto, UploadType } from './interface';
 import { IImage } from '../interface';
 import { filterUnsplashPhotos, getIPFSGatewayUrl, getRandomKeyword, getUnsplashPhotos } from '../store';
@@ -99,20 +98,6 @@ export default class ScomImageConfig extends Module {
   set url(value: string) {
     this._data.url = value ?? '';
     this.updateImg();
-  }
-
-  get altText() {
-    return this._data.altText ?? '';
-  }
-  set altText(value: string) {
-    this._data.altText = value;
-  }
-
-  get link() {
-    return this._data.link ?? '';
-  }
-  set link(value: string) {
-    this._data.link = value;
   }
 
   private async renderType() {
@@ -208,6 +193,8 @@ export default class ScomImageConfig extends Module {
   }
 
   private async renderGrid(photoList: IUnsplashPhoto[]) {
+    const placeholders = this.imageGrid.querySelectorAll('.image-placeholder');
+    for (let placeholder of placeholders) placeholder.remove();
     if (!photoList?.length) return;
     for (let photo of photoList) {
       this.imageGrid.appendChild(
@@ -261,7 +248,7 @@ export default class ScomImageConfig extends Module {
     if (this.selectedPhoto)
       this.selectedPhoto.classList.remove('img-actived');
     this.url = photo.urls.regular;
-    this.altText = photo.alt_description;
+    this.data.altText = photo.alt_description;
     this.data.photoId = photo.id;
     source.classList.add('img-actived');
     this.selectedPhoto = source;
@@ -269,6 +256,7 @@ export default class ScomImageConfig extends Module {
 
   private async onLoadMore() {
     ++this.currentPage;
+    this.renderPlaceholders();
     const newData = await getUnsplashPhotos({page: this.currentPage});
     this.renderGrid([...newData]);
   }
@@ -280,10 +268,20 @@ export default class ScomImageConfig extends Module {
 
   private async onFetchPhotos(keyword?: string) {
     this.data.keyword = keyword || this.searchInput.value;
+    this.imageGrid.clearInnerHTML();
+    this.renderPlaceholders();
     const response = await filterUnsplashPhotos({query: this.data.keyword});
     this.imageGrid.clearInnerHTML();
     this.photoList = response?.results || [];
     this.renderGrid([...this.photoList]);
+  }
+
+  private renderPlaceholders() {
+    for (let i = 0; i < 18; i++) {
+      this.imageGrid.appendChild(
+        <i-panel class="image-placeholder" height="100px" border={{radius: '0.25rem'}}></i-panel>
+      )
+    }
   }
 
   private async onSurpriseClicked() {
@@ -298,6 +296,7 @@ export default class ScomImageConfig extends Module {
 
   private onGoClicked() {
     this.url = this.imgLinkInput.value;
+    this.data.photoId = '';
     this.onToggleImage(true);
   }
 
@@ -305,6 +304,7 @@ export default class ScomImageConfig extends Module {
     let newUrl = '';
     if (files && files[0]) {
       newUrl = (await this.imgUploader.toBase64(files[0])) as string;
+      this.data.photoId = '';
       this.onToggleImage(true);
     }
     this.url = newUrl;

@@ -169,6 +169,14 @@ define("@scom/scom-image/config/index.css.ts", ["require", "exports", "@ijstech/
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_2.Styles.Theme.ThemeVars;
+    const loadingAnim = components_2.Styles.keyframes({
+        'from': {
+            backgroundPosition: '0 0'
+        },
+        'to': {
+            backgroundPosition: '1000px 0'
+        }
+    });
     exports.default = components_2.Styles.cssRule('i-scom-image-config', {
         $nest: {
             '.type-item': {
@@ -255,21 +263,15 @@ define("@scom/scom-image/config/index.css.ts", ["require", "exports", "@ijstech/
                         opacity: 1
                     }
                 }
+            },
+            '.image-placeholder': {
+                backgroundImage: 'linear-gradient(90deg, #e4e4e4 0%, #f1f1f1 40%, #ededed 60%, #e4e4e4 100%)',
+                backgroundPosition: '0px 0px',
+                backgroundRepeat: 'repeat',
+                animation: `${loadingAnim} 5s linear infinite`
             }
         }
     });
-});
-define("@scom/scom-image/assets.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const moduleDir = components_3.application.currentModuleDir;
-    function fullPath(path) {
-        return `${moduleDir}/${path}`;
-    }
-    ;
-    exports.default = {
-        fullPath
-    };
 });
 define("@scom/scom-image/config/interface.ts", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -282,11 +284,11 @@ define("@scom/scom-image/config/interface.ts", ["require", "exports"], function 
         UploadType["UNSPLASH"] = "unsplash";
     })(UploadType = exports.UploadType || (exports.UploadType = {}));
 });
-define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/config/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/config/index.css.ts"], function (require, exports, components_4, interface_1, store_1) {
+define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/config/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/config/index.css.ts"], function (require, exports, components_3, interface_1, store_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_4.Styles.Theme.ThemeVars;
-    let ScomImageConfig = class ScomImageConfig extends components_4.Module {
+    const Theme = components_3.Styles.Theme.ThemeVars;
+    let ScomImageConfig = class ScomImageConfig extends components_3.Module {
         constructor(parent, options) {
             super(parent, options);
             this.typeList = [
@@ -324,20 +326,6 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             this._data.url = value !== null && value !== void 0 ? value : '';
             this.updateImg();
         }
-        get altText() {
-            var _a;
-            return (_a = this._data.altText) !== null && _a !== void 0 ? _a : '';
-        }
-        set altText(value) {
-            this._data.altText = value;
-        }
-        get link() {
-            var _a;
-            return (_a = this._data.link) !== null && _a !== void 0 ? _a : '';
-        }
-        set link(value) {
-            this._data.link = value;
-        }
         async renderType() {
             this.typeMapper = new Map();
             this.typeStack.clearInnerHTML();
@@ -350,7 +338,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                 this.typeMapper.set(type.type, hstack);
             }
             this.typeButton.caption = this.currentType.caption;
-            this.typeButton.icon = await components_4.Icon.create(Object.assign({}, this.currentType.icon));
+            this.typeButton.icon = await components_3.Icon.create(Object.assign({}, this.currentType.icon));
         }
         async onTypeSelected(source, data) {
             this.typeModal.visible = false;
@@ -366,7 +354,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             if (currentType)
                 currentType.classList.add('is-actived');
             this.typeButton.caption = this.currentType.caption;
-            this.typeButton.icon = await components_4.Icon.create(Object.assign({}, this.currentType.icon));
+            this.typeButton.icon = await components_3.Icon.create(Object.assign({}, this.currentType.icon));
         }
         onShowType() {
             this.typeModal.visible = !this.typeModal.visible;
@@ -416,6 +404,9 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         }
         async renderGrid(photoList) {
             var _a;
+            const placeholders = this.imageGrid.querySelectorAll('.image-placeholder');
+            for (let placeholder of placeholders)
+                placeholder.remove();
             if (!(photoList === null || photoList === void 0 ? void 0 : photoList.length))
                 return;
             for (let photo of photoList) {
@@ -433,13 +424,14 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             if (this.selectedPhoto)
                 this.selectedPhoto.classList.remove('img-actived');
             this.url = photo.urls.regular;
-            this.altText = photo.alt_description;
+            this.data.altText = photo.alt_description;
             this.data.photoId = photo.id;
             source.classList.add('img-actived');
             this.selectedPhoto = source;
         }
         async onLoadMore() {
             ++this.currentPage;
+            this.renderPlaceholders();
             const newData = await (0, store_1.getUnsplashPhotos)({ page: this.currentPage });
             this.renderGrid([...newData]);
         }
@@ -450,10 +442,17 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         }
         async onFetchPhotos(keyword) {
             this.data.keyword = keyword || this.searchInput.value;
+            this.imageGrid.clearInnerHTML();
+            this.renderPlaceholders();
             const response = await (0, store_1.filterUnsplashPhotos)({ query: this.data.keyword });
             this.imageGrid.clearInnerHTML();
             this.photoList = (response === null || response === void 0 ? void 0 : response.results) || [];
             this.renderGrid([...this.photoList]);
+        }
+        renderPlaceholders() {
+            for (let i = 0; i < 18; i++) {
+                this.imageGrid.appendChild(this.$render("i-panel", { class: "image-placeholder", height: "100px", border: { radius: '0.25rem' } }));
+            }
         }
         async onSurpriseClicked() {
             this.onFetchPhotos((0, store_1.getRandomKeyword)());
@@ -465,12 +464,14 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         }
         onGoClicked() {
             this.url = this.imgLinkInput.value;
+            this.data.photoId = '';
             this.onToggleImage(true);
         }
         async onChangedImage(control, files) {
             let newUrl = '';
             if (files && files[0]) {
                 newUrl = (await this.imgUploader.toBase64(files[0]));
+                this.data.photoId = '';
                 this.onToggleImage(true);
             }
             this.url = newUrl;
@@ -532,16 +533,16 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         }
     };
     ScomImageConfig = __decorate([
-        components_4.customModule,
-        (0, components_4.customElements)('i-scom-image-config')
+        components_3.customModule,
+        (0, components_3.customElements)('i-scom-image-config')
     ], ScomImageConfig);
     exports.default = ScomImageConfig;
 });
-define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/store.ts", "@scom/scom-image/data.json.ts", "@scom/scom-image/config/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_5, store_2, data_json_1, index_1) {
+define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/store.ts", "@scom/scom-image/data.json.ts", "@scom/scom-image/config/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_4, store_2, data_json_1, index_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_5.Styles.Theme.ThemeVars;
-    let ScomImage = class ScomImage extends components_5.Module {
+    const Theme = components_4.Styles.Theme.ThemeVars;
+    let ScomImage = class ScomImage extends components_4.Module {
         constructor(parent, options) {
             super(parent, options);
             this.data = {
@@ -703,13 +704,13 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     },
                     customUI: {
                         render: (data, onConfirm) => {
-                            const vstack = new components_5.VStack(null, { gap: '1rem' });
+                            const vstack = new components_4.VStack(null, { gap: '1rem' });
                             const config = new index_1.default(null, Object.assign({}, this.data));
-                            const hstack = new components_5.HStack(null, {
+                            const hstack = new components_4.HStack(null, {
                                 verticalAlignment: 'center',
                                 horizontalAlignment: 'end'
                             });
-                            const button = new components_5.Button(null, {
+                            const button = new components_4.Button(null, {
                                 caption: 'Confirm',
                                 width: '100%',
                                 font: { color: Theme.colors.primary.contrastText }
@@ -790,8 +791,8 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
     };
     ScomImage = __decorate([
-        components_5.customModule,
-        (0, components_5.customElements)('i-scom-image')
+        components_4.customModule,
+        (0, components_4.customElements)('i-scom-image')
     ], ScomImage);
     exports.default = ScomImage;
 });
