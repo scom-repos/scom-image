@@ -387,7 +387,7 @@ export default class ScomImageConfig extends Module {
               <i-grid-layout
                 id="imageGrid"
                 margin={{top: '1rem'}}
-                templateColumns={['repeat(3, minmax(0px, 122px))']}
+                templateColumns={['repeat(auto-fill, minmax(min(122px, 100%), 1fr))']}
                 grid={{horizontalAlignment: 'center'}}
                 gap={{row: '0.5rem', column: '0.5rem'}}
               ></i-grid-layout>

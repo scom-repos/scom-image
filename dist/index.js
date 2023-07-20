@@ -511,7 +511,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                                 this.$render("i-icon", { name: 'search', width: 16, height: 16, fill: Theme.text.primary }),
                                 this.$render("i-input", { id: "searchInput", placeholder: 'Find an image', border: { style: 'none' }, height: "100%", width: "100%", onKeyUp: this.onSearchPhoto.bind(this) }),
                                 this.$render("i-button", { icon: { name: 'surprise', width: 16, height: 16, fill: Theme.colors.primary.main }, border: { radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider }, font: { weight: 600 }, background: { color: 'transparent' }, tooltip: { content: 'Surprise me' }, onClick: this.onSurpriseClicked.bind(this), class: "hover-btn" })),
-                            this.$render("i-grid-layout", { id: "imageGrid", margin: { top: '1rem' }, templateColumns: ['repeat(3, minmax(0px, 122px))'], grid: { horizontalAlignment: 'center' }, gap: { row: '0.5rem', column: '0.5rem' } }),
+                            this.$render("i-grid-layout", { id: "imageGrid", margin: { top: '1rem' }, templateColumns: ['repeat(auto-fill, minmax(min(122px, 100%), 1fr))'], grid: { horizontalAlignment: 'center' }, gap: { row: '0.5rem', column: '0.5rem' } }),
                             this.$render("i-hstack", { horizontalAlignment: "center", margin: { top: '1rem' } },
                                 this.$render("i-button", { id: "loadMoreButton", height: 40, width: "45%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, font: { color: Theme.text.primary }, caption: 'Load more', background: { color: 'transparent' }, class: "shadow-btn", onClick: this.onLoadMore.bind(this) })),
                             this.$render("i-hstack", { horizontalAlignment: 'center', gap: "4px", padding: { top: 30, bottom: 10 } },
@@ -713,6 +713,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                             const button = new components_4.Button(null, {
                                 caption: 'Confirm',
                                 width: '100%',
+                                height: 40,
                                 font: { color: Theme.colors.primary.contrastText }
                             });
                             hstack.append(button);
