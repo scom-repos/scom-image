@@ -713,6 +713,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                             const button = new components_4.Button(null, {
                                 caption: 'Confirm',
                                 width: '100%',
+                                height: 40,
                                 font: { color: Theme.colors.primary.contrastText }
                             });
                             hstack.append(button);
