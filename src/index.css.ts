@@ -1,5 +1,4 @@
 import { Styles } from '@ijstech/components';
-const Theme = Styles.Theme.ThemeVars;
 
 Styles.cssRule('#pnlImage', {
   $nest: {
@@ -7,66 +6,27 @@ Styles.cssRule('#pnlImage', {
       objectFit: 'fill',
       objectPosition: 'center',
       width: '100%',
-      height: '100%',
-      maxWidth: 'none',
-      maxHeight: 'none'
+      height: '100%'
     },
-    '#imgLink span': {
-      display: 'block'
+    "&.img-wrapper": {
+      mask: 'none',
+      '-webkit-mask': 'none'
     },
-    '#edtLink input': {
-      border: `1px solid ${Theme.divider}`
-    },
-    ".angle": {
-      zIndex: '200',
-      position: 'absolute',
-      width: '30px',
-      height: '30px',
-      background: 'black',
-      clipPath: "polygon(0 0, 0 100%, 20% 100%, 20% 20%, 100% 20%, 100% 0)"
-    },
-    ".transform": {
-      transformOrigin: "left top"
-    },
-
-    ".angle-nw:hover": {
-      cursor: 'nw-resize',
-      background: 'blue'
-    },
-    ".angle-ne:hover": {
-      cursor: 'ne-resize',
-      background: 'blue'
-    },
-    ".angle-sw:hover": {
-      cursor: 'sw-resize',
-      background: 'blue'
-    },
-    ".angle-se:hover": {
-      cursor: 'se-resize',
-      background: 'blue'
-    },
-
-    ".angle-ne": {
-      transform: "rotate(90deg)"
-    },
-    ".angle-se": {
-      transform: "rotate(180deg)"
-    },
-    ".angle-sw": {
-      transform: "rotate(270deg)"
-    },
-
-    ".canvas": {
-      zIndex: '180',
-      position: 'absolute',
-      top: '0px',
-      left: '0px'
-    },
-    ".canvas-line": {
-      zIndex: '190',
-      position: 'absolute',
-      top: '0px',
-      left: '0px'
+    "&.cropped-pnl": {
+      maxWidth: '100%',
+      maxHeight: '100%',
+      width: '100%',
+      overflow: 'hidden',
+      $nest: {
+        '.custom-img img': {
+          objectFit: 'contain',
+          maxWidth: '100%',
+          maxHeight: '100%',
+          transformOrigin: 'left top',
+          width: '100%',
+          height: 'auto'
+        }
+      }
     }
   }
 });
