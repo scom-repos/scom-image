@@ -53,7 +53,6 @@ export default class ScomImageConfig extends Module {
   private imgUploader: Upload;
   private imgLinkInput: Input;
   private goButton: Button;
-  private loadMoreButton: Button;
   private searchInput: Input;
 
   private typeList = [

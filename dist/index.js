@@ -97,70 +97,33 @@ define("@scom/scom-image/data.json.ts", ["require", "exports"], function (requir
 define("@scom/scom-image/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_1.Styles.Theme.ThemeVars;
     components_1.Styles.cssRule('#pnlImage', {
         $nest: {
             '.custom-img img': {
                 objectFit: 'fill',
                 objectPosition: 'center',
                 width: '100%',
-                height: '100%',
-                maxWidth: 'none',
-                maxHeight: 'none'
+                height: '100%'
             },
-            '#imgLink span': {
-                display: 'block'
+            "&.img-wrapper": {
+                mask: 'none',
+                '-webkit-mask': 'none'
             },
-            '#edtLink input': {
-                border: `1px solid ${Theme.divider}`
-            },
-            ".angle": {
-                zIndex: '200',
-                position: 'absolute',
-                width: '30px',
-                height: '30px',
-                background: 'black',
-                clipPath: "polygon(0 0, 0 100%, 20% 100%, 20% 20%, 100% 20%, 100% 0)"
-            },
-            ".transform": {
-                transformOrigin: "left top"
-            },
-            ".angle-nw:hover": {
-                cursor: 'nw-resize',
-                background: 'blue'
-            },
-            ".angle-ne:hover": {
-                cursor: 'ne-resize',
-                background: 'blue'
-            },
-            ".angle-sw:hover": {
-                cursor: 'sw-resize',
-                background: 'blue'
-            },
-            ".angle-se:hover": {
-                cursor: 'se-resize',
-                background: 'blue'
-            },
-            ".angle-ne": {
-                transform: "rotate(90deg)"
-            },
-            ".angle-se": {
-                transform: "rotate(180deg)"
-            },
-            ".angle-sw": {
-                transform: "rotate(270deg)"
-            },
-            ".canvas": {
-                zIndex: '180',
-                position: 'absolute',
-                top: '0px',
-                left: '0px'
-            },
-            ".canvas-line": {
-                zIndex: '190',
-                position: 'absolute',
-                top: '0px',
-                left: '0px'
+            "&.cropped-pnl": {
+                maxWidth: '100%',
+                maxHeight: '100%',
+                width: '100%',
+                overflow: 'hidden',
+                $nest: {
+                    '.custom-img img': {
+                        objectFit: 'contain',
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        transformOrigin: 'left top',
+                        width: '100%',
+                        height: 'auto'
+                    }
+                }
             }
         }
     });
@@ -538,11 +501,408 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
     ], ScomImageConfig);
     exports.default = ScomImageConfig;
 });
-define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/store.ts", "@scom/scom-image/data.json.ts", "@scom/scom-image/config/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_4, store_2, data_json_1, index_1) {
+define("@scom/scom-image/crop/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_4.Styles.Theme.ThemeVars;
-    let ScomImage = class ScomImage extends components_4.Module {
+    const maskStyle = `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px) 50% 100% / 100% 100% no-repeat, linear-gradient(rgba(0, 0, 0, 0.4) 0px, rgba(0, 0, 0, 0.4) 0px)`;
+    components_4.Styles.cssRule('i-scom-image-crop', {
+        $nest: {
+            '.custom-img img': {
+                objectFit: 'fill',
+                objectPosition: 'center',
+                width: '100%',
+                height: '100%',
+                maxWidth: 'none',
+                maxHeight: 'none'
+            },
+            ".angle": {
+                zIndex: 2,
+                position: 'absolute',
+                width: '16px',
+                height: '16px',
+                background: 'none 0px center !important',
+                border: `6px solid ${Theme.colors.primary.main}`,
+                borderRadius: 0
+            },
+            ".angle-nw": {
+                left: 0,
+                top: 0,
+                borderRight: 0,
+                borderBottom: 0,
+                marginTop: -2,
+                marginLeft: -2,
+                cursor: 'nw-resize'
+            },
+            ".angle-n": {
+                borderRight: 0,
+                borderBottom: 0,
+                borderLeft: 0,
+                marginTop: -2,
+                cursor: 'n-resize',
+                left: 'calc(50% - 8px)',
+                top: 0
+            },
+            ".angle-ne": {
+                transform: "rotate(360deg)",
+                right: 0,
+                top: 0,
+                borderBottom: 0,
+                borderLeft: 0,
+                marginTop: -2,
+                marginLeft: -14,
+                cursor: 'ne-resize'
+            },
+            ".angle-e": {
+                borderBottom: 0,
+                borderLeft: 0,
+                borderTop: 0,
+                marginLeft: -14,
+                cursor: 'e-resize',
+                top: 'calc(50% - 8px)',
+                right: 0
+            },
+            ".angle-se": {
+                transform: "rotate(0deg)",
+                right: 0,
+                bottom: 0,
+                borderLeft: 0,
+                borderTop: 0,
+                marginLeft: -14,
+                marginTop: -14,
+                cursor: 'se-resize'
+            },
+            ".angle-s": {
+                borderTop: 0,
+                borderLeft: 0,
+                borderRight: 0,
+                marginTop: -14,
+                cursor: 's-resize',
+                left: 'calc(50% - 8px)',
+                bottom: 0
+            },
+            ".angle-sw": {
+                transform: "rotate(360deg)",
+                bottom: 0,
+                left: 0,
+                borderTop: 0,
+                borderRight: 0,
+                marginTop: -14,
+                marginLeft: -2,
+                cursor: 'sw-resize',
+            },
+            ".angle-w": {
+                borderTop: 0,
+                borderRight: 0,
+                borderBottom: 0,
+                marginLeft: -2,
+                cursor: 'w-resize',
+                top: 'calc(50% - 8px)',
+                left: 0
+            },
+            ".custom-mask": {
+                mask: maskStyle,
+                '-webkit-mask': maskStyle
+            }
+        }
+    });
+});
+define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/store.ts", "@scom/scom-image/crop/index.css.ts"], function (require, exports, components_5, store_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    let ScomImageCrop = class ScomImageCrop extends components_5.Module {
+        constructor(parent, options) {
+            super(parent, options);
+            this._data = { url: '' };
+            this.isResizing = false;
+            this._mouseMoveHandler = this.handleMouseMove.bind(this);
+            this._mouseUpHandler = this.handleMouseUp.bind(this);
+        }
+        static async create(options, parent) {
+            let self = new this(parent, options);
+            await self.ready();
+            return self;
+        }
+        init() {
+            super.init();
+            const cid = this.getAttribute('cid', true);
+            const url = this.getAttribute('url', true);
+            const cropData = this.getAttribute('cropData', true);
+            this.data = { cid, url, cropData };
+        }
+        _handleMouseDown(event, stopPropagation) {
+            const target = event.target;
+            const resizer = target.closest('.angle');
+            const mask = target.closest('#pnlCropMask');
+            this._origWidth = this.pnlCropMask.offsetWidth;
+            this._origHeight = this.pnlCropMask.offsetHeight;
+            this._origLeft = this.pnlCropMask.offsetLeft;
+            this._origTop = this.pnlCropMask.offsetTop;
+            this._mouseDownPos = { x: event.clientX, y: event.clientY };
+            this.isResizing = !!resizer;
+            if (resizer) {
+                this.currentResizer = resizer;
+                this.currentResizer.classList.add('highlight');
+            }
+            if (mask || resizer) {
+                document.addEventListener('mousemove', this._mouseMoveHandler);
+                document.addEventListener('mouseup', this._mouseUpHandler);
+            }
+            return super._handleMouseDown(event);
+        }
+        handleMouseMove(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            let offsetX = event.clientX - this._mouseDownPos.x;
+            let offsetY = event.clientY - this._mouseDownPos.y;
+            if (this.isResizing)
+                this.onResize(offsetX, offsetY);
+            else
+                this.onMove(offsetX, offsetY);
+        }
+        onResize(offsetX, offsetY) {
+            const dock = this.currentResizer.tag;
+            let newWidth = 0;
+            let newHeight = 0;
+            switch (dock) {
+                case 'left':
+                    newWidth = this._origWidth - offsetX;
+                    this.updateDimension(newWidth);
+                    this.updatePosition(this._origLeft + offsetX);
+                    break;
+                case 'top':
+                    newHeight = this._origHeight - offsetY;
+                    this.updatePosition(undefined, this._origTop + offsetY);
+                    this.updateDimension(undefined, newHeight);
+                    break;
+                case 'right':
+                    newWidth = this._origWidth + offsetX;
+                    this.updateDimension(newWidth);
+                    break;
+                case 'bottom':
+                    newHeight = this._origHeight + offsetY;
+                    this.updateDimension(undefined, newHeight);
+                    break;
+                case 'topLeft':
+                    newWidth = this._origWidth - offsetX;
+                    newHeight = this._origHeight - offsetY;
+                    this.updateDimension(newWidth, newHeight);
+                    this.updatePosition(this._origLeft + offsetX);
+                    break;
+                case 'topRight':
+                    newWidth = this._origWidth + offsetX;
+                    newHeight = this._origHeight - offsetY;
+                    this.updateDimension(newWidth, newHeight);
+                    break;
+                case 'bottomLeft':
+                    newWidth = this._origWidth - offsetX;
+                    newHeight = this._origHeight + offsetY;
+                    this.updateDimension(newWidth, newHeight);
+                    this.updatePosition(this._origLeft + offsetX);
+                    break;
+                case 'bottomRight':
+                    newWidth = this._origWidth + offsetX;
+                    newHeight = this._origHeight + offsetY;
+                    this.updateDimension(newWidth, newHeight);
+                    break;
+            }
+            this.pnlCropWrap.refresh();
+            this.updateMaskImage();
+        }
+        updatePosition(left, top) {
+            const { width: containerWidth, height: containerHeight } = this.pnlCropWrap.getBoundingClientRect();
+            const width = this.pnlCropMask.offsetWidth;
+            const height = this.pnlCropMask.offsetHeight;
+            if (left !== undefined) {
+                const validLeft = left < 0
+                    ? 0
+                    : left > containerWidth - width
+                        ? containerWidth - width
+                        : left;
+                this.pnlCropMask.style.left = validLeft + 'px';
+            }
+            if (top !== undefined) {
+                const validTop = top < 0
+                    ? 0
+                    : top > containerHeight - height
+                        ? containerHeight - height
+                        : top;
+                this.pnlCropMask.style.top = validTop + 'px';
+            }
+        }
+        updateDimension(newWidth, newHeight) {
+            const { width, height } = this.pnlCropWrap.getBoundingClientRect();
+            if (newWidth !== undefined) {
+                const validWidth = newWidth > width ? width : newWidth;
+                this.pnlCropMask.style.width = (validWidth || 5) + 'px';
+            }
+            if (newHeight !== undefined) {
+                const validHeight = newHeight > height ? height : newHeight;
+                this.pnlCropMask.style.height = (validHeight || 5) + 'px';
+            }
+        }
+        onMove(offsetX, offsetY) {
+            if (this.pnlCropMask.offsetWidth === this.offsetWidth &&
+                this.pnlCropMask.offsetHeight === this.offsetHeight)
+                return;
+            const { left, top } = this.validatePosition(offsetX, offsetY, this.pnlCropMask.offsetWidth, this.pnlCropMask.offsetHeight);
+            this.pnlCropMask.style.left = `${left}px`;
+            this.pnlCropMask.style.top = `${top}px`;
+            this.pnlCropWrap.refresh();
+            this.updateMaskImage();
+        }
+        validatePosition(left, top, width, height) {
+            let newLeft = 0;
+            let newTop = 0;
+            const { width: containerWidth, height: containerHeight } = this.pnlCropWrap.getBoundingClientRect();
+            newLeft =
+                left < 0
+                    ? 0
+                    : left > containerWidth - width
+                        ? containerWidth - width
+                        : left;
+            newTop =
+                top < 0
+                    ? 0
+                    : top > containerHeight - height
+                        ? containerHeight - height
+                        : top;
+            return { left: newLeft, top: newTop };
+        }
+        updateMaskImage() {
+            const { left, top, width, height } = this.getPercentValues();
+            const { width: containerWidth, height: containerHeight } = this.pnlCropWrap.getBoundingClientRect();
+            const leftVal = (left * containerWidth) / 100;
+            const topVal = (top * containerHeight) / 100;
+            const widthVal = (width * containerWidth) / 100;
+            const heightVal = (height * containerHeight) / 100;
+            const maskPosition = `${leftVal}px ${topVal}px`;
+            const maskSize = `${widthVal}px ${heightVal}px`;
+            const maskStyle = `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px) ${maskPosition} / ${maskSize} no-repeat, linear-gradient(rgba(0, 0, 0, 0.4) 0px, rgba(0, 0, 0, 0.4) 0px)`;
+            this.pnlCropWrap.style.mask = maskStyle;
+            this.pnlCropWrap.style.webkitMask = maskStyle;
+        }
+        getPercentValues() {
+            const { width: currentParentWidth, height: currentParentHeight } = this.pnlCropWrap.getBoundingClientRect();
+            const currentLeft = this.pnlCropMask.offsetLeft;
+            const currentTop = this.pnlCropMask.offsetTop;
+            const currentWidth = this.pnlCropMask.offsetWidth;
+            const currentHeight = this.pnlCropMask.offsetHeight;
+            return {
+                width: (currentWidth / currentParentWidth) * 100,
+                height: (currentHeight / currentParentHeight) * 100,
+                left: (currentLeft / currentParentWidth) * 100,
+                top: (currentTop / currentParentHeight) * 100,
+                aspectRatio: currentWidth / currentHeight
+            };
+        }
+        handleMouseUp(event) {
+            event.preventDefault();
+            this.isResizing = false;
+            this._mouseDownPos = null;
+            this.currentResizer = null;
+            document.removeEventListener('mousemove', this._mouseMoveHandler);
+            document.removeEventListener('mouseup', this._mouseUpHandler);
+        }
+        get url() {
+            var _a;
+            return (_a = this.data.url) !== null && _a !== void 0 ? _a : '';
+        }
+        set url(value) {
+            var _a;
+            this.data.url = value;
+            if (!value) {
+                this.img.url = 'https://placehold.co/600x400?text=No+Image';
+                return;
+            }
+            if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
+                this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
+            }
+            else {
+                this.img.url = this.data.url;
+            }
+        }
+        get cropData() {
+            return this.data.cropData;
+        }
+        set cropData(value) {
+            this.data.cropData = value;
+            this.renderCropUI();
+        }
+        get data() {
+            return this._data;
+        }
+        set data(value) {
+            this._data = value;
+            this.renderUI();
+        }
+        renderUI() {
+            const url = this.getImgSrc();
+            this.img.url = url;
+            this.renderCropUI();
+        }
+        renderCropUI() {
+            const cropData = this.data.cropData || null;
+            if (cropData) {
+                const { width, height, left, top } = cropData;
+                this.pnlCropMask.style.width = `${width}%`;
+                this.pnlCropMask.style.height = `${height}%`;
+                this.pnlCropMask.style.left = `${left}%`;
+                this.pnlCropMask.style.top = `${top}%`;
+                this.updateMaskImage();
+            }
+            else {
+                this.pnlCropMask.style.width = `100%`;
+                this.pnlCropMask.style.height = `100%`;
+                this.pnlCropMask.style.left = `0px`;
+                this.pnlCropMask.style.top = `0px`;
+            }
+        }
+        getImgSrc() {
+            var _a;
+            let url = '';
+            if (this.data.cid) {
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
+                url = ipfsGatewayUrl + this.data.cid;
+            }
+            else if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
+                url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
+            }
+            else {
+                url = this.data.url || 'https://placehold.co/600x400?text=No+Image';
+            }
+            return url;
+        }
+        onCrop() {
+            this.cropData = JSON.parse(JSON.stringify(this.getPercentValues()));
+        }
+        render() {
+            return (this.$render("i-panel", { id: 'pnlCropWrap', overflow: 'hidden', class: 'custom-mask' },
+                this.$render("i-panel", { id: 'pnlCropMask', width: '100%', height: '100%', maxWidth: '100%', maxHeight: '100%', position: 'absolute', zIndex: 1 },
+                    this.$render("i-panel", { class: 'angle angle-nw', tag: 'topLeft' }),
+                    this.$render("i-panel", { class: 'angle angle-ne', tag: 'topRight' }),
+                    this.$render("i-panel", { class: 'angle angle-sw', tag: 'bottomLeft' }),
+                    this.$render("i-panel", { class: 'angle angle-se', tag: 'bottomRight' }),
+                    this.$render("i-panel", { class: 'angle angle-e', tag: 'right' }),
+                    this.$render("i-panel", { class: 'angle angle-s', tag: 'bottom' }),
+                    this.$render("i-panel", { class: 'angle angle-w', tag: 'left' }),
+                    this.$render("i-panel", { class: 'angle angle-n', tag: 'top' })),
+                this.$render("i-image", { id: 'img', url: 'https://placehold.co/600x400?text=No+Image', maxHeight: '100%', maxWidth: '100%', class: 'custom-img' })));
+        }
+    };
+    ScomImageCrop = __decorate([
+        components_5.customModule,
+        (0, components_5.customElements)('i-scom-image-crop')
+    ], ScomImageCrop);
+    exports.default = ScomImageCrop;
+});
+define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/store.ts", "@scom/scom-image/data.json.ts", "@scom/scom-image/config/index.tsx", "@scom/scom-image/crop/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_6, store_3, data_json_1, index_1, index_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Theme = components_6.Styles.Theme.ThemeVars;
+    let ScomImage = class ScomImage extends components_6.Module {
         constructor(parent, options) {
             super(parent, options);
             this.data = {
@@ -554,7 +914,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             };
             this.isInitedLink = false;
             if (data_json_1.default)
-                (0, store_2.setDataFromSCConfig)(data_json_1.default);
+                (0, store_3.setDataFromSCConfig)(data_json_1.default);
         }
         init() {
             super.init();
@@ -562,9 +922,12 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             const lazyLoad = this.getAttribute('lazyLoad', true, false);
             if (!lazyLoad) {
                 let cid = this.getAttribute('cid', true);
-                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
                 this.url = this.getAttribute('url', true) || cid ? ipfsGatewayUrl + cid : "";
                 this.altText = this.getAttribute('altText', true);
+                const cropData = this.getAttribute('cropData', true);
+                if (cropData)
+                    this.cropData = cropData;
             }
         }
         static async create(options, parent) {
@@ -584,7 +947,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 return;
             }
             if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
@@ -606,6 +969,13 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         set link(value) {
             this.data.link = value;
+        }
+        get cropData() {
+            return this.data.cropData;
+        }
+        set cropData(value) {
+            this.data.cropData = value;
+            this.updateCropUI();
         }
         getConfigurators() {
             return [
@@ -681,15 +1051,17 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             return themeSchema;
         }
         _getActions(settingSchema, themeSchema) {
+            const self = this;
+            const parentToolbar = self.closest('ide-toolbar');
             const actions = [
                 {
-                    name: 'Settings',
-                    icon: 'cog',
+                    name: 'Crop',
+                    icon: 'crop',
                     command: (builder, userInputData) => {
                         let oldData = { url: '' };
                         return {
                             execute: () => {
-                                oldData = Object.assign({}, this.data);
+                                oldData = JSON.parse(JSON.stringify(this.data));
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData(userInputData);
                                 this.setData(userInputData);
@@ -704,13 +1076,65 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     },
                     customUI: {
                         render: (data, onConfirm) => {
-                            const vstack = new components_4.VStack(null, { gap: '1rem' });
-                            const config = new index_1.default(null, Object.assign({}, this.data));
-                            const hstack = new components_4.HStack(null, {
+                            const vstack = new components_6.VStack(null, { gap: '1rem' });
+                            const config = new index_2.default(null, Object.assign({}, this.data));
+                            const hstack = new components_6.HStack(null, {
                                 verticalAlignment: 'center',
                                 horizontalAlignment: 'end'
                             });
-                            const button = new components_4.Button(null, {
+                            const button = new components_6.Button(null, {
+                                caption: 'Confirm',
+                                width: '100%',
+                                height: 40,
+                                font: { color: Theme.colors.primary.contrastText }
+                            });
+                            hstack.append(button);
+                            vstack.append(config);
+                            vstack.append(hstack);
+                            if (parentToolbar)
+                                parentToolbar.classList.add('is-editing');
+                            button.onClick = async () => {
+                                if (onConfirm) {
+                                    config.onCrop();
+                                    onConfirm(true, Object.assign(Object.assign({}, this.data), config.data));
+                                    self.updateCropUI();
+                                    if (parentToolbar)
+                                        parentToolbar.classList.remove('is-editing');
+                                }
+                            };
+                            return vstack;
+                        }
+                    }
+                },
+                {
+                    name: 'Settings',
+                    icon: 'cog',
+                    command: (builder, userInputData) => {
+                        let oldData = { url: '' };
+                        return {
+                            execute: () => {
+                                oldData = JSON.parse(JSON.stringify(this.data));
+                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                    builder.setData(userInputData);
+                                this.setData(userInputData);
+                            },
+                            undo: () => {
+                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                    builder.setData(oldData);
+                                this.setData(oldData);
+                            },
+                            redo: () => { }
+                        };
+                    },
+                    customUI: {
+                        render: (data, onConfirm) => {
+                            const vstack = new components_6.VStack(null, { gap: '1rem' });
+                            const config = new index_1.default(null, Object.assign({}, this.data));
+                            const hstack = new components_6.HStack(null, {
+                                verticalAlignment: 'center',
+                                horizontalAlignment: 'end'
+                            });
+                            const button = new components_6.Button(null, {
                                 caption: 'Confirm',
                                 width: '100%',
                                 height: 40,
@@ -721,7 +1145,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                             vstack.append(hstack);
                             button.onClick = async () => {
                                 if (onConfirm)
-                                    onConfirm(true, Object.assign({}, config.data));
+                                    onConfirm(true, Object.assign(Object.assign({}, this.data), config.data));
                             };
                             return vstack;
                         }
@@ -736,16 +1160,17 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         async setData(value) {
             this.data = value;
             this.updateImg();
+            this.updateCropUI();
             this.pnlImage.background.color = value.backgroundColor || '';
         }
         updateImg() {
             var _a;
             if (this.data.cid) {
-                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
                 this.img.url = ipfsGatewayUrl + this.data.cid;
             }
             else if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
@@ -758,6 +1183,29 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             }
             const imgElm = this.img.querySelector('img');
             imgElm && imgElm.setAttribute('alt', this.data.altText || '');
+        }
+        updateCropUI() {
+            const cropData = this.data.cropData;
+            const imgTag = this.img.querySelector('img');
+            if (!imgTag)
+                return;
+            if (cropData) {
+                const { left, top, width, height, aspectRatio } = cropData;
+                this.pnlImage.classList.add('cropped-pnl');
+                const parentWidth = this.offsetWidth;
+                const right = left + width;
+                const bottom = top + height;
+                const scale = parentWidth / (width / 100 * parentWidth);
+                imgTag.style.transform = `scale(${scale}) translate(-${left}%, -${top}%)`;
+                imgTag.style.clipPath = `polygon(${left}% ${top}%, ${right}% ${top}%, ${right}% ${bottom}%, ${left}% ${bottom}%)`;
+                this.pnlImage.style.height = `${this.img.offsetWidth / aspectRatio}px`;
+            }
+            else {
+                this.pnlImage.classList.remove('cropped-pnl');
+                imgTag.style.clipPath = '';
+                imgTag.style.transform = '';
+                this.pnlImage.style.height = 'auto';
+            }
         }
         async connectedCallback() {
             super.connectedCallback();
@@ -778,6 +1226,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 this.img.display = "block";
                 this.img.width = this.tag.width;
                 this.img.height = this.tag.height;
+                this.updateCropUI();
             }
         }
         onImageClick() {
@@ -787,13 +1236,13 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         render() {
             return (this.$render("i-panel", null,
-                this.$render("i-vstack", { id: 'pnlImage' },
+                this.$render("i-vstack", { id: 'pnlImage', class: "img-wrapper" },
                     this.$render("i-image", { id: 'img', url: 'https://placehold.co/600x400?text=No+Image', maxHeight: "100%", maxWidth: "100%", class: "custom-img", onClick: this.onImageClick.bind(this) }))));
         }
     };
     ScomImage = __decorate([
-        components_4.customModule,
-        (0, components_4.customElements)('i-scom-image')
+        components_6.customModule,
+        (0, components_6.customElements)('i-scom-image')
     ], ScomImage);
     exports.default = ScomImage;
 });

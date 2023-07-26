@@ -12,11 +12,12 @@ import {
   HStack,
   Styles
 } from '@ijstech/components'
-import { IImage } from './interface'
+import { ICropData, IImage } from './interface'
 import { getIPFSGatewayUrl, setDataFromSCConfig } from './store'
 import configData from './data.json'
 import './index.css'
 import ScomImageConfig from './config/index'
+import ScomImageCrop from './crop/index'
 const Theme = Styles.Theme.ThemeVars
 
 interface ScomImageElement extends ControlElement {
@@ -25,12 +26,13 @@ interface ScomImageElement extends ControlElement {
   url: string;
   altText?: string;
   link?: string;
+  cropData?: ICropData;
 }
 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      ["i-scom-image"]: ScomImageElement;
+      ['i-scom-image']: ScomImageElement
     }
   }
 }
@@ -45,6 +47,7 @@ export default class ScomImage extends Module {
     backgroundColor: '',
     link: ''
   }
+
   private img: Image;
   private pnlImage: Panel;
 
@@ -77,6 +80,8 @@ export default class ScomImage extends Module {
       const ipfsGatewayUrl = getIPFSGatewayUrl()
       this.url = this.getAttribute('url', true) || cid ? ipfsGatewayUrl + cid : "";
       this.altText = this.getAttribute('altText', true);
+      const cropData = this.getAttribute('cropData', true);
+      if (cropData) this.cropData = cropData;
     }
   }
 
@@ -117,6 +122,14 @@ export default class ScomImage extends Module {
   }
   set link(value: string) {
     this.data.link = value;
+  }
+
+  get cropData() {
+    return this.data.cropData;
+  }
+  set cropData(value: ICropData) {
+    this.data.cropData = value;
+    this.updateCropUI()
   }
 
   getConfigurators() {
@@ -198,7 +211,57 @@ export default class ScomImage extends Module {
   }
 
   private _getActions(settingSchema: IDataSchema, themeSchema: IDataSchema) {
+    const self = this;
+    const parentToolbar = self.closest('ide-toolbar');
     const actions = [
+      {
+        name: 'Crop',
+        icon: 'crop',
+        command: (builder: any, userInputData: any) => {
+          let oldData: IImage = { url: '' };
+          return {
+            execute: () => {
+              oldData = JSON.parse(JSON.stringify(this.data));
+              if (builder?.setData) builder.setData(userInputData);
+              this.setData(userInputData);
+            },
+            undo: () => {
+              if (builder?.setData) builder.setData(oldData);
+              this.setData(oldData);
+            },
+            redo: () => { }
+          }
+        },
+        customUI: {
+          render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
+            const vstack = new VStack(null, {gap: '1rem'});
+            const config = new ScomImageCrop(null, {...this.data});
+            const hstack = new HStack(null, {
+              verticalAlignment: 'center',
+              horizontalAlignment: 'end'
+            });
+            const button = new Button(null, {
+              caption: 'Confirm',
+              width: '100%',
+              height: 40,
+              font: {color: Theme.colors.primary.contrastText}
+            });
+            hstack.append(button);
+            vstack.append(config);
+            vstack.append(hstack);
+            if (parentToolbar) parentToolbar.classList.add('is-editing');
+            button.onClick = async () => {
+              if (onConfirm) {
+                config.onCrop();
+                onConfirm(true, {...this.data, ...config.data});
+                self.updateCropUI()
+                if (parentToolbar) parentToolbar.classList.remove('is-editing');
+              }
+            }
+            return vstack;
+          }
+        }
+      },
       {
         name: 'Settings',
         icon: 'cog',
@@ -206,7 +269,7 @@ export default class ScomImage extends Module {
           let oldData: IImage = { url: '' };
           return {
             execute: () => {
-              oldData = { ...this.data };
+              oldData = JSON.parse(JSON.stringify(this.data));
               if (builder?.setData) builder.setData(userInputData);
               this.setData(userInputData);
             },
@@ -235,7 +298,7 @@ export default class ScomImage extends Module {
             vstack.append(config);
             vstack.append(hstack);
             button.onClick = async () => {
-              if (onConfirm) onConfirm(true, {...config.data});
+              if (onConfirm) onConfirm(true, {...this.data, ...config.data});
             }
             return vstack;
           }
@@ -252,6 +315,7 @@ export default class ScomImage extends Module {
   private async setData(value: IImage) {
     this.data = value;
     this.updateImg()
+    this.updateCropUI()
     this.pnlImage.background.color = value.backgroundColor || '';
   }
 
@@ -274,6 +338,28 @@ export default class ScomImage extends Module {
     imgElm && imgElm.setAttribute('alt', this.data.altText || '')
   }
 
+  private updateCropUI() {
+    const cropData = this.data.cropData
+    const imgTag = this.img.querySelector('img')
+    if (!imgTag) return
+    if (cropData) {
+      const { left, top, width, height, aspectRatio } = cropData
+      this.pnlImage.classList.add('cropped-pnl')
+      const parentWidth = this.offsetWidth
+      const right = left + width
+      const bottom = top + height
+      const scale = parentWidth / (width / 100 * parentWidth)
+      imgTag.style.transform = `scale(${scale}) translate(-${left}%, -${top}%)`;
+      imgTag.style.clipPath = `polygon(${left}% ${top}%, ${right}% ${top}%, ${right}% ${bottom}%, ${left}% ${bottom}%)`
+      this.pnlImage.style.height = `${this.img.offsetWidth / aspectRatio}px`
+    } else {
+      this.pnlImage.classList.remove('cropped-pnl')
+      imgTag.style.clipPath = ''
+      imgTag.style.transform = ''
+      this.pnlImage.style.height = 'auto'
+    }
+  }
+
   async connectedCallback() {
     super.connectedCallback();
     if (!this.isConnected) return;
@@ -294,6 +380,7 @@ export default class ScomImage extends Module {
       this.img.display = "block";
       this.img.width = this.tag.width;
       this.img.height = this.tag.height;
+      this.updateCropUI()
     }
   }
   
@@ -305,7 +392,7 @@ export default class ScomImage extends Module {
   render() {
     return (
       <i-panel>
-        <i-vstack id={'pnlImage'}>
+        <i-vstack id={'pnlImage'} class="img-wrapper">
           <i-image
             id={'img'}
             url={'https://placehold.co/600x400?text=No+Image'}

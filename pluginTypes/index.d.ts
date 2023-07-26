@@ -36,6 +36,14 @@ declare module "@scom/scom-image/interface.ts" {
         link?: string;
         photoId?: string;
         keyword?: string;
+        cropData?: ICropData;
+    }
+    export interface ICropData {
+        width: number;
+        height: number;
+        left: number;
+        top: number;
+        aspectRatio?: number;
     }
 }
 /// <amd-module name="@scom/scom-image/store.ts" />
@@ -118,7 +126,6 @@ declare module "@scom/scom-image/config/index.tsx" {
         private imgUploader;
         private imgLinkInput;
         private goButton;
-        private loadMoreButton;
         private searchInput;
         private typeList;
         private currentType;
@@ -157,9 +164,69 @@ declare module "@scom/scom-image/config/index.tsx" {
         render(): any;
     }
 }
+/// <amd-module name="@scom/scom-image/crop/index.css.ts" />
+declare module "@scom/scom-image/crop/index.css.ts" { }
+/// <amd-module name="@scom/scom-image/crop/index.tsx" />
+declare module "@scom/scom-image/crop/index.tsx" {
+    import { Module, Container, ControlElement } from '@ijstech/components';
+    import "@scom/scom-image/crop/index.css.ts";
+    import { IImage, ICropData } from "@scom/scom-image/interface.ts";
+    interface ScomImageCropElement extends ControlElement {
+        url: string;
+        cid?: string;
+        cropData?: ICropData;
+    }
+    global {
+        namespace JSX {
+            interface IntrinsicElements {
+                ['i-scom-image-crop']: ScomImageCropElement;
+            }
+        }
+    }
+    export default class ScomImageCrop extends Module {
+        private _data;
+        private _mouseDownPos;
+        private _origWidth;
+        private _origHeight;
+        private _origLeft;
+        private _origTop;
+        private isResizing;
+        private img;
+        private pnlCropWrap;
+        private pnlCropMask;
+        private currentResizer;
+        private _mouseMoveHandler;
+        private _mouseUpHandler;
+        constructor(parent?: Container, options?: any);
+        static create(options?: ScomImageCropElement, parent?: Container): Promise<ScomImageCrop>;
+        init(): void;
+        protected _handleMouseDown(event: MouseEvent, stopPropagation?: boolean): boolean;
+        private handleMouseMove;
+        private onResize;
+        private updatePosition;
+        private updateDimension;
+        private onMove;
+        private validatePosition;
+        private updateMaskImage;
+        private getPercentValues;
+        private handleMouseUp;
+        get url(): string;
+        set url(value: string);
+        get cropData(): ICropData;
+        set cropData(value: ICropData);
+        get data(): IImage;
+        set data(value: IImage);
+        private renderUI;
+        private renderCropUI;
+        private getImgSrc;
+        onCrop(): void;
+        render(): any;
+    }
+}
 /// <amd-module name="@scom/scom-image" />
 declare module "@scom/scom-image" {
     import { Module, Container, ControlElement, VStack } from '@ijstech/components';
+    import { ICropData } from "@scom/scom-image/interface.ts";
     import "@scom/scom-image/index.css.ts";
     interface ScomImageElement extends ControlElement {
         lazyLoad?: boolean;
@@ -167,11 +234,12 @@ declare module "@scom/scom-image" {
         url: string;
         altText?: string;
         link?: string;
+        cropData?: ICropData;
     }
     global {
         namespace JSX {
             interface IntrinsicElements {
-                ["i-scom-image"]: ScomImageElement;
+                ['i-scom-image']: ScomImageElement;
             }
         }
     }
@@ -198,6 +266,8 @@ declare module "@scom/scom-image" {
         set altText(value: string);
         get link(): string;
         set link(value: string);
+        get cropData(): ICropData;
+        set cropData(value: ICropData);
         getConfigurators(): {
             name: string;
             target: string;
@@ -224,6 +294,7 @@ declare module "@scom/scom-image" {
         private getData;
         private setData;
         private updateImg;
+        private updateCropUI;
         connectedCallback(): Promise<void>;
         private getTag;
         private setTag;

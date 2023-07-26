@@ -44,4 +44,13 @@ export interface IImage {
 	link?: string;
   photoId?: string;
   keyword?: string;
+  cropData?: ICropData;
+}
+
+export interface ICropData {
+  width: number;
+  height: number;
+  left: number;
+  top: number;
+  aspectRatio?: number;
 }
