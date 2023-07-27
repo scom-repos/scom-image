@@ -111,38 +111,42 @@ export default class ScomImageCrop extends Module {
         break
       case 'top':
         newHeight = this._origHeight - offsetY
-        this.updatePosition(undefined, this._origTop + offsetY)
         this.updateDimension(undefined, newHeight)
+        this.updatePosition(undefined, this._origTop + offsetY)
         break
       case 'right':
         newWidth = this._origWidth + offsetX
         this.updateDimension(newWidth)
+        this.updatePosition(this._origLeft + offsetX)
         break
       case 'bottom':
         newHeight = this._origHeight + offsetY
         this.updateDimension(undefined, newHeight)
+        this.updatePosition(undefined, this._origTop + offsetY)
         break
       case 'topLeft':
         newWidth = this._origWidth - offsetX
         newHeight = this._origHeight - offsetY
         this.updateDimension(newWidth, newHeight)
-        this.updatePosition(this._origLeft + offsetX)
+        this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY)
         break
       case 'topRight':
         newWidth = this._origWidth + offsetX
         newHeight = this._origHeight - offsetY
         this.updateDimension(newWidth, newHeight)
+        this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY)
         break
       case 'bottomLeft':
         newWidth = this._origWidth - offsetX
         newHeight = this._origHeight + offsetY
         this.updateDimension(newWidth, newHeight)
-        this.updatePosition(this._origLeft + offsetX)
+        this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY)
         break
       case 'bottomRight':
         newWidth = this._origWidth + offsetX
         newHeight = this._origHeight + offsetY
         this.updateDimension(newWidth, newHeight)
+        this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY)
         break
     }
     this.pnlCropWrap.refresh()
@@ -150,7 +154,8 @@ export default class ScomImageCrop extends Module {
   }
 
   private updatePosition(left?: number, top?: number) {
-    const { width: containerWidth, height: containerHeight } = this.pnlCropWrap.getBoundingClientRect()
+    const containerWidth = this.pnlCropWrap.offsetWidth
+    const containerHeight = this.pnlCropWrap.offsetHeight
     const width = this.pnlCropMask.offsetWidth
     const height = this.pnlCropMask.offsetHeight
     if (left !== undefined) {
@@ -172,13 +177,14 @@ export default class ScomImageCrop extends Module {
   }
 
   private updateDimension(newWidth?: number, newHeight?: number) {
-    const { width, height } = this.pnlCropWrap.getBoundingClientRect()
+    const containerWidth = this.pnlCropWrap.offsetWidth
+    const containerHeight = this.pnlCropWrap.offsetHeight
     if (newWidth !== undefined) {
-      const validWidth = newWidth > width ? width : newWidth
+      const validWidth = newWidth > containerWidth ? containerWidth : newWidth
       this.pnlCropMask.style.width = (validWidth || 5) + 'px'
     }
     if (newHeight !== undefined) {
-      const validHeight = newHeight > height ? height : newHeight
+      const validHeight = newHeight > containerHeight ? containerHeight : newHeight
       this.pnlCropMask.style.height = (validHeight || 5) + 'px'
     }
   }
@@ -202,16 +208,17 @@ export default class ScomImageCrop extends Module {
   }
 
   private validatePosition(
-    left: number,
-    top: number,
+    dx: number,
+    dy: number,
     width: number,
     height: number
   ) {
     let newLeft = 0
     let newTop = 0
-    const { width: containerWidth, height: containerHeight } =
-      this.pnlCropWrap.getBoundingClientRect()
-
+    let left = this._origLeft + dx
+    let top = this._origTop + dy
+    const containerWidth = this.pnlCropWrap.offsetWidth
+    const containerHeight = this.pnlCropWrap.offsetHeight
     newLeft =
       left < 0
         ? 0
@@ -227,22 +234,23 @@ export default class ScomImageCrop extends Module {
     return { left: newLeft, top: newTop }
   }
 
-  private updateMaskImage() {
-    const { left, top, width, height } = this.getPercentValues()
-    const { width: containerWidth, height: containerHeight } = this.pnlCropWrap.getBoundingClientRect()
+  private updateMaskImage(cropData?: ICropData) {
+    const { left, top, width, height } = cropData || this.getPercentValues()
+    const containerWidth = this.pnlCropWrap.offsetWidth;
+    const containerHeight = this.pnlCropWrap.offsetHeight;
     const leftVal = (left * containerWidth) / 100
     const topVal = (top * containerHeight) / 100
-    const widthVal = (width * containerWidth) / 100
-    const heightVal = (height * containerHeight) / 100
+    // TODO: update to percent
     const maskPosition = `${leftVal}px ${topVal}px`
-    const maskSize = `${widthVal}px ${heightVal}px`
+    const maskSize = `${width}% ${height}%`
     const maskStyle = `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px) ${maskPosition} / ${maskSize} no-repeat, linear-gradient(rgba(0, 0, 0, 0.4) 0px, rgba(0, 0, 0, 0.4) 0px)`
     this.pnlCropWrap.style.mask = maskStyle
     this.pnlCropWrap.style.webkitMask = maskStyle
   }
 
   private getPercentValues() {
-    const { width: currentParentWidth, height: currentParentHeight } = this.pnlCropWrap.getBoundingClientRect()
+    const currentParentWidth = this.pnlCropWrap.offsetWidth;
+    const currentParentHeight = this.pnlCropWrap.offsetHeight;
     const currentLeft = this.pnlCropMask.offsetLeft
     const currentTop = this.pnlCropMask.offsetTop
     const currentWidth = this.pnlCropMask.offsetWidth
@@ -312,7 +320,8 @@ export default class ScomImageCrop extends Module {
       this.pnlCropMask.style.height = `${height}%`
       this.pnlCropMask.style.left = `${left}%`
       this.pnlCropMask.style.top = `${top}%`
-      this.updateMaskImage()
+      this.pnlCropWrap.refresh()
+      this.updateMaskImage({ width, height, left, top })
     } else {
       this.pnlCropMask.style.width = `100%`
       this.pnlCropMask.style.height = `100%`
