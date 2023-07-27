@@ -247,6 +247,7 @@ declare module "@scom/scom-image" {
         private data;
         private img;
         private pnlImage;
+        private pnlImgWrap;
         private isInitedLink;
         tag: any;
         readonly onConfirm: () => Promise<void>;

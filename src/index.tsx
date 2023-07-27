@@ -50,10 +50,11 @@ export default class ScomImage extends Module {
 
   private img: Image;
   private pnlImage: Panel;
+  private pnlImgWrap: Panel;
 
   private isInitedLink: boolean = false;
 
-  tag: any;
+  tag: any = {};
 
   readonly onConfirm: () => Promise<void>;
   readonly onDiscard: () => Promise<void>;
@@ -345,18 +346,22 @@ export default class ScomImage extends Module {
     if (cropData) {
       const { left, top, width, height, aspectRatio } = cropData
       this.pnlImage.classList.add('cropped-pnl')
-      const parentWidth = this.offsetWidth
+      const parentWidth = this.pnlImage.offsetWidth
       const right = left + width
       const bottom = top + height
       const scale = parentWidth / (width / 100 * parentWidth)
       imgTag.style.transform = `scale(${scale}) translate(-${left}%, -${top}%)`;
       imgTag.style.clipPath = `polygon(${left}% ${top}%, ${right}% ${top}%, ${right}% ${bottom}%, ${left}% ${bottom}%)`
-      this.pnlImage.style.height = `${this.img.offsetWidth / aspectRatio}px`
+      // this.pnlImage.style.maxHeight = `${this.pnlImage.offsetWidth / aspectRatio}px`
+      if (this.pnlImgWrap)
+        this.pnlImgWrap.style.aspectRatio = `${aspectRatio} / 1`
     } else {
       this.pnlImage.classList.remove('cropped-pnl')
       imgTag.style.clipPath = ''
       imgTag.style.transform = ''
-      this.pnlImage.style.height = 'auto'
+      // this.pnlImage.style.maxHeight = 'auto'
+      if (this.pnlImgWrap)
+        this.pnlImgWrap.style.aspectRatio = ``
     }
   }
 
@@ -380,7 +385,7 @@ export default class ScomImage extends Module {
       this.img.display = "block";
       this.img.width = this.tag.width;
       this.img.height = this.tag.height;
-      this.updateCropUI()
+      this.updateCropUI();
     }
   }
   
@@ -391,7 +396,7 @@ export default class ScomImage extends Module {
 
   render() {
     return (
-      <i-panel>
+      <i-panel id={'pnlImgWrap'}>
         <i-vstack id={'pnlImage'} class="img-wrapper">
           <i-image
             id={'img'}

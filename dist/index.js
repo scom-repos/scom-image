@@ -672,45 +672,50 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
                     break;
                 case 'top':
                     newHeight = this._origHeight - offsetY;
-                    this.updatePosition(undefined, this._origTop + offsetY);
                     this.updateDimension(undefined, newHeight);
+                    this.updatePosition(undefined, this._origTop + offsetY);
                     break;
                 case 'right':
                     newWidth = this._origWidth + offsetX;
                     this.updateDimension(newWidth);
+                    this.updatePosition(this._origLeft + offsetX);
                     break;
                 case 'bottom':
                     newHeight = this._origHeight + offsetY;
                     this.updateDimension(undefined, newHeight);
+                    this.updatePosition(undefined, this._origTop + offsetY);
                     break;
                 case 'topLeft':
                     newWidth = this._origWidth - offsetX;
                     newHeight = this._origHeight - offsetY;
                     this.updateDimension(newWidth, newHeight);
-                    this.updatePosition(this._origLeft + offsetX);
+                    this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY);
                     break;
                 case 'topRight':
                     newWidth = this._origWidth + offsetX;
                     newHeight = this._origHeight - offsetY;
                     this.updateDimension(newWidth, newHeight);
+                    this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY);
                     break;
                 case 'bottomLeft':
                     newWidth = this._origWidth - offsetX;
                     newHeight = this._origHeight + offsetY;
                     this.updateDimension(newWidth, newHeight);
-                    this.updatePosition(this._origLeft + offsetX);
+                    this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY);
                     break;
                 case 'bottomRight':
                     newWidth = this._origWidth + offsetX;
                     newHeight = this._origHeight + offsetY;
                     this.updateDimension(newWidth, newHeight);
+                    this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY);
                     break;
             }
             this.pnlCropWrap.refresh();
             this.updateMaskImage();
         }
         updatePosition(left, top) {
-            const { width: containerWidth, height: containerHeight } = this.pnlCropWrap.getBoundingClientRect();
+            const containerWidth = this.pnlCropWrap.offsetWidth;
+            const containerHeight = this.pnlCropWrap.offsetHeight;
             const width = this.pnlCropMask.offsetWidth;
             const height = this.pnlCropMask.offsetHeight;
             if (left !== undefined) {
@@ -731,13 +736,14 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             }
         }
         updateDimension(newWidth, newHeight) {
-            const { width, height } = this.pnlCropWrap.getBoundingClientRect();
+            const containerWidth = this.pnlCropWrap.offsetWidth;
+            const containerHeight = this.pnlCropWrap.offsetHeight;
             if (newWidth !== undefined) {
-                const validWidth = newWidth > width ? width : newWidth;
+                const validWidth = newWidth > containerWidth ? containerWidth : newWidth;
                 this.pnlCropMask.style.width = (validWidth || 5) + 'px';
             }
             if (newHeight !== undefined) {
-                const validHeight = newHeight > height ? height : newHeight;
+                const validHeight = newHeight > containerHeight ? containerHeight : newHeight;
                 this.pnlCropMask.style.height = (validHeight || 5) + 'px';
             }
         }
@@ -751,10 +757,13 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             this.pnlCropWrap.refresh();
             this.updateMaskImage();
         }
-        validatePosition(left, top, width, height) {
+        validatePosition(dx, dy, width, height) {
             let newLeft = 0;
             let newTop = 0;
-            const { width: containerWidth, height: containerHeight } = this.pnlCropWrap.getBoundingClientRect();
+            let left = this._origLeft + dx;
+            let top = this._origTop + dy;
+            const containerWidth = this.pnlCropWrap.offsetWidth;
+            const containerHeight = this.pnlCropWrap.offsetHeight;
             newLeft =
                 left < 0
                     ? 0
@@ -769,21 +778,22 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
                         : top;
             return { left: newLeft, top: newTop };
         }
-        updateMaskImage() {
-            const { left, top, width, height } = this.getPercentValues();
-            const { width: containerWidth, height: containerHeight } = this.pnlCropWrap.getBoundingClientRect();
+        updateMaskImage(cropData) {
+            const { left, top, width, height } = cropData || this.getPercentValues();
+            const containerWidth = this.pnlCropWrap.offsetWidth;
+            const containerHeight = this.pnlCropWrap.offsetHeight;
             const leftVal = (left * containerWidth) / 100;
             const topVal = (top * containerHeight) / 100;
-            const widthVal = (width * containerWidth) / 100;
-            const heightVal = (height * containerHeight) / 100;
+            // TODO: update to percent
             const maskPosition = `${leftVal}px ${topVal}px`;
-            const maskSize = `${widthVal}px ${heightVal}px`;
+            const maskSize = `${width}% ${height}%`;
             const maskStyle = `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px) ${maskPosition} / ${maskSize} no-repeat, linear-gradient(rgba(0, 0, 0, 0.4) 0px, rgba(0, 0, 0, 0.4) 0px)`;
             this.pnlCropWrap.style.mask = maskStyle;
             this.pnlCropWrap.style.webkitMask = maskStyle;
         }
         getPercentValues() {
-            const { width: currentParentWidth, height: currentParentHeight } = this.pnlCropWrap.getBoundingClientRect();
+            const currentParentWidth = this.pnlCropWrap.offsetWidth;
+            const currentParentHeight = this.pnlCropWrap.offsetHeight;
             const currentLeft = this.pnlCropMask.offsetLeft;
             const currentTop = this.pnlCropMask.offsetTop;
             const currentWidth = this.pnlCropMask.offsetWidth;
@@ -850,7 +860,8 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
                 this.pnlCropMask.style.height = `${height}%`;
                 this.pnlCropMask.style.left = `${left}%`;
                 this.pnlCropMask.style.top = `${top}%`;
-                this.updateMaskImage();
+                this.pnlCropWrap.refresh();
+                this.updateMaskImage({ width, height, left, top });
             }
             else {
                 this.pnlCropMask.style.width = `100%`;
@@ -913,6 +924,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 link: ''
             };
             this.isInitedLink = false;
+            this.tag = {};
             if (data_json_1.default)
                 (0, store_3.setDataFromSCConfig)(data_json_1.default);
         }
@@ -1192,19 +1204,23 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             if (cropData) {
                 const { left, top, width, height, aspectRatio } = cropData;
                 this.pnlImage.classList.add('cropped-pnl');
-                const parentWidth = this.offsetWidth;
+                const parentWidth = this.pnlImage.offsetWidth;
                 const right = left + width;
                 const bottom = top + height;
                 const scale = parentWidth / (width / 100 * parentWidth);
                 imgTag.style.transform = `scale(${scale}) translate(-${left}%, -${top}%)`;
                 imgTag.style.clipPath = `polygon(${left}% ${top}%, ${right}% ${top}%, ${right}% ${bottom}%, ${left}% ${bottom}%)`;
-                this.pnlImage.style.height = `${this.img.offsetWidth / aspectRatio}px`;
+                // this.pnlImage.style.maxHeight = `${this.pnlImage.offsetWidth / aspectRatio}px`
+                if (this.pnlImgWrap)
+                    this.pnlImgWrap.style.aspectRatio = `${aspectRatio} / 1`;
             }
             else {
                 this.pnlImage.classList.remove('cropped-pnl');
                 imgTag.style.clipPath = '';
                 imgTag.style.transform = '';
-                this.pnlImage.style.height = 'auto';
+                // this.pnlImage.style.maxHeight = 'auto'
+                if (this.pnlImgWrap)
+                    this.pnlImgWrap.style.aspectRatio = ``;
             }
         }
         async connectedCallback() {
@@ -1235,7 +1251,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             window.open(this.data.link, '_blank');
         }
         render() {
-            return (this.$render("i-panel", null,
+            return (this.$render("i-panel", { id: 'pnlImgWrap' },
                 this.$render("i-vstack", { id: 'pnlImage', class: "img-wrapper" },
                     this.$render("i-image", { id: 'img', url: 'https://placehold.co/600x400?text=No+Image', maxHeight: "100%", maxWidth: "100%", class: "custom-img", onClick: this.onImageClick.bind(this) }))));
         }
