@@ -780,12 +780,15 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
         }
         updateMaskImage(cropData) {
             const { left, top, width, height } = cropData || this.getPercentValues();
-            const containerWidth = this.pnlCropWrap.offsetWidth;
-            const containerHeight = this.pnlCropWrap.offsetHeight;
-            const leftVal = (left * containerWidth) / 100;
-            const topVal = (top * containerHeight) / 100;
-            // TODO: update to percent
-            const maskPosition = `${leftVal}px ${topVal}px`;
+            // const containerWidth = this.pnlCropWrap.offsetWidth
+            // const containerHeight = this.pnlCropWrap.offsetHeight
+            // const leftVal = (left * containerWidth) / 100
+            // const topVal = (top * containerHeight) / 100
+            const xSpaces = 100 - width;
+            const x = xSpaces > 0 ? (left / xSpaces) * 100 : 0;
+            const ySpaces = 100 - height;
+            const y = ySpaces > 0 ? (top / ySpaces) * 100 : 0;
+            const maskPosition = `${x}% ${y}%`;
             const maskSize = `${width}% ${height}%`;
             const maskStyle = `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px) ${maskPosition} / ${maskSize} no-repeat, linear-gradient(rgba(0, 0, 0, 0.4) 0px, rgba(0, 0, 0, 0.4) 0px)`;
             this.pnlCropWrap.style.mask = maskStyle;
