@@ -610,6 +610,7 @@ define("@scom/scom-image/crop/index.css.ts", ["require", "exports", "@ijstech/co
 define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/store.ts", "@scom/scom-image/crop/index.css.ts"], function (require, exports, components_5, store_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    const MIN_WIDTH = 10;
     let ScomImageCrop = class ScomImageCrop extends components_5.Module {
         constructor(parent, options) {
             super(parent, options);
@@ -664,87 +665,87 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             const dock = this.currentResizer.tag;
             let newWidth = 0;
             let newHeight = 0;
+            const containerWidth = this.pnlCropWrap.offsetWidth;
+            const containerHeight = this.pnlCropWrap.offsetHeight;
+            const maxWidthRight = containerWidth - this._origLeft;
+            const maxWidthLeft = this._origLeft + this._origWidth;
+            const maxHeightTop = this._origTop + this._origHeight;
+            const maxHeightBottom = containerHeight - this._origTop;
             switch (dock) {
                 case 'left':
                     newWidth = this._origWidth - offsetX;
-                    this.updateDimension(newWidth);
+                    this.updateDimension({ maxWidth: maxWidthLeft }, newWidth);
                     this.updatePosition(this._origLeft + offsetX);
                     break;
                 case 'top':
                     newHeight = this._origHeight - offsetY;
-                    this.updateDimension(undefined, newHeight);
+                    this.updateDimension({ maxHeight: maxHeightTop }, undefined, newHeight);
                     this.updatePosition(undefined, this._origTop + offsetY);
                     break;
                 case 'right':
                     newWidth = this._origWidth + offsetX;
-                    this.updateDimension(newWidth);
-                    this.updatePosition(this._origLeft + offsetX);
+                    this.updateDimension({ maxWidth: maxWidthRight }, newWidth);
                     break;
                 case 'bottom':
                     newHeight = this._origHeight + offsetY;
-                    this.updateDimension(undefined, newHeight);
-                    this.updatePosition(undefined, this._origTop + offsetY);
+                    this.updateDimension({ maxHeight: maxHeightBottom }, undefined, newHeight);
                     break;
                 case 'topLeft':
                     newWidth = this._origWidth - offsetX;
                     newHeight = this._origHeight - offsetY;
-                    this.updateDimension(newWidth, newHeight);
+                    this.updateDimension({ maxWidth: maxWidthLeft, maxHeight: maxHeightTop }, newWidth, newHeight);
                     this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY);
                     break;
                 case 'topRight':
                     newWidth = this._origWidth + offsetX;
                     newHeight = this._origHeight - offsetY;
-                    this.updateDimension(newWidth, newHeight);
-                    this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY);
+                    this.updateDimension({ maxWidth: maxWidthRight, maxHeight: maxHeightTop }, newWidth, newHeight);
+                    this.updatePosition(undefined, this._origTop + offsetY);
                     break;
                 case 'bottomLeft':
                     newWidth = this._origWidth - offsetX;
                     newHeight = this._origHeight + offsetY;
-                    this.updateDimension(newWidth, newHeight);
-                    this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY);
+                    this.updateDimension({ maxWidth: maxWidthLeft, maxHeight: maxHeightBottom }, newWidth, newHeight);
+                    this.updatePosition(this._origLeft + offsetX);
                     break;
                 case 'bottomRight':
                     newWidth = this._origWidth + offsetX;
                     newHeight = this._origHeight + offsetY;
-                    this.updateDimension(newWidth, newHeight);
-                    this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY);
+                    this.updateDimension({ maxWidth: maxWidthRight, maxHeight: maxHeightBottom }, newWidth, newHeight);
                     break;
             }
             this.pnlCropWrap.refresh();
             this.updateMaskImage();
         }
         updatePosition(left, top) {
-            const containerWidth = this.pnlCropWrap.offsetWidth;
-            const containerHeight = this.pnlCropWrap.offsetHeight;
-            const width = this.pnlCropMask.offsetWidth;
-            const height = this.pnlCropMask.offsetHeight;
             if (left !== undefined) {
                 const validLeft = left < 0
                     ? 0
-                    : left > containerWidth - width
-                        ? containerWidth - width
+                    : left > this._origLeft + this._origWidth
+                        ? (this._origLeft + this._origWidth - 15)
                         : left;
                 this.pnlCropMask.style.left = validLeft + 'px';
             }
             if (top !== undefined) {
                 const validTop = top < 0
                     ? 0
-                    : top > containerHeight - height
-                        ? containerHeight - height
+                    : top > this._origTop + this._origHeight
+                        ? (this._origTop + this._origHeight - 15)
                         : top;
                 this.pnlCropMask.style.top = validTop + 'px';
             }
         }
-        updateDimension(newWidth, newHeight) {
+        updateDimension(maxValues, newWidth, newHeight) {
             const containerWidth = this.pnlCropWrap.offsetWidth;
             const containerHeight = this.pnlCropWrap.offsetHeight;
+            const { maxWidth = containerWidth, maxHeight = containerHeight } = maxValues;
             if (newWidth !== undefined) {
-                const validWidth = newWidth > containerWidth ? containerWidth : newWidth;
-                this.pnlCropMask.style.width = (validWidth || 5) + 'px';
+                const validWidth = newWidth > maxWidth ? maxWidth : newWidth;
+                this.pnlCropMask.style.width = Math.max(MIN_WIDTH, validWidth) + 'px';
             }
             if (newHeight !== undefined) {
-                const validHeight = newHeight > containerHeight ? containerHeight : newHeight;
-                this.pnlCropMask.style.height = (validHeight || 5) + 'px';
+                const validHeight = newHeight > maxHeight ? maxHeight : newHeight;
+                this.pnlCropMask.style.height = Math.max(MIN_WIDTH, validHeight) + 'px';
             }
         }
         onMove(offsetX, offsetY) {
