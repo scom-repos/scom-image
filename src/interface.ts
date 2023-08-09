@@ -47,10 +47,17 @@ export interface IImage {
   cropData?: ICropData;
 }
 
+export enum CropType {
+  PREEFORM = 'Freeform',
+  CIRCLE = 'Circle'
+}
+
 export interface ICropData {
   width: number;
   height: number;
   left: number;
   top: number;
-  aspectRatio?: number;
+  aspectRatio?: string;
+  type: CropType;
+  locked?: boolean;
 }
