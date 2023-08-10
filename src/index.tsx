@@ -360,7 +360,10 @@ export default class ScomImage extends Module {
       } else {
         imgTag.style.transform = `scale(${scale}) translate(-${left}%, -${top}%)`;
         imgTag.style.clipPath = `polygon(${left}% ${top}%, ${right}% ${top}%, ${right}% ${bottom}%, ${left}% ${bottom}%)`
-        this.pnlImage && (this.pnlImage.style.aspectRatio = `${aspectRatio.replace(':', '/')}`)
+        if (this.pnlImage && typeof(aspectRatio) == 'string')
+          this.pnlImage.style.aspectRatio = `${aspectRatio.replace(':', '/')}`
+        else
+          this.pnlImage.style.aspectRatio = `${aspectRatio}/1`
       }
     } else {
       this.pnlImage.classList.remove('cropped-pnl')
