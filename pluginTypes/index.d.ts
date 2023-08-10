@@ -38,12 +38,18 @@ declare module "@scom/scom-image/interface.ts" {
         keyword?: string;
         cropData?: ICropData;
     }
+    export enum CropType {
+        PREEFORM = "Freeform",
+        CIRCLE = "Circle"
+    }
     export interface ICropData {
         width: number;
         height: number;
         left: number;
         top: number;
-        aspectRatio?: number;
+        aspectRatio?: string;
+        type: CropType;
+        locked?: boolean;
     }
 }
 /// <amd-module name="@scom/scom-image/store.ts" />
@@ -191,12 +197,20 @@ declare module "@scom/scom-image/crop/index.tsx" {
         private _origLeft;
         private _origTop;
         private isResizing;
+        private _cropType;
+        private _isLockedRatio;
         private img;
         private pnlCropWrap;
         private pnlCropMask;
         private currentResizer;
+        private ratioInput;
+        private typeCombobox;
+        private lockedCheck;
+        private pnlResizeWrap;
         private _mouseMoveHandler;
         private _mouseUpHandler;
+        private timer;
+        private isShown;
         constructor(parent?: Container, options?: any);
         static create(options?: ScomImageCropElement, parent?: Container): Promise<ScomImageCrop>;
         init(): void;
@@ -214,12 +228,21 @@ declare module "@scom/scom-image/crop/index.tsx" {
         set url(value: string);
         get cropData(): ICropData;
         set cropData(value: ICropData);
+        get isCircleType(): boolean;
+        get isFixedRatio(): boolean;
+        get aspectRatio(): string;
         get data(): IImage;
         set data(value: IImage);
         private renderUI;
         private renderCropUI;
+        private resetMask;
+        private updateFormUI;
         private getImgSrc;
         onCrop(): void;
+        private onTypeChanged;
+        private renderTypeUI;
+        private onInputChanged;
+        private onLockChanged;
         render(): any;
     }
 }

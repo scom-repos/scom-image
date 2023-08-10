@@ -13,12 +13,36 @@ Styles.cssRule('i-scom-image-crop', {
       maxWidth: 'none',
       maxHeight: 'none'
     },
+    '.is-circle': {
+      cursor: 'move',
+      borderRadius: '50%',
+      border: `2px solid ${Theme.colors.primary.main}`,
+      $nest: {
+        ".angle": {
+          borderRadius: '50%',
+          background: Theme.colors.primary.main,
+          border: '2px solid #fff',
+          marginTop: -8
+        },
+        ".angle-center": {
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          border: '2px solid #fff',
+          display: 'block',
+          cursor: 'pointer'
+        }
+      }
+    },
+    ".angle-center": {
+      display: 'none'
+    },
     ".angle": {
       zIndex: 2,
       position: 'absolute',
       width: '16px',
       height: '16px',
-      background: 'none 0px center !important',
+      background: 'none 0px center',
       border: `6px solid ${Theme.colors.primary.main}`,
       borderRadius: 0
     },
@@ -100,6 +124,11 @@ Styles.cssRule('i-scom-image-crop', {
     ".custom-mask": {
       mask: maskStyle,
       '-webkit-mask': maskStyle
+    },
+    '#pnlCropMask': {
+      aspectRatio: '1 / 1',
+      minWidth: 50,
+      minHeight: 50
     }
   }
 });

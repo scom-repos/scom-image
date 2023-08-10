@@ -12,7 +12,7 @@ import {
   HStack,
   Styles
 } from '@ijstech/components'
-import { ICropData, IImage } from './interface'
+import { CropType, ICropData, IImage } from './interface'
 import { getIPFSGatewayUrl, setDataFromSCConfig } from './store'
 import configData from './data.json'
 import './index.css'
@@ -344,24 +344,29 @@ export default class ScomImage extends Module {
     const imgTag = this.img.querySelector('img')
     if (!imgTag) return
     if (cropData) {
-      const { left, top, width, height, aspectRatio } = cropData
+      const { left, top, width, height, aspectRatio, type = CropType.PREEFORM } = cropData
       this.pnlImage.classList.add('cropped-pnl')
       const parentWidth = this.pnlImage.offsetWidth
       const right = left + width
       const bottom = top + height
       const scale = parentWidth / (width / 100 * parentWidth)
-      imgTag.style.transform = `scale(${scale}) translate(-${left}%, -${top}%)`;
-      imgTag.style.clipPath = `polygon(${left}% ${top}%, ${right}% ${top}%, ${right}% ${bottom}%, ${left}% ${bottom}%)`
-      // this.pnlImage.style.maxHeight = `${this.pnlImage.offsetWidth / aspectRatio}px`
-      if (this.pnlImgWrap)
-        this.pnlImgWrap.style.aspectRatio = `${aspectRatio} / 1`
+      if (type === CropType.CIRCLE) {
+        imgTag.style.transform = `scale(${scale}) translate(-${left}%, -${top}%)`;
+        const x = left + width / 2
+        const y = top + height / 2
+        const radius = `${(width / 100 * parentWidth) / 2}px`
+        imgTag.style.clipPath = `circle(${radius} at ${x}% ${y}%)`
+        this.pnlImage && (this.pnlImage.style.aspectRatio = `1 / 1`)
+      } else {
+        imgTag.style.transform = `scale(${scale}) translate(-${left}%, -${top}%)`;
+        imgTag.style.clipPath = `polygon(${left}% ${top}%, ${right}% ${top}%, ${right}% ${bottom}%, ${left}% ${bottom}%)`
+        this.pnlImage && (this.pnlImage.style.aspectRatio = `${aspectRatio.replace(':', '/')}`)
+      }
     } else {
       this.pnlImage.classList.remove('cropped-pnl')
       imgTag.style.clipPath = ''
       imgTag.style.transform = ''
-      // this.pnlImage.style.maxHeight = 'auto'
-      if (this.pnlImgWrap)
-        this.pnlImgWrap.style.aspectRatio = ``
+      this.pnlImgWrap && (this.pnlImgWrap.style.aspectRatio = ``)
     }
   }
 
@@ -396,12 +401,11 @@ export default class ScomImage extends Module {
 
   render() {
     return (
-      <i-panel id={'pnlImgWrap'}>
+      <i-panel id={'pnlImgWrap'} height="100%">
         <i-vstack id={'pnlImage'} class="img-wrapper">
           <i-image
             id={'img'}
             url={'https://placehold.co/600x400?text=No+Image'}
-            maxHeight="100%" maxWidth="100%"
             class="custom-img"
             onClick={this.onImageClick.bind(this)}
           ></i-image>
