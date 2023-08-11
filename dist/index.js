@@ -721,13 +721,11 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             const maxWidthLeft = this._origLeft + this._origWidth;
             const maxHeightTop = this._origTop + this._origHeight;
             const maxHeightBottom = containerHeight - this._origTop;
-            let maxWidth = 0;
-            let maxHeight = 0;
+            this.resetCurrentPos();
             switch (dock) {
                 case 'left':
                     newWidth = this._origWidth - offsetX;
-                    maxWidth = this.isFixedRatio ? maxWidthRight : maxWidthLeft;
-                    this.updateDimension({ maxWidth: maxWidth, maxHeight: maxHeightBottom }, newWidth);
+                    this.updateDimension({ maxWidth: maxWidthLeft, maxHeight: maxHeightBottom }, newWidth);
                     this.updatePosition(this._origLeft + offsetX);
                     break;
                 case 'top':
@@ -737,6 +735,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
                         this.updatePosition(this._origLeft + offsetY / 2, this._origTop + offsetY / 2);
                     }
                     else {
+                        // TODO: check
                         this.updateDimension({ maxHeight: maxHeightTop }, undefined, newHeight);
                         this.updatePosition(undefined, this._origTop + offsetY);
                     }
@@ -752,9 +751,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
                 case 'topLeft':
                     newWidth = this._origWidth - offsetX;
                     newHeight = this._origHeight - offsetY;
-                    maxWidth = this.isFixedRatio ? maxWidthRight : maxWidthLeft;
-                    maxHeight = this.isFixedRatio ? maxHeightBottom : maxHeightTop;
-                    this.updateDimension({ maxWidth, maxHeight }, newWidth, newHeight);
+                    this.updateDimension({ maxWidth: maxWidthLeft, maxHeight: maxHeightTop }, newWidth, newHeight);
                     this.updatePosition(this._origLeft + offsetX, this._origTop + offsetY);
                     break;
                 case 'topRight':
@@ -766,8 +763,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
                 case 'bottomLeft':
                     newWidth = this._origWidth - offsetX;
                     newHeight = this._origHeight + offsetY;
-                    maxWidth = this.isFixedRatio ? maxWidthRight : maxWidthLeft;
-                    this.updateDimension({ maxWidth, maxHeight: maxHeightBottom }, newWidth, newHeight);
+                    this.updateDimension({ maxWidth: maxWidthLeft, maxHeight: maxHeightBottom }, newWidth, newHeight);
                     this.updatePosition(this._origLeft + offsetX);
                     break;
                 case 'bottomRight':
@@ -780,27 +776,49 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             this.updateMaskImage();
         }
         updatePosition(left, top) {
+            this.resetCurrentPos();
             const currentWidth = this.pnlCropMask.offsetWidth;
             const isFullCircle = this.isCircleType && this.pnlCropMask.offsetWidth === this.pnlCropWrap.offsetHeight;
-            if (this._isLockedRatio || currentWidth === MIN_WIDTH || isFullCircle) {
-                return; // TODO: check maxLeft when locking ratio
+            if (currentWidth === MIN_WIDTH || isFullCircle) {
+                return;
             }
             if (left !== undefined) {
-                const validLeft = left < 0
-                    ? 0
-                    : left > this._origLeft + this._origWidth
-                        ? (this._origLeft + this._origWidth - MIN_WIDTH)
-                        : left;
-                this.pnlCropMask.style.left = validLeft + 'px';
+                if (this._isLockedRatio && !this.isCircleType) {
+                    this.pnlCropMask.style.left = 'auto';
+                    const rightPos = this.pnlCropWrap.offsetWidth - (this._origLeft + this._origWidth);
+                    this.pnlCropMask.style.right = `${rightPos}px`;
+                }
+                else {
+                    const validLeft = left < 0
+                        ? 0
+                        : left > this._origLeft + this._origWidth
+                            ? (this._origLeft + this._origWidth - MIN_WIDTH)
+                            : left;
+                    this.pnlCropMask.style.left = `${validLeft}px`;
+                }
             }
             if (top !== undefined) {
-                const validTop = top < 0
-                    ? 0
-                    : top > this._origTop + this._origHeight
-                        ? (this._origTop + this._origHeight - MIN_WIDTH)
-                        : top;
-                this.pnlCropMask.style.top = validTop + 'px';
+                if (this._isLockedRatio && !this.isCircleType) {
+                    this.pnlCropMask.style.top = 'auto';
+                    const bottomPos = this.pnlCropWrap.offsetHeight - (this._origTop + this._origHeight);
+                    this.pnlCropMask.style.bottom = `${bottomPos}px`;
+                }
+                else {
+                    const validTop = top < 0
+                        ? 0
+                        : top > this._origTop + this._origHeight
+                            ? (this._origTop + this._origHeight - MIN_WIDTH)
+                            : top;
+                    this.pnlCropMask.style.top = `${validTop}px`;
+                    this.pnlCropMask.style.bottom = '';
+                }
             }
+        }
+        resetCurrentPos() {
+            this.pnlCropMask.style.left = `${this.pnlCropMask.offsetLeft}px`;
+            this.pnlCropMask.style.right = '';
+            this.pnlCropMask.style.top = `${this.pnlCropMask.offsetTop}px`;
+            this.pnlCropMask.style.bottom = '';
         }
         updateDimension(maxValues, newWidth, newHeight) {
             const containerWidth = this.pnlCropWrap.offsetWidth;
@@ -830,6 +848,10 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
                     const minWal = Math.min(maxWidth, maxHeight);
                     maxWidth = maxHeight = minWal;
                 }
+            }
+            else {
+                this.pnlCropMask.style.maxHeight = maxHeight + 'px';
+                this.pnlCropMask.style.maxWidth = maxWidth + 'px';
             }
             if (newWidth !== undefined) {
                 const validWidth = newWidth > maxWidth ? maxWidth : newWidth;

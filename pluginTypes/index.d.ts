@@ -218,6 +218,7 @@ declare module "@scom/scom-image/crop/index.tsx" {
         private handleMouseMove;
         private onResize;
         private updatePosition;
+        private resetCurrentPos;
         private updateDimension;
         private onMove;
         private validatePosition;
