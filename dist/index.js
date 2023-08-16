@@ -495,7 +495,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                                         this.$render("i-button", { id: "goButton", border: { radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider }, font: { weight: 600 }, background: { color: 'transparent' }, height: "40px", caption: 'Go', enabled: false, onClick: this.onGoClicked.bind(this), class: "hover-btn" }))),
                                 this.$render("i-vstack", { gap: "1rem" },
                                     this.$render("i-label", { caption: 'Upload', font: { size: '1.25rem', weight: 'bold' } }),
-                                    this.$render("i-upload", { id: 'imgUploader', multiple: false, height: '100%', caption: 'Drag a file or click to upload', minWidth: "auto", onChanged: this.onChangedImage }))),
+                                    this.$render("i-upload", { id: 'imgUploader', multiple: false, height: '100%', caption: 'Drag a file or click to upload', minWidth: "auto", draggable: true, onChanged: this.onChangedImage }))),
                             this.$render("i-vstack", { id: 'pnlImage', gap: "1rem", visible: false },
                                 this.$render("i-image", { id: 'imgEl', url: 'https://placehold.co/600x400?text=No+Image', maxHeight: "100%", maxWidth: "100%", class: "custom-img" }),
                                 this.$render("i-button", { id: "replaceButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, font: { color: Theme.text.primary }, caption: 'Replace Image', background: { color: 'transparent' }, class: "shadow-btn", onClick: this.onReplaceImage.bind(this) })))))));

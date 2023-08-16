@@ -444,6 +444,7 @@ export default class ScomImageConfig extends Module {
                     height={'100%'}
                     caption='Drag a file or click to upload'
                     minWidth="auto"
+                    draggable={true}
                     onChanged={this.onChangedImage}
                   ></i-upload>
                 </i-vstack>
