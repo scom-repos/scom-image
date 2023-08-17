@@ -580,14 +580,14 @@ define("@scom/scom-image/crop/index.css.ts", ["require", "exports", "@ijstech/co
                 borderBottom: 0,
                 borderLeft: 0,
                 marginTop: -2,
-                marginLeft: -14,
+                marginRight: -2,
                 cursor: 'ne-resize'
             },
             ".angle-e": {
                 borderBottom: 0,
                 borderLeft: 0,
                 borderTop: 0,
-                marginLeft: -14,
+                marginRight: -2,
                 cursor: 'e-resize',
                 top: 'calc(50% - 8px)',
                 right: 0
@@ -598,18 +598,18 @@ define("@scom/scom-image/crop/index.css.ts", ["require", "exports", "@ijstech/co
                 bottom: 0,
                 borderLeft: 0,
                 borderTop: 0,
-                marginLeft: -14,
-                marginTop: -14,
+                marginRight: -2,
+                marginBottom: -2,
                 cursor: 'se-resize'
             },
             ".angle-s": {
                 borderTop: 0,
                 borderLeft: 0,
                 borderRight: 0,
-                marginTop: -14,
                 cursor: 's-resize',
                 left: 'calc(50% - 8px)',
-                bottom: 0
+                bottom: 0,
+                marginBottom: -2
             },
             ".angle-sw": {
                 transform: "rotate(360deg)",
@@ -617,7 +617,7 @@ define("@scom/scom-image/crop/index.css.ts", ["require", "exports", "@ijstech/co
                 left: 0,
                 borderTop: 0,
                 borderRight: 0,
-                marginTop: -14,
+                marginBottom: -2,
                 marginLeft: -2,
                 cursor: 'sw-resize',
             },
