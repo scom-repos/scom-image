@@ -319,8 +319,8 @@ export default class ScomImageConfig extends Module {
     this.goButton.enabled = this.imgLinkInput.value;
   }
 
-  disconnectCallback(): void {
-    super.disconnectCallback();
+  disconnecedCallback(): void {
+    super.disconnectedCallback();
     if (this.searchTimer) clearTimeout(this.searchTimer);
   }
 

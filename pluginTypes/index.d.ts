@@ -165,7 +165,7 @@ declare module "@scom/scom-image/config/index.tsx" {
         private onChangedImage;
         private onReplaceImage;
         private onChangedLink;
-        disconnectCallback(): void;
+        disconnecedCallback(): void;
         init(): void;
         render(): any;
     }

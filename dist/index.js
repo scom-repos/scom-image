@@ -453,8 +453,8 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         onChangedLink() {
             this.goButton.enabled = this.imgLinkInput.value;
         }
-        disconnectCallback() {
-            super.disconnectCallback();
+        disconnecedCallback() {
+            super.disconnectedCallback();
             if (this.searchTimer)
                 clearTimeout(this.searchTimer);
         }
