@@ -264,8 +264,8 @@ export default class ScomImage extends Module {
         }
       },
       {
-        name: 'Settings',
-        icon: 'cog',
+        name: 'Edit',
+        icon: 'edit',
         command: (builder: any, userInputData: any) => {
           let oldData: IImage = { url: '' };
           return {
