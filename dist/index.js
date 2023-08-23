@@ -1344,8 +1344,8 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     }
                 },
                 {
-                    name: 'Settings',
-                    icon: 'cog',
+                    name: 'Edit',
+                    icon: 'edit',
                     command: (builder, userInputData) => {
                         let oldData = { url: '' };
                         return {
