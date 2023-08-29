@@ -389,10 +389,28 @@ export default class ScomImage extends Module {
 
   private async setTag(value: any) {
     this.tag = value;
+    const { width, height, maxWidth, align } = this.tag
+    if (this.pnlImage) {
+      this.pnlImage.style.removeProperty('aspectRatio');
+      if (maxWidth !== undefined) {
+        this.pnlImage.maxWidth = maxWidth;
+      } else {
+        this.pnlImage.maxWidth = '100%';
+      }
+      if (align !== undefined) {
+        let customMargin = {};
+        if (align === 'left') customMargin = {right: 'auto'};
+        else if (align === 'right') customMargin = {left: 'auto'};
+        else customMargin = {right: 'auto', left: 'auto'};
+        this.pnlImage.margin = customMargin;
+      } else {
+        this.pnlImage.style.removeProperty('margin')
+      }
+    }
     if (this.img) {
       this.img.display = "block";
-      this.img.width = this.tag.width;
-      this.img.height = this.tag.height;
+      this.img.width = width;
+      this.img.height = height;
       this.updateCropUI();
     }
   }
