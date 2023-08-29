@@ -10,7 +10,8 @@ import {
   VStack,
   Button,
   HStack,
-  Styles
+  Styles,
+  IUISchema
 } from '@ijstech/components'
 import { CropType, ICropData, IImage } from './interface'
 import { getIPFSGatewayUrl, setDataFromSCConfig } from './store'
@@ -304,9 +305,130 @@ export default class ScomImage extends Module {
             return vstack;
           }
         }
+      },
+      {
+        name: 'Widget Settings',
+        icon: 'edit',
+        ...this.getWidgetSchemas()
       }
     ]
     return actions
+  }
+
+  private getWidgetSchemas(): any {
+    const propertiesSchema: IDataSchema = {
+      type: 'object',
+      properties: {
+        pt: {
+          title: 'Top',
+          type: 'number'
+        },
+        pb: {
+          title: 'Bottom',
+          type: 'number'
+        },
+        pl: {
+          title: 'Left',
+          type: 'number'
+        },
+        pr: {
+          title: 'Right',
+          type: 'number'
+        },
+        align: {
+          type: 'string',
+          title: 'Alignment',
+          enum: [
+            'left',
+            'center',
+            'right'
+          ]
+        },
+        maxWidth: {
+          type: 'number'
+        },
+        link: {
+          title: 'URL',
+          type: 'string'
+        }
+      }
+    };
+    const themesSchema: IUISchema = {
+      type: 'VerticalLayout',
+      elements: [
+        {
+          type: 'HorizontalLayout',
+          elements: [
+            {
+              type: 'Group',
+              label: 'Padding (px)',
+              elements: [
+                {
+                  type: 'VerticalLayout',
+                  elements: [
+                    {
+                      type: 'HorizontalLayout',
+                      elements: [
+                        {
+                          type: 'Control',
+                          scope: '#/properties/pt',
+                        },
+                        {
+                          type: 'Control',
+                          scope: '#/properties/pb',
+                        },
+                        {
+                          type: 'Control',
+                          scope: '#/properties/pl',
+                        },
+                        {
+                          type: 'Control',
+                          scope: '#/properties/pr',
+                        },
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: 'HorizontalLayout',
+          elements: [
+            {
+              type: 'Control',
+              label: 'Max Width',
+              scope: '#/properties/maxWidth',
+            }
+          ]
+        },
+        {
+          type: 'HorizontalLayout',
+          elements: [
+            {
+              type: 'Control',
+              label: 'Alignment',
+              scope: '#/properties/align',
+            }
+          ]
+        },
+        {
+          type: 'HorizontalLayout',
+          elements: [
+            {
+              type: 'Control',
+              label: 'URL',
+              scope: '#/properties/link',
+            }
+          ]
+        }
+      ]
+    };
+    return {
+      userInputDataSchema: propertiesSchema,
+      userInputUISchema: themesSchema
+    }
   }
 
   private getData() {
@@ -389,7 +511,7 @@ export default class ScomImage extends Module {
 
   private async setTag(value: any) {
     this.tag = value;
-    const { width, height, maxWidth, align } = this.tag
+    const { width, height, maxWidth, align, link } = this.tag
     if (this.pnlImage) {
       this.pnlImage.style.removeProperty('aspectRatio');
       if (maxWidth !== undefined) {
@@ -416,8 +538,8 @@ export default class ScomImage extends Module {
   }
   
   private onImageClick() {
-    if (!this.data.link) return;
-    window.open(this.data.link, '_blank');
+    if (!this.tag.link) return;
+    window.open(this.tag.link, '_blank');
   }
 
   render() {
