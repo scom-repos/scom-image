@@ -249,7 +249,7 @@ declare module "@scom/scom-image/crop/index.tsx" {
 }
 /// <amd-module name="@scom/scom-image" />
 declare module "@scom/scom-image" {
-    import { Module, Container, ControlElement, VStack } from '@ijstech/components';
+    import { Module, Container, ControlElement } from '@ijstech/components';
     import { ICropData } from "@scom/scom-image/interface.ts";
     import "@scom/scom-image/index.css.ts";
     interface ScomImageElement extends ControlElement {
@@ -296,18 +296,7 @@ declare module "@scom/scom-image" {
         getConfigurators(): {
             name: string;
             target: string;
-            getActions: () => {
-                name: string;
-                icon: string;
-                command: (builder: any, userInputData: any) => {
-                    execute: () => void;
-                    undo: () => void;
-                    redo: () => void;
-                };
-                customUI: {
-                    render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => VStack;
-                };
-            }[];
+            getActions: () => any[];
             getData: any;
             setData: any;
             getTag: any;
@@ -316,6 +305,7 @@ declare module "@scom/scom-image" {
         private getPropertiesSchema;
         private getThemeSchema;
         private _getActions;
+        private getWidgetSchemas;
         private getData;
         private setData;
         private updateImg;

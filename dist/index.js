@@ -1387,9 +1387,125 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                             return vstack;
                         }
                     }
-                }
+                },
+                Object.assign({ name: 'Widget Settings', icon: 'edit' }, this.getWidgetSchemas())
             ];
             return actions;
+        }
+        getWidgetSchemas() {
+            const propertiesSchema = {
+                type: 'object',
+                properties: {
+                    pt: {
+                        title: 'Top',
+                        type: 'number'
+                    },
+                    pb: {
+                        title: 'Bottom',
+                        type: 'number'
+                    },
+                    pl: {
+                        title: 'Left',
+                        type: 'number'
+                    },
+                    pr: {
+                        title: 'Right',
+                        type: 'number'
+                    },
+                    align: {
+                        type: 'string',
+                        title: 'Alignment',
+                        enum: [
+                            'left',
+                            'center',
+                            'right'
+                        ]
+                    },
+                    maxWidth: {
+                        type: 'number'
+                    },
+                    link: {
+                        title: 'URL',
+                        type: 'string'
+                    }
+                }
+            };
+            const themesSchema = {
+                type: 'VerticalLayout',
+                elements: [
+                    {
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Group',
+                                label: 'Padding (px)',
+                                elements: [
+                                    {
+                                        type: 'VerticalLayout',
+                                        elements: [
+                                            {
+                                                type: 'HorizontalLayout',
+                                                elements: [
+                                                    {
+                                                        type: 'Control',
+                                                        scope: '#/properties/pt',
+                                                    },
+                                                    {
+                                                        type: 'Control',
+                                                        scope: '#/properties/pb',
+                                                    },
+                                                    {
+                                                        type: 'Control',
+                                                        scope: '#/properties/pl',
+                                                    },
+                                                    {
+                                                        type: 'Control',
+                                                        scope: '#/properties/pr',
+                                                    },
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Control',
+                                label: 'Max Width',
+                                scope: '#/properties/maxWidth',
+                            }
+                        ]
+                    },
+                    {
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Control',
+                                label: 'Alignment',
+                                scope: '#/properties/align',
+                            }
+                        ]
+                    },
+                    {
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Control',
+                                label: 'URL',
+                                scope: '#/properties/link',
+                            }
+                        ]
+                    }
+                ]
+            };
+            return {
+                userInputDataSchema: propertiesSchema,
+                userInputUISchema: themesSchema
+            };
         }
         getData() {
             return this.data;
@@ -1472,17 +1588,40 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         async setTag(value) {
             this.tag = value;
+            const { width, height, maxWidth, align, link } = this.tag;
+            if (this.pnlImage) {
+                this.pnlImage.style.removeProperty('aspectRatio');
+                if (maxWidth !== undefined) {
+                    this.pnlImage.maxWidth = maxWidth;
+                }
+                else {
+                    this.pnlImage.maxWidth = '100%';
+                }
+                if (align !== undefined) {
+                    let customMargin = {};
+                    if (align === 'left')
+                        customMargin = { right: 'auto' };
+                    else if (align === 'right')
+                        customMargin = { left: 'auto' };
+                    else
+                        customMargin = { right: 'auto', left: 'auto' };
+                    this.pnlImage.margin = customMargin;
+                }
+                else {
+                    this.pnlImage.style.removeProperty('margin');
+                }
+            }
             if (this.img) {
                 this.img.display = "block";
-                this.img.width = this.tag.width;
-                this.img.height = this.tag.height;
+                this.img.width = width;
+                this.img.height = height;
                 this.updateCropUI();
             }
         }
         onImageClick() {
-            if (!this.data.link)
+            if (!this.tag.link)
                 return;
-            window.open(this.data.link, '_blank');
+            window.open(this.tag.link, '_blank');
         }
         render() {
             return (this.$render("i-panel", { id: 'pnlImgWrap', height: "100%" },
