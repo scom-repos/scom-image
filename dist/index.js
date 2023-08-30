@@ -1617,6 +1617,12 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 this.img.height = height;
                 this.updateCropUI();
             }
+            if (link) {
+                this.classList.add('pointer');
+            }
+            else {
+                this.classList.remove('pointer');
+            }
         }
         onImageClick() {
             if (!this.tag.link)
