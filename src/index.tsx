@@ -535,6 +535,11 @@ export default class ScomImage extends Module {
       this.img.height = height;
       this.updateCropUI();
     }
+    if (link) {
+      this.classList.add('pointer');
+    } else {
+      this.classList.remove('pointer');
+    }
   }
   
   private onImageClick() {
