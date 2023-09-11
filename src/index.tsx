@@ -146,7 +146,7 @@ export default class ScomImage extends Module {
         setData: async (data: IImage) => {
           // const defaultData = configData.defaultBuilderData;
           // await this.setData({...defaultData, ...data});
-          await this.setData({ ...data })
+          this.setData({ ...data })
         },
         getTag: this.getTag.bind(this),
         setTag: this.setTag.bind(this)
@@ -435,7 +435,7 @@ export default class ScomImage extends Module {
     return this.data
   }
 
-  private async setData(value: IImage) {
+  private setData(value: IImage) {
     this.data = value;
     this.updateImg()
     this.updateCropUI()
