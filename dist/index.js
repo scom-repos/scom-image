@@ -284,8 +284,6 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         }
         set data(value) {
             this._data = value;
-            this.updateCurrentType(this.data.photoId ? this.typeList[1] : this.typeList[0]);
-            this.renderUI();
         }
         get url() {
             var _a;
@@ -294,6 +292,11 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         set url(value) {
             this._data.url = value !== null && value !== void 0 ? value : '';
             this.updateImg();
+        }
+        async setData(value) {
+            this._data = value;
+            this.updateCurrentType(this.data.photoId ? this.typeList[1] : this.typeList[0]);
+            await this.renderUI();
         }
         async renderType() {
             this.typeMapper = new Map();
@@ -328,10 +331,10 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         onShowType() {
             this.typeModal.visible = !this.typeModal.visible;
         }
-        renderUI() {
+        async renderUI() {
             if (this.currentType.type === interface_1.UploadType.UNSPLASH) {
                 this.searchInput.value = this.data.keyword || '';
-                this.onFetchPhotos();
+                await this.onFetchPhotos();
                 this.unsplashPnl.visible = true;
                 this.normalPnl.visible = false;
             }
@@ -458,14 +461,14 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             if (this.searchTimer)
                 clearTimeout(this.searchTimer);
         }
-        init() {
+        async init() {
             super.init();
             this.renderType();
             const cid = this.getAttribute('cid', true);
             const url = this.getAttribute('url', true);
             const keyword = this.getAttribute('keyword', true);
             const photoId = this.getAttribute('photoId', true);
-            this.data = { cid, url, keyword, photoId };
+            await this.setData({ cid, url, keyword, photoId });
         }
         render() {
             return (this.$render("i-panel", null,
@@ -1226,7 +1229,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     setData: async (data) => {
                         // const defaultData = configData.defaultBuilderData;
                         // await this.setData({...defaultData, ...data});
-                        await this.setData(Object.assign({}, data));
+                        this.setData(Object.assign({}, data));
                     },
                     getTag: this.getTag.bind(this),
                     setTag: this.setTag.bind(this)
@@ -1510,7 +1513,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         getData() {
             return this.data;
         }
-        async setData(value) {
+        setData(value) {
             this.data = value;
             this.updateImg();
             this.updateCropUI();

@@ -87,8 +87,6 @@ export default class ScomImageConfig extends Module {
   }
   set data(value: IImage) {
     this._data = value;
-    this.updateCurrentType(this.data.photoId ? this.typeList[1] : this.typeList[0]);
-    this.renderUI();
   }
 
   get url() {
@@ -97,6 +95,12 @@ export default class ScomImageConfig extends Module {
   set url(value: string) {
     this._data.url = value ?? '';
     this.updateImg();
+  }
+
+  async setData(value: IImage) {
+    this._data = value;
+    this.updateCurrentType(this.data.photoId ? this.typeList[1] : this.typeList[0]);
+    await this.renderUI();
   }
 
   private async renderType() {
@@ -150,10 +154,10 @@ export default class ScomImageConfig extends Module {
     this.typeModal.visible = !this.typeModal.visible;
   }
 
-  private renderUI() {
+  private async renderUI() {
     if (this.currentType.type === UploadType.UNSPLASH) {
       this.searchInput.value = this.data.keyword || '';
-      this.onFetchPhotos();
+      await this.onFetchPhotos();
       this.unsplashPnl.visible = true;
       this.normalPnl.visible = false;
     } else {
@@ -324,14 +328,14 @@ export default class ScomImageConfig extends Module {
     if (this.searchTimer) clearTimeout(this.searchTimer);
   }
 
-  init() {
+  async init() {
     super.init();
     this.renderType();
     const cid = this.getAttribute('cid', true);
     const url = this.getAttribute('url', true);
     const keyword = this.getAttribute('keyword', true);
     const photoId = this.getAttribute('photoId', true);
-    this.data = { cid, url, keyword, photoId };
+    await this.setData({ cid, url, keyword, photoId });
   }
 
   render() {

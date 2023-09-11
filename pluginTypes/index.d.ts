@@ -146,6 +146,7 @@ declare module "@scom/scom-image/config/index.tsx" {
         set data(value: IImage);
         get url(): string;
         set url(value: string);
+        setData(value: IImage): Promise<void>;
         private renderType;
         private onTypeSelected;
         private updateCurrentType;
@@ -166,7 +167,7 @@ declare module "@scom/scom-image/config/index.tsx" {
         private onReplaceImage;
         private onChangedLink;
         disconnecedCallback(): void;
-        init(): void;
+        init(): Promise<void>;
         render(): any;
     }
 }
