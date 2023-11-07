@@ -553,7 +553,7 @@ export default class ScomImage extends Module {
         <i-vstack id={'pnlImage'} class="img-wrapper">
           <i-image
             id={'img'}
-            url={'https://placehold.co/600x400?text=No+Image'}
+            // url={'https://placehold.co/600x400?text=No+Image'}
             class="custom-img"
             onClick={this.onImageClick.bind(this)}
           ></i-image>
