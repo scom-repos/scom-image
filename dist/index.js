@@ -54,12 +54,14 @@ define("@scom/scom-image/store.ts", ["require", "exports"], function (require, e
         if (!params.per_page)
             params.per_page = 18;
         params.client_id = (0, exports.getUnsplashApiKey)();
-        const queries = params ? new URLSearchParams(Object.assign({}, params)).toString() : '';
+        const queries = params ? new URLSearchParams({
+            ...params
+        }).toString() : '';
         try {
             const response = await fetch(`https://api.unsplash.com/photos?${queries}`);
             return await response.json();
         }
-        catch (_a) {
+        catch {
             return null;
         }
     };
@@ -72,12 +74,14 @@ define("@scom/scom-image/store.ts", ["require", "exports"], function (require, e
         if (!params.query)
             params.query = 'nature';
         params.client_id = (0, exports.getUnsplashApiKey)();
-        const queries = params ? new URLSearchParams(Object.assign({}, params)).toString() : '';
+        const queries = params ? new URLSearchParams({
+            ...params
+        }).toString() : '';
         try {
             const response = await fetch(`https://api.unsplash.com/search/photos?${queries}`);
             return await response.json();
         }
-        catch (_a) {
+        catch {
             return null;
         }
     };
@@ -286,11 +290,10 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             this._data = value;
         }
         get url() {
-            var _a;
-            return (_a = this._data.url) !== null && _a !== void 0 ? _a : '';
+            return this._data.url ?? '';
         }
         set url(value) {
-            this._data.url = value !== null && value !== void 0 ? value : '';
+            this._data.url = value ?? '';
             this.updateImg();
         }
         async setData(value) {
@@ -310,7 +313,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                 this.typeMapper.set(type.type, hstack);
             }
             this.typeButton.caption = this.currentType.caption;
-            this.typeButton.icon = await components_3.Icon.create(Object.assign({}, this.currentType.icon));
+            this.typeButton.icon = await components_3.Icon.create({ ...this.currentType.icon });
         }
         async onTypeSelected(source, data) {
             this.typeModal.visible = false;
@@ -321,12 +324,12 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             const oldType = this.typeMapper.get(this.currentType.type);
             if (oldType)
                 oldType.classList.remove('is-actived');
-            this.currentType = Object.assign({}, type);
+            this.currentType = { ...type };
             const currentType = this.typeMapper.get(this.currentType.type);
             if (currentType)
                 currentType.classList.add('is-actived');
             this.typeButton.caption = this.currentType.caption;
-            this.typeButton.icon = await components_3.Icon.create(Object.assign({}, this.currentType.icon));
+            this.typeButton.icon = await components_3.Icon.create({ ...this.currentType.icon });
         }
         onShowType() {
             this.typeModal.visible = !this.typeModal.visible;
@@ -359,13 +362,12 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             }
         }
         getImgSrc() {
-            var _a;
             let url = '';
             if (this.data.cid) {
                 const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
                 url = ipfsGatewayUrl + this.data.cid;
             }
-            else if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
+            else if (this.data.url?.startsWith('ipfs://')) {
                 const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
                 url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
@@ -375,14 +377,13 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             return url;
         }
         async renderGrid(photoList) {
-            var _a;
             const placeholders = this.imageGrid.querySelectorAll('.image-placeholder');
             for (let placeholder of placeholders)
                 placeholder.remove();
-            if (!(photoList === null || photoList === void 0 ? void 0 : photoList.length))
+            if (!photoList?.length)
                 return;
             for (let photo of photoList) {
-                this.imageGrid.appendChild(this.$render("i-panel", { border: { radius: '0.25rem' }, height: 100, background: { image: photo.urls.thumb }, onClick: (source) => this.onPhotoSelected(source, photo), class: `${((_a = this._data) === null || _a === void 0 ? void 0 : _a.photoId) && photo.id === this._data.photoId ? 'image-item img-actived' : 'image-item'}` },
+                this.imageGrid.appendChild(this.$render("i-panel", { border: { radius: '0.25rem' }, height: 100, background: { image: photo.urls.thumb }, onClick: (source) => this.onPhotoSelected(source, photo), class: `${this._data?.photoId && photo.id === this._data.photoId ? 'image-item img-actived' : 'image-item'}` },
                     this.$render("i-vstack", { border: { radius: '0.25rem' }, position: 'absolute', width: "100%", height: "100%", left: "0px", bottom: "0px", zIndex: 90, background: { color: 'rgba(0, 0, 0, 0.5)' }, horizontalAlignment: "center", verticalAlignment: "center", class: "img-fade" },
                         this.$render("i-icon", { name: "check", fill: "#fff", width: "14px", height: "14px" })),
                     this.$render("i-vstack", { position: 'absolute', width: "100%", height: "100%", left: "0px", bottom: "0px", zIndex: 99, verticalAlignment: "end", class: "image-content" },
@@ -418,7 +419,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             this.renderPlaceholders();
             const response = await (0, store_1.filterUnsplashPhotos)({ query: this.data.keyword });
             this.imageGrid.clearInnerHTML();
-            this.photoList = (response === null || response === void 0 ? void 0 : response.results) || [];
+            this.photoList = response?.results || [];
             this.renderGrid([...this.photoList]);
         }
         renderPlaceholders() {
@@ -951,17 +952,15 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             document.removeEventListener('mouseup', this._mouseUpHandler);
         }
         get url() {
-            var _a;
-            return (_a = this.data.url) !== null && _a !== void 0 ? _a : '';
+            return this.data.url ?? '';
         }
         set url(value) {
-            var _a;
             this.data.url = value;
             if (!value) {
                 this.img.url = 'https://placehold.co/600x400?text=No+Image';
                 return;
             }
-            if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
+            if (this.data.url?.startsWith('ipfs://')) {
                 const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
@@ -973,9 +972,8 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             return this.data.cropData;
         }
         set cropData(value) {
-            var _a;
             this.data.cropData = value;
-            this._cropType = (_a = value.type) !== null && _a !== void 0 ? _a : interface_2.CropType.PREEFORM;
+            this._cropType = value.type ?? interface_2.CropType.PREEFORM;
             this.renderCropUI();
         }
         get isCircleType() {
@@ -997,9 +995,8 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             return this._data;
         }
         set data(value) {
-            var _a, _b;
             this._data = value;
-            this._cropType = (_b = (_a = value === null || value === void 0 ? void 0 : value.cropData) === null || _a === void 0 ? void 0 : _a.type) !== null && _b !== void 0 ? _b : interface_2.CropType.PREEFORM;
+            this._cropType = value?.cropData?.type ?? interface_2.CropType.PREEFORM;
             this.renderUI();
         }
         renderUI() {
@@ -1042,13 +1039,12 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             this.lockedCheck.checked = locked;
         }
         getImgSrc() {
-            var _a;
             let url = '';
             if (this.data.cid) {
                 const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 url = ipfsGatewayUrl + this.data.cid;
             }
-            else if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
+            else if (this.data.url?.startsWith('ipfs://')) {
                 const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
@@ -1081,8 +1077,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             if (this.timer)
                 clearTimeout(this.timer);
             this.timer = setTimeout(() => {
-                var _a;
-                const value = (_a = source.value) !== null && _a !== void 0 ? _a : '';
+                const value = source.value ?? '';
                 if (/(\d+)\s?\:(\d+)\s?/g.test(value)) {
                     const [_var, string = '', height = ''] = /(\d+)\s?\:(\d+)\s?/g.exec(value);
                     let newWidthRatio = Math.min(Number(string || 1), 100);
@@ -1176,17 +1171,15 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             return self;
         }
         get url() {
-            var _a;
-            return (_a = this.data.url) !== null && _a !== void 0 ? _a : '';
+            return this.data.url ?? '';
         }
         set url(value) {
-            var _a;
             this.data.url = value;
             if (!value) {
                 this.img.url = 'https://placehold.co/600x400?text=No+Image';
                 return;
             }
-            if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
+            if (this.data.url?.startsWith('ipfs://')) {
                 const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
@@ -1195,8 +1188,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             }
         }
         get altText() {
-            var _a;
-            return (_a = this.data.altText) !== null && _a !== void 0 ? _a : '';
+            return this.data.altText ?? '';
         }
         set altText(value) {
             this.data.altText = value;
@@ -1204,8 +1196,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             imgElm && imgElm.setAttribute('alt', this.data.altText || '');
         }
         get link() {
-            var _a;
-            return (_a = this.data.link) !== null && _a !== void 0 ? _a : '';
+            return this.data.link ?? '';
         }
         set link(value) {
             this.data.link = value;
@@ -1229,7 +1220,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     setData: async (data) => {
                         // const defaultData = configData.defaultBuilderData;
                         // await this.setData({...defaultData, ...data});
-                        this.setData(Object.assign({}, data));
+                        this.setData({ ...data });
                     },
                     getTag: this.getTag.bind(this),
                     setTag: this.setTag.bind(this)
@@ -1302,12 +1293,12 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                         return {
                             execute: () => {
                                 oldData = JSON.parse(JSON.stringify(this.data));
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                if (builder?.setData)
                                     builder.setData(userInputData);
                                 this.setData(userInputData);
                             },
                             undo: () => {
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                if (builder?.setData)
                                     builder.setData(oldData);
                                 this.setData(oldData);
                             },
@@ -1317,7 +1308,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     customUI: {
                         render: (data, onConfirm) => {
                             const vstack = new components_6.VStack(null, { gap: '1rem' });
-                            const config = new index_2.default(null, Object.assign({}, this.data));
+                            const config = new index_2.default(null, { ...this.data });
                             const hstack = new components_6.HStack(null, {
                                 verticalAlignment: 'center',
                                 horizontalAlignment: 'end'
@@ -1336,7 +1327,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                             button.onClick = async () => {
                                 if (onConfirm) {
                                     config.onCrop();
-                                    onConfirm(true, Object.assign(Object.assign({}, this.data), config.data));
+                                    onConfirm(true, { ...this.data, ...config.data });
                                     self.updateCropUI();
                                     if (parentToolbar)
                                         parentToolbar.classList.remove('is-editing');
@@ -1354,12 +1345,12 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                         return {
                             execute: () => {
                                 oldData = JSON.parse(JSON.stringify(this.data));
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                if (builder?.setData)
                                     builder.setData(userInputData);
                                 this.setData(userInputData);
                             },
                             undo: () => {
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                if (builder?.setData)
                                     builder.setData(oldData);
                                 this.setData(oldData);
                             },
@@ -1369,7 +1360,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     customUI: {
                         render: (data, onConfirm) => {
                             const vstack = new components_6.VStack(null, { gap: '1rem' });
-                            const config = new index_1.default(null, Object.assign({}, this.data));
+                            const config = new index_1.default(null, { ...this.data });
                             const hstack = new components_6.HStack(null, {
                                 verticalAlignment: 'center',
                                 horizontalAlignment: 'end'
@@ -1385,13 +1376,17 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                             vstack.append(hstack);
                             button.onClick = async () => {
                                 if (onConfirm)
-                                    onConfirm(true, Object.assign(Object.assign({}, this.data), config.data));
+                                    onConfirm(true, { ...this.data, ...config.data });
                             };
                             return vstack;
                         }
                     }
                 },
-                Object.assign({ name: 'Widget Settings', icon: 'edit' }, this.getWidgetSchemas())
+                {
+                    name: 'Widget Settings',
+                    icon: 'edit',
+                    ...this.getWidgetSchemas()
+                }
             ];
             return actions;
         }
@@ -1520,12 +1515,11 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             this.pnlImage.background.color = value.backgroundColor || '';
         }
         updateImg() {
-            var _a;
             if (this.data.cid) {
                 const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
                 this.img.url = ipfsGatewayUrl + this.data.cid;
             }
-            else if ((_a = this.data.url) === null || _a === void 0 ? void 0 : _a.startsWith('ipfs://')) {
+            else if (this.data.url?.startsWith('ipfs://')) {
                 const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
@@ -1635,7 +1629,9 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         render() {
             return (this.$render("i-panel", { id: 'pnlImgWrap', height: "100%" },
                 this.$render("i-vstack", { id: 'pnlImage', class: "img-wrapper" },
-                    this.$render("i-image", { id: 'img', url: 'https://placehold.co/600x400?text=No+Image', class: "custom-img", onClick: this.onImageClick.bind(this) }))));
+                    this.$render("i-image", { id: 'img', 
+                        // url={'https://placehold.co/600x400?text=No+Image'}
+                        class: "custom-img", onClick: this.onImageClick.bind(this) }))));
         }
     };
     ScomImage = __decorate([
