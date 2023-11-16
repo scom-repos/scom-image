@@ -186,6 +186,7 @@ define("@scom/scom-image/config/index.css.ts", ["require", "exports", "@ijstech/
                 color: `${Theme.colors.primary.main} !important`
             },
             '#typeModal': {
+                width: '100%',
                 $nest: {
                     '> div': {
                         boxShadow: `0 10px 15px -3px rgba(0, 0, 0, 0.1),0 4px 6px -2px ${Theme.divider}`
@@ -308,7 +309,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             for (let type of this.typeList) {
                 const hstack = (this.$render("i-hstack", { verticalAlignment: 'center', gap: "0.5rem", class: `${type.type === this.currentType.type ? 'type-item is-actived' : 'type-item'}`, padding: { left: '0.5rem', right: '0.5rem' }, border: { radius: '0.375rem' }, onClick: (source) => this.onTypeSelected(source, type) },
                     this.$render("i-icon", { name: "check", width: 14, height: 14, fill: Theme.text.primary, opacity: 0, class: "check-icon" }),
-                    this.$render("i-button", { width: "100%", padding: { top: '0.5rem', bottom: '0.5rem', left: '0.75rem', right: '0.75rem' }, border: { width: '1px', style: 'none', color: Theme.divider, radius: '0.375rem' }, icon: type.icon, caption: type.caption, background: { color: 'transparent' } })));
+                    this.$render("i-button", { width: "100%", padding: { top: '0.5rem', bottom: '0.5rem', left: '0.75rem', right: '0.75rem' }, border: { width: '1px', style: 'none', color: Theme.divider, radius: '0.375rem' }, icon: type.icon, caption: type.caption, boxShadow: 'none', background: { color: 'transparent' } })));
                 this.typeStack.appendChild(hstack);
                 this.typeMapper.set(type.type, hstack);
             }
@@ -474,9 +475,9 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         render() {
             return (this.$render("i-panel", null,
                 this.$render("i-vstack", null,
-                    this.$render("i-panel", { margin: { bottom: '1.5rem' }, class: "type-pnl" },
-                        this.$render("i-button", { id: "typeButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, background: { color: 'transparent' }, rightIcon: { name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: { left: 'auto' } }, onClick: this.onShowType.bind(this), class: "shadow-btn" }),
-                        this.$render("i-modal", { id: "typeModal", showBackdrop: false, width: '200px', popupPlacement: "bottomLeft" },
+                    this.$render("i-panel", { margin: { bottom: '1.5rem' }, class: "type-pnl", stack: { grow: '1' } },
+                        this.$render("i-button", { id: "typeButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, background: { color: 'transparent' }, rightIcon: { name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: { left: 'auto' } }, onClick: this.onShowType.bind(this), padding: { left: 12, right: 12 }, class: "shadow-btn" }),
+                        this.$render("i-modal", { id: "typeModal", showBackdrop: false, width: '100%', minWidth: 200, popupPlacement: "bottomLeft" },
                             this.$render("i-vstack", { id: "typeStack", gap: "0.5rem", padding: { left: '1rem', right: '1rem' } }))),
                     this.$render("i-panel", null,
                         this.$render("i-panel", { id: "unsplashPnl", visible: false },
@@ -1158,11 +1159,13 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             if (!lazyLoad) {
                 let cid = this.getAttribute('cid', true);
                 const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
-                this.url = this.getAttribute('url', true) || cid ? ipfsGatewayUrl + cid : "";
+                this.url = this.getAttribute('url', true) || (cid ? ipfsGatewayUrl + cid : "");
                 this.altText = this.getAttribute('altText', true);
                 const cropData = this.getAttribute('cropData', true);
                 if (cropData)
                     this.cropData = cropData;
+                this.data.photoId = this.options?.photoId || '';
+                this.data.keyword = this.options?.keyword || '';
             }
         }
         static async create(options, parent) {

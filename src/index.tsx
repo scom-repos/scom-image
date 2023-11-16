@@ -80,10 +80,12 @@ export default class ScomImage extends Module {
     if (!lazyLoad) {
       let cid = this.getAttribute('cid', true);
       const ipfsGatewayUrl = getIPFSGatewayUrl()
-      this.url = this.getAttribute('url', true) || cid ? ipfsGatewayUrl + cid : "";
+      this.url = this.getAttribute('url', true) || (cid ? ipfsGatewayUrl + cid : "");
       this.altText = this.getAttribute('altText', true);
       const cropData = this.getAttribute('cropData', true);
       if (cropData) this.cropData = cropData;
+      this.data.photoId = this.options?.photoId || '';
+      this.data.keyword = this.options?.keyword || '';
     }
   }
 
