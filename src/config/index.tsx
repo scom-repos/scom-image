@@ -123,6 +123,7 @@ export default class ScomImageConfig extends Module {
             border={{width: '1px', style: 'none', color: Theme.divider, radius: '0.375rem'}}
             icon={type.icon}
             caption={type.caption}
+            boxShadow='none'
             background={{color: 'transparent'}}
           ></i-button>
         </i-hstack>
@@ -342,7 +343,7 @@ export default class ScomImageConfig extends Module {
     return (
       <i-panel>
         <i-vstack>
-          <i-panel margin={{bottom: '1.5rem'}} class="type-pnl">
+          <i-panel margin={{bottom: '1.5rem'}} class="type-pnl" stack={{grow: '1'}}>
             <i-button
               id="typeButton"
               height={40} width="100%"
@@ -350,12 +351,14 @@ export default class ScomImageConfig extends Module {
               background={{color: 'transparent'}}
               rightIcon={{name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: {left: 'auto'}}}
               onClick={this.onShowType.bind(this)}
+              padding={{left: 12, right: 12}}
               class="shadow-btn"
             ></i-button>
             <i-modal
               id="typeModal"
               showBackdrop={false}
-              width='200px'
+              width='100%'
+              minWidth={200}
               popupPlacement="bottomLeft"
             >
               <i-vstack id="typeStack" gap="0.5rem" padding={{left: '1rem', right: '1rem'}}></i-vstack>

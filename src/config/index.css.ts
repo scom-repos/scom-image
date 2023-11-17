@@ -46,6 +46,7 @@ export default Styles.cssRule('i-scom-image-config', {
       color: `${Theme.colors.primary.main} !important`
     },
     '#typeModal': {
+      width: '100%',
       $nest: {
         '> div': {
           boxShadow: `0 10px 15px -3px rgba(0, 0, 0, 0.1),0 4px 6px -2px ${Theme.divider}`
