@@ -137,27 +137,54 @@ export default class ScomImage extends Module {
   }
 
   getConfigurators() {
+    const self = this;
     return [
       {
         name: 'Builder Configurator',
         target: 'Builders',
         getActions: () => {
-          return this._getActions(this.getPropertiesSchema(), this.getThemeSchema());
+          return this._getActions('Builders');
         },
         getData: this.getData.bind(this),
-        setData: async (data: IImage) => {
-          // const defaultData = configData.defaultBuilderData;
-          // await this.setData({...defaultData, ...data});
-          this.setData({ ...data })
-        },
+        setData: this.setData.bind(this),
         getTag: this.getTag.bind(this),
         setTag: this.setTag.bind(this)
       },
       {
         name: 'Emdedder Configurator',
         target: 'Embedders',
+        getData: this.getData.bind(this),
+        setData: this.setData.bind(this),
+        getTag: this.getTag.bind(this),
+        setTag: this.setTag.bind(this)
+      },
+      {
+        name: 'Editor',
+        target: 'Editor',
         getActions: () => {
-          return this._getActions(this.getPropertiesSchema(), this.getThemeSchema(true));
+          return this._getActions('Editor')
+        },
+        getLink: () => {
+          const encodedWidgetDataString  = window.btoa(JSON.stringify(self._getWidgetData()));
+          const loaderUrl = `https://ipfs.scom.dev/ipfs/bafybeia442nl6djz7qipnfk5dxu26pgr2xgpar7znvt3aih2k6nxk7sib4`
+          return `${loaderUrl}?data=${encodedWidgetDataString}`
+        },
+        getLinkParams: () => {
+          return {
+            data: window.btoa(JSON.stringify(self._getWidgetData()))
+          }
+        },
+        setLinkParams: async (params: any) => {
+          if (params.data) {
+            const utf8String = decodeURIComponent(params.data);
+            const decodedString = window.atob(utf8String);
+            const newData = JSON.parse(decodedString);
+            let resultingData = {
+              ...self.data,
+              ...(newData.properties || {})
+            };
+            this.setData(resultingData);
+          }
         },
         getData: this.getData.bind(this),
         setData: this.setData.bind(this),
@@ -167,57 +194,65 @@ export default class ScomImage extends Module {
     ]
   }
 
-  private getPropertiesSchema() {
-    const propertiesSchema: IDataSchema = {
-      "type": "object",
+  private _getWidgetData() {
+    return {
+      "module": {
+        "name": "@scom/scom-image",
+        "localPath": "scom-image"
+      },
       "properties": {
-        "cid": {
-          title: 'Image',
-          type: 'string',
-          format: 'data-cid'
-        },
-        "url": {
-          "type": "string"
-        },
-        "altText": {
-          "type": "string"
-        },
-        "link": {
-          "type": "string"
+        ...(this.data || {})
+      }
+    }
+  }
+
+  private _getActions(target?: string) {
+    const self = this;
+    const parentToolbar = self.closest('ide-toolbar');
+    const editAction = {
+      name: 'Edit',
+      icon: 'edit',
+      command: (builder: any, userInputData: any) => {
+        let oldData: IImage = { url: '' };
+        return {
+          execute: () => {
+            oldData = JSON.parse(JSON.stringify(this.data));
+            if (builder?.setData) builder.setData(userInputData);
+            this.setData(userInputData);
+          },
+          undo: () => {
+            if (builder?.setData) builder.setData(oldData);
+            this.setData(oldData);
+          },
+          redo: () => { }
+        }
+      },
+      customUI: {
+        render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
+          const vstack = new VStack(null, {gap: '1rem'});
+          const config = new ScomImageConfig(null, {...this.data, canUpload: target !== 'Editor'});
+          const hstack = new HStack(null, {
+            verticalAlignment: 'center',
+            horizontalAlignment: 'end'
+          });
+          const button = new Button(null, {
+            caption: 'Confirm',
+            width: '100%',
+            height: 40,
+            font: {color: Theme.colors.primary.contrastText}
+          });
+          hstack.append(button);
+          vstack.append(config);
+          vstack.append(hstack);
+          button.onClick = async () => {
+            if (onConfirm) onConfirm(true, {...this.data, ...config.data});
+          }
+          return vstack;
         }
       }
     };
-
-    return propertiesSchema;
-  }
-
-  private getThemeSchema(readOnly?: boolean) {
-    const themeSchema: IDataSchema = {
-      type: 'object',
-      properties: {
-        backgroundColor: {
-          type: 'string',
-          format: 'color',
-          readOnly
-        },
-        width: {
-          type: 'string',
-          readOnly
-        },
-        height: {
-          type: 'string',
-          readOnly
-        }
-      }
-    }
-
-    return themeSchema;
-  }
-
-  private _getActions(settingSchema: IDataSchema, themeSchema: IDataSchema) {
-    const self = this;
-    const parentToolbar = self.closest('ide-toolbar');
-    const actions = [
+    if (target === 'Editor') return [editAction];
+    return [
       {
         name: 'Crop',
         icon: 'crop',
@@ -266,55 +301,13 @@ export default class ScomImage extends Module {
           }
         }
       },
-      {
-        name: 'Edit',
-        icon: 'edit',
-        command: (builder: any, userInputData: any) => {
-          let oldData: IImage = { url: '' };
-          return {
-            execute: () => {
-              oldData = JSON.parse(JSON.stringify(this.data));
-              if (builder?.setData) builder.setData(userInputData);
-              this.setData(userInputData);
-            },
-            undo: () => {
-              if (builder?.setData) builder.setData(oldData);
-              this.setData(oldData);
-            },
-            redo: () => { }
-          }
-        },
-        customUI: {
-          render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
-            const vstack = new VStack(null, {gap: '1rem'});
-            const config = new ScomImageConfig(null, {...this.data});
-            const hstack = new HStack(null, {
-              verticalAlignment: 'center',
-              horizontalAlignment: 'end'
-            });
-            const button = new Button(null, {
-              caption: 'Confirm',
-              width: '100%',
-              height: 40,
-              font: {color: Theme.colors.primary.contrastText}
-            });
-            hstack.append(button);
-            vstack.append(config);
-            vstack.append(hstack);
-            button.onClick = async () => {
-              if (onConfirm) onConfirm(true, {...this.data, ...config.data});
-            }
-            return vstack;
-          }
-        }
-      },
+      editAction,
       {
         name: 'Widget Settings',
         icon: 'edit',
         ...this.getWidgetSchemas()
       }
-    ]
-    return actions
+    ];
   }
 
   private getWidgetSchemas(): any {

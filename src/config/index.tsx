@@ -54,6 +54,7 @@ export default class ScomImageConfig extends Module {
   private imgLinkInput: Input;
   private goButton: Button;
   private searchInput: Input;
+  private pnlUpload: Panel;
 
   private typeList = [
     {
@@ -167,6 +168,7 @@ export default class ScomImageConfig extends Module {
       this.onToggleImage(!!this.data.url)
     }
     this.updateImg();
+    this.pnlUpload.visible = this._data.canUpload === true;
   }
 
   private updateImg() {
@@ -443,7 +445,7 @@ export default class ScomImageConfig extends Module {
                     ></i-button>
                   </i-hstack>
                 </i-vstack>
-                <i-vstack gap="1rem">
+                <i-vstack id="pnlUpload" gap="1rem" visible={false}>
                   <i-label caption='Upload' font={{size: '1.25rem', weight: 'bold'}}></i-label>
                   <i-upload
                     id={'imgUploader'}

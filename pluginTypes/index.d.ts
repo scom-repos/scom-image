@@ -37,6 +37,7 @@ declare module "@scom/scom-image/interface.ts" {
         photoId?: string;
         keyword?: string;
         cropData?: ICropData;
+        canUpload?: boolean;
     }
     export enum CropType {
         PREEFORM = "Freeform",
@@ -133,6 +134,7 @@ declare module "@scom/scom-image/config/index.tsx" {
         private imgLinkInput;
         private goButton;
         private searchInput;
+        private pnlUpload;
         private typeList;
         private currentType;
         private typeMapper;
@@ -294,7 +296,7 @@ declare module "@scom/scom-image" {
         set link(value: string);
         get cropData(): ICropData;
         set cropData(value: ICropData);
-        getConfigurators(): {
+        getConfigurators(): ({
             name: string;
             target: string;
             getActions: () => any[];
@@ -302,9 +304,35 @@ declare module "@scom/scom-image" {
             setData: any;
             getTag: any;
             setTag: any;
-        }[];
-        private getPropertiesSchema;
-        private getThemeSchema;
+            getLink?: undefined;
+            getLinkParams?: undefined;
+            setLinkParams?: undefined;
+        } | {
+            name: string;
+            target: string;
+            getData: any;
+            setData: any;
+            getTag: any;
+            setTag: any;
+            getActions?: undefined;
+            getLink?: undefined;
+            getLinkParams?: undefined;
+            setLinkParams?: undefined;
+        } | {
+            name: string;
+            target: string;
+            getActions: () => any[];
+            getLink: () => string;
+            getLinkParams: () => {
+                data: string;
+            };
+            setLinkParams: (params: any) => Promise<void>;
+            getData: any;
+            setData: any;
+            getTag: any;
+            setTag: any;
+        })[];
+        private _getWidgetData;
         private _getActions;
         private getWidgetSchemas;
         private getData;
