@@ -45,6 +45,7 @@ export interface IImage {
   photoId?: string;
   keyword?: string;
   cropData?: ICropData;
+  canUpload?: boolean;
 }
 
 export enum CropType {
