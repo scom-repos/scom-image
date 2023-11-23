@@ -81,6 +81,7 @@ export default class ScomImageConfig extends Module {
 
   constructor(parent?: Container, options?: any) {
     super(parent, options);
+    this.onShowType = this.onShowType.bind(this);
   }
 
   get data() {
@@ -100,7 +101,8 @@ export default class ScomImageConfig extends Module {
 
   async setData(value: IImage) {
     this._data = value;
-    this.updateCurrentType(this.data.photoId ? this.typeList[1] : this.typeList[0]);
+    const unsplashRegex = /^https:\/\/images\.unsplash\.com\/\S*/g;
+    this.updateCurrentType(this.data.photoId || unsplashRegex.test(this.url) ? this.typeList[1] : this.typeList[0]);
     await this.renderUI();
   }
 
@@ -152,7 +154,8 @@ export default class ScomImageConfig extends Module {
     this.typeButton.icon = await Icon.create({...this.currentType.icon});
   }
 
-  private onShowType() {
+  private onShowType(target: Control, event: MouseEvent) {
+    event.preventDefault();
     this.typeModal.visible = !this.typeModal.visible;
   }
 
@@ -169,6 +172,7 @@ export default class ScomImageConfig extends Module {
     }
     this.updateImg();
     this.pnlUpload.visible = this._data.canUpload === true;
+    this.typeModal.refresh();
   }
 
   private updateImg() {
@@ -352,7 +356,7 @@ export default class ScomImageConfig extends Module {
               border={{width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem'}}
               background={{color: 'transparent'}}
               rightIcon={{name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: {left: 'auto'}}}
-              onClick={this.onShowType.bind(this)}
+              onClick={this.onShowType}
               padding={{left: 12, right: 12}}
               class="shadow-btn"
             ></i-button>
@@ -362,6 +366,7 @@ export default class ScomImageConfig extends Module {
               width='100%'
               minWidth={200}
               popupPlacement="bottomLeft"
+              visible={false}
             >
               <i-vstack id="typeStack" gap="0.5rem" padding={{left: '1rem', right: '1rem'}}></i-vstack>
             </i-modal>

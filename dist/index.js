@@ -283,6 +283,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             this.selectedPhoto = null;
             this.currentPage = 1;
             this.searchTimer = null;
+            this.onShowType = this.onShowType.bind(this);
         }
         get data() {
             return this._data;
@@ -299,7 +300,8 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
         }
         async setData(value) {
             this._data = value;
-            this.updateCurrentType(this.data.photoId ? this.typeList[1] : this.typeList[0]);
+            const unsplashRegex = /^https:\/\/images\.unsplash\.com\/\S*/g;
+            this.updateCurrentType(this.data.photoId || unsplashRegex.test(this.url) ? this.typeList[1] : this.typeList[0]);
             await this.renderUI();
         }
         async renderType() {
@@ -332,7 +334,8 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             this.typeButton.caption = this.currentType.caption;
             this.typeButton.icon = await components_3.Icon.create({ ...this.currentType.icon });
         }
-        onShowType() {
+        onShowType(target, event) {
+            event.preventDefault();
             this.typeModal.visible = !this.typeModal.visible;
         }
         async renderUI() {
@@ -349,6 +352,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             }
             this.updateImg();
             this.pnlUpload.visible = this._data.canUpload === true;
+            this.typeModal.refresh();
         }
         updateImg() {
             if (this.currentType.type === interface_1.UploadType.UPLOAD) {
@@ -477,8 +481,8 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
             return (this.$render("i-panel", null,
                 this.$render("i-vstack", null,
                     this.$render("i-panel", { margin: { bottom: '1.5rem' }, class: "type-pnl", stack: { grow: '1' } },
-                        this.$render("i-button", { id: "typeButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, background: { color: 'transparent' }, rightIcon: { name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: { left: 'auto' } }, onClick: this.onShowType.bind(this), padding: { left: 12, right: 12 }, class: "shadow-btn" }),
-                        this.$render("i-modal", { id: "typeModal", showBackdrop: false, width: '100%', minWidth: 200, popupPlacement: "bottomLeft" },
+                        this.$render("i-button", { id: "typeButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, background: { color: 'transparent' }, rightIcon: { name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: { left: 'auto' } }, onClick: this.onShowType, padding: { left: 12, right: 12 }, class: "shadow-btn" }),
+                        this.$render("i-modal", { id: "typeModal", showBackdrop: false, width: '100%', minWidth: 200, popupPlacement: "bottomLeft", visible: false },
                             this.$render("i-vstack", { id: "typeStack", gap: "0.5rem", padding: { left: '1rem', right: '1rem' } }))),
                     this.$render("i-panel", null,
                         this.$render("i-panel", { id: "unsplashPnl", visible: false },
