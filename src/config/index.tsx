@@ -445,6 +445,7 @@ export default class ScomImageConfig extends Module {
                       height="40px"
                       caption='Go'
                       enabled={false}
+                      padding={{left: '0.5rem', right: '0.5rem'}}
                       onClick={this.onGoClicked.bind(this)}
                       class="hover-btn"
                     ></i-button>

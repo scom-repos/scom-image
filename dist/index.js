@@ -502,7 +502,7 @@ define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/com
                                     this.$render("i-label", { caption: 'URL', font: { size: '1.25rem', weight: 'bold' } }),
                                     this.$render("i-hstack", { gap: "0.5rem", verticalAlignment: "center", horizontalAlignment: "space-between" },
                                         this.$render("i-input", { id: 'imgLinkInput', width: '100%', height: 40, border: { radius: '0.375rem' }, placeholder: 'Paste on enter image URL', onChanged: this.onChangedLink.bind(this) }),
-                                        this.$render("i-button", { id: "goButton", border: { radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider }, font: { weight: 600 }, background: { color: 'transparent' }, height: "40px", caption: 'Go', enabled: false, onClick: this.onGoClicked.bind(this), class: "hover-btn" }))),
+                                        this.$render("i-button", { id: "goButton", border: { radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider }, font: { weight: 600 }, background: { color: 'transparent' }, height: "40px", caption: 'Go', enabled: false, padding: { left: '0.5rem', right: '0.5rem' }, onClick: this.onGoClicked.bind(this), class: "hover-btn" }))),
                                 this.$render("i-vstack", { id: "pnlUpload", gap: "1rem", visible: false },
                                     this.$render("i-label", { caption: 'Upload', font: { size: '1.25rem', weight: 'bold' } }),
                                     this.$render("i-upload", { id: 'imgUploader', multiple: false, height: '100%', caption: 'Drag a file or click to upload', minWidth: "auto", draggable: true, onChanged: this.onChangedImage }))),
@@ -1183,6 +1183,8 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         set url(value) {
             this.data.url = value;
+            if (!this.img)
+                return;
             if (!value) {
                 this.img.url = 'https://placehold.co/600x400?text=No+Image';
                 return;
@@ -1200,6 +1202,8 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
         }
         set altText(value) {
             this.data.altText = value;
+            if (!this.img)
+                return;
             const imgElm = this.img.querySelector('img');
             imgElm && imgElm.setAttribute('alt', this.data.altText || '');
         }
@@ -1244,45 +1248,12 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     getActions: () => {
                         return this._getActions('Editor');
                     },
-                    getLink: () => {
-                        const encodedWidgetDataString = window.btoa(JSON.stringify(self._getWidgetData()));
-                        const loaderUrl = `https://ipfs.scom.dev/ipfs/bafybeia442nl6djz7qipnfk5dxu26pgr2xgpar7znvt3aih2k6nxk7sib4`;
-                        return `${loaderUrl}?data=${encodedWidgetDataString}`;
-                    },
-                    getLinkParams: () => {
-                        return {
-                            data: window.btoa(JSON.stringify(self._getWidgetData()))
-                        };
-                    },
-                    setLinkParams: async (params) => {
-                        if (params.data) {
-                            const utf8String = decodeURIComponent(params.data);
-                            const decodedString = window.atob(utf8String);
-                            const newData = JSON.parse(decodedString);
-                            let resultingData = {
-                                ...self.data,
-                                ...(newData.properties || {})
-                            };
-                            this.setData(resultingData);
-                        }
-                    },
                     getData: this.getData.bind(this),
                     setData: this.setData.bind(this),
                     getTag: this.getTag.bind(this),
                     setTag: this.setTag.bind(this)
                 }
             ];
-        }
-        _getWidgetData() {
-            return {
-                "module": {
-                    "name": "@scom/scom-image",
-                    "localPath": "scom-image"
-                },
-                "properties": {
-                    ...(this.data || {})
-                }
-            };
         }
         _getActions(target) {
             const self = this;
@@ -1517,9 +1488,12 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             this.data = value;
             this.updateImg();
             this.updateCropUI();
-            this.pnlImage.background.color = value.backgroundColor || '';
+            if (this.pnlImage)
+                this.pnlImage.background.color = value.backgroundColor || '';
         }
         updateImg() {
+            if (!this.img)
+                return;
             if (this.data.cid) {
                 const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
                 this.img.url = ipfsGatewayUrl + this.data.cid;
@@ -1540,6 +1514,8 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             imgElm && imgElm.setAttribute('alt', this.data.altText || '');
         }
         updateCropUI() {
+            if (!this.img)
+                return;
             const cropData = this.data.cropData;
             const imgTag = this.img.querySelector('img');
             if (!imgTag)

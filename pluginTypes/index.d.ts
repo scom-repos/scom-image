@@ -304,9 +304,6 @@ declare module "@scom/scom-image" {
             setData: any;
             getTag: any;
             setTag: any;
-            getLink?: undefined;
-            getLinkParams?: undefined;
-            setLinkParams?: undefined;
         } | {
             name: string;
             target: string;
@@ -315,24 +312,7 @@ declare module "@scom/scom-image" {
             getTag: any;
             setTag: any;
             getActions?: undefined;
-            getLink?: undefined;
-            getLinkParams?: undefined;
-            setLinkParams?: undefined;
-        } | {
-            name: string;
-            target: string;
-            getActions: () => any[];
-            getLink: () => string;
-            getLinkParams: () => {
-                data: string;
-            };
-            setLinkParams: (params: any) => Promise<void>;
-            getData: any;
-            setData: any;
-            getTag: any;
-            setTag: any;
         })[];
-        private _getWidgetData;
         private _getActions;
         private getWidgetSchemas;
         private getData;
