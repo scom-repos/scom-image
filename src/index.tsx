@@ -100,6 +100,7 @@ export default class ScomImage extends Module {
   }
   set url(value: string) {
     this.data.url = value;
+    if(!this.img) return;
     if (!value) {
       this.img.url = 'https://placehold.co/600x400?text=No+Image'
       return
@@ -117,6 +118,7 @@ export default class ScomImage extends Module {
   }
   set altText(value: string) {
     this.data.altText = value;
+    if (!this.img) return;
     const imgElm = this.img.querySelector('img')
     imgElm && imgElm.setAttribute('alt', this.data.altText || '')
   }
@@ -164,46 +166,12 @@ export default class ScomImage extends Module {
         getActions: () => {
           return this._getActions('Editor')
         },
-        getLink: () => {
-          const encodedWidgetDataString  = window.btoa(JSON.stringify(self._getWidgetData()));
-          const loaderUrl = `https://ipfs.scom.dev/ipfs/bafybeia442nl6djz7qipnfk5dxu26pgr2xgpar7znvt3aih2k6nxk7sib4`
-          return `${loaderUrl}?data=${encodedWidgetDataString}`
-        },
-        getLinkParams: () => {
-          return {
-            data: window.btoa(JSON.stringify(self._getWidgetData()))
-          }
-        },
-        setLinkParams: async (params: any) => {
-          if (params.data) {
-            const utf8String = decodeURIComponent(params.data);
-            const decodedString = window.atob(utf8String);
-            const newData = JSON.parse(decodedString);
-            let resultingData = {
-              ...self.data,
-              ...(newData.properties || {})
-            };
-            this.setData(resultingData);
-          }
-        },
         getData: this.getData.bind(this),
         setData: this.setData.bind(this),
         getTag: this.getTag.bind(this),
         setTag: this.setTag.bind(this)
       }
     ]
-  }
-
-  private _getWidgetData() {
-    return {
-      "module": {
-        "name": "@scom/scom-image",
-        "localPath": "scom-image"
-      },
-      "properties": {
-        ...(this.data || {})
-      }
-    }
   }
 
   private _getActions(target?: string) {
@@ -434,10 +402,12 @@ export default class ScomImage extends Module {
     this.data = value;
     this.updateImg()
     this.updateCropUI()
-    this.pnlImage.background.color = value.backgroundColor || '';
+    if (this.pnlImage)
+      this.pnlImage.background.color = value.backgroundColor || '';
   }
 
   private updateImg() {
+    if(!this.img) return;
     if (this.data.cid) {
       const ipfsGatewayUrl = getIPFSGatewayUrl()
       this.img.url = ipfsGatewayUrl + this.data.cid;
@@ -457,6 +427,7 @@ export default class ScomImage extends Module {
   }
 
   private updateCropUI() {
+    if (!this.img) return;
     const cropData = this.data.cropData
     const imgTag = this.img.querySelector('img')
     if (!imgTag) return
