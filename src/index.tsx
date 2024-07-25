@@ -195,29 +195,38 @@ export default class ScomImage extends Module {
           redo: () => { }
         }
       },
-      customUI: {
-        render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
-          const vstack = new VStack(null, {gap: '1rem'});
-          const config = new ScomImageConfig(null, {...this.data, canUpload: target !== 'Editor'});
-          const hstack = new HStack(null, {
-            verticalAlignment: 'center',
-            horizontalAlignment: 'end'
-          });
-          const button = new Button(null, {
-            caption: 'Confirm',
-            width: '100%',
-            height: 40,
-            font: {color: Theme.colors.primary.contrastText}
-          });
-          hstack.append(button);
-          vstack.append(config);
-          vstack.append(hstack);
-          button.onClick = async () => {
-            if (onConfirm) onConfirm(true, {...this.data, ...config.data});
+      userInputDataSchema: {
+        type: 'object',
+        properties: {
+          url: {
+            required: true,
+            type: 'string'
           }
-          return vstack;
         }
       }
+      // customUI: {
+      //   render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
+      //     const vstack = new VStack(null, {gap: '1rem'});
+      //     const config = new ScomImageConfig(null, {...this.data, canUpload: target !== 'Editor'});
+      //     const hstack = new HStack(null, {
+      //       verticalAlignment: 'center',
+      //       horizontalAlignment: 'end'
+      //     });
+      //     const button = new Button(null, {
+      //       caption: 'Confirm',
+      //       width: '100%',
+      //       height: 40,
+      //       font: {color: Theme.colors.primary.contrastText}
+      //     });
+      //     hstack.append(button);
+      //     vstack.append(config);
+      //     vstack.append(hstack);
+      //     button.onClick = async () => {
+      //       if (onConfirm) onConfirm(true, {...this.data, ...config.data});
+      //     }
+      //     return vstack;
+      //   }
+      // }
     };
     if (target === 'Editor') return [editAction];
     return [
@@ -521,6 +530,7 @@ export default class ScomImage extends Module {
             id={'img'}
             // url={'https://placehold.co/600x400?text=No+Image'}
             class="custom-img"
+            fallbackUrl="https://placehold.co/600x400?text=No+Image"
             onClick={this.onImageClick.bind(this)}
           ></i-image>
         </i-vstack>

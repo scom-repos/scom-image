@@ -1138,7 +1138,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
     ], ScomImageCrop);
     exports.default = ScomImageCrop;
 });
-define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/data.json.ts", "@scom/scom-image/config/index.tsx", "@scom/scom-image/crop/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_6, interface_3, store_3, data_json_1, index_1, index_2) {
+define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/data.json.ts", "@scom/scom-image/crop/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_6, interface_3, store_3, data_json_1, index_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_6.Styles.Theme.ThemeVars;
@@ -1278,30 +1278,38 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                         redo: () => { }
                     };
                 },
-                customUI: {
-                    render: (data, onConfirm) => {
-                        const vstack = new components_6.VStack(null, { gap: '1rem' });
-                        const config = new index_1.default(null, { ...this.data, canUpload: target !== 'Editor' });
-                        const hstack = new components_6.HStack(null, {
-                            verticalAlignment: 'center',
-                            horizontalAlignment: 'end'
-                        });
-                        const button = new components_6.Button(null, {
-                            caption: 'Confirm',
-                            width: '100%',
-                            height: 40,
-                            font: { color: Theme.colors.primary.contrastText }
-                        });
-                        hstack.append(button);
-                        vstack.append(config);
-                        vstack.append(hstack);
-                        button.onClick = async () => {
-                            if (onConfirm)
-                                onConfirm(true, { ...this.data, ...config.data });
-                        };
-                        return vstack;
+                userInputDataSchema: {
+                    type: 'object',
+                    properties: {
+                        url: {
+                            required: true,
+                            type: 'string'
+                        }
                     }
                 }
+                // customUI: {
+                //   render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
+                //     const vstack = new VStack(null, {gap: '1rem'});
+                //     const config = new ScomImageConfig(null, {...this.data, canUpload: target !== 'Editor'});
+                //     const hstack = new HStack(null, {
+                //       verticalAlignment: 'center',
+                //       horizontalAlignment: 'end'
+                //     });
+                //     const button = new Button(null, {
+                //       caption: 'Confirm',
+                //       width: '100%',
+                //       height: 40,
+                //       font: {color: Theme.colors.primary.contrastText}
+                //     });
+                //     hstack.append(button);
+                //     vstack.append(config);
+                //     vstack.append(hstack);
+                //     button.onClick = async () => {
+                //       if (onConfirm) onConfirm(true, {...this.data, ...config.data});
+                //     }
+                //     return vstack;
+                //   }
+                // }
             };
             if (target === 'Editor')
                 return [editAction];
@@ -1329,7 +1337,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     customUI: {
                         render: (data, onConfirm) => {
                             const vstack = new components_6.VStack(null, { gap: '1rem' });
-                            const config = new index_2.default(null, { ...this.data });
+                            const config = new index_1.default(null, { ...this.data });
                             const hstack = new components_6.HStack(null, {
                                 verticalAlignment: 'center',
                                 horizontalAlignment: 'end'
@@ -1612,7 +1620,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 this.$render("i-vstack", { id: 'pnlImage', class: "img-wrapper" },
                     this.$render("i-image", { id: 'img', 
                         // url={'https://placehold.co/600x400?text=No+Image'}
-                        class: "custom-img", onClick: this.onImageClick.bind(this) }))));
+                        class: "custom-img", fallbackUrl: "https://placehold.co/600x400?text=No+Image", onClick: this.onImageClick.bind(this) }))));
         }
     };
     ScomImage = __decorate([
