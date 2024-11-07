@@ -138,391 +138,12 @@ define("@scom/scom-image/index.css.ts", ["require", "exports", "@ijstech/compone
         }
     });
 });
-define("@scom/scom-image/config/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
+define("@scom/scom-image/crop/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_2.Styles.Theme.ThemeVars;
-    const loadingAnim = components_2.Styles.keyframes({
-        'from': {
-            backgroundPosition: '0 0'
-        },
-        'to': {
-            backgroundPosition: '1000px 0'
-        }
-    });
-    exports.default = components_2.Styles.cssRule('i-scom-image-config', {
-        $nest: {
-            '.type-item': {
-                border: `1px solid ${Theme.background.modal}`,
-                transition: 'opacity, border .2s ease-in'
-            },
-            '.type-item:hover': {
-                background: Theme.action.hover,
-                border: `1px solid ${Theme.divider}`,
-            },
-            '.is-actived > .check-icon': {
-                opacity: '1 !important'
-            },
-            '.type-pnl': {
-                $nest: {
-                    'i-button': {
-                        justifyContent: 'start',
-                        gap: '0.5rem'
-                    }
-                }
-            },
-            'i-button': {
-                gap: '0.5rem'
-            },
-            '.hover-btn:hover': {
-                background: Theme.action.hover,
-                border: `1px solid ${Theme.divider}`
-            },
-            '.shadow-btn': {
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1),0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                fontWeight: 600
-            },
-            '.shadow-btn:hover': {
-                color: `${Theme.colors.primary.main} !important`
-            },
-            '#typeModal': {
-                width: '100%',
-                $nest: {
-                    '> div': {
-                        boxShadow: `0 10px 15px -3px rgba(0, 0, 0, 0.1),0 4px 6px -2px ${Theme.divider}`
-                    },
-                    '.modal': {
-                        padding: '1rem',
-                        marginTop: '0.5rem',
-                        $nest: {
-                            '.i-modal_header': {
-                                display: 'none'
-                            }
-                        }
-                    }
-                }
-            },
-            'i-input input': {
-                padding: '0 10px'
-            },
-            '#searchInput': {
-                border: 'none !important'
-            },
-            '.overflow': {
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-            },
-            '.image-item': {
-                cursor: 'pointer',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                $nest: {
-                    '.image-content': {
-                        opacity: 0,
-                        borderBottomLeftRadius: '0.25rem',
-                        borderBottomRightRadius: '0.25rem',
-                        transition: 'background-color,border-color,color,fill,stroke,opacity,box-shadow,transform .3s ease-in'
-                    },
-                    '&:hover .image-content': {
-                        opacity: 1
-                    },
-                    '.img-fade': {
-                        opacity: 0,
-                        borderTopLeftRadius: '0.25rem',
-                        borderTopRightRadius: '0.25rem',
-                    },
-                    '&.img-actived .img-fade': {
-                        opacity: 1
-                    }
-                }
-            },
-            '.image-placeholder': {
-                backgroundImage: 'linear-gradient(90deg, #e4e4e4 0%, #f1f1f1 40%, #ededed 60%, #e4e4e4 100%)',
-                backgroundPosition: '0px 0px',
-                backgroundRepeat: 'repeat',
-                animation: `${loadingAnim} 5s linear infinite`
-            }
-        }
-    });
-});
-define("@scom/scom-image/config/interface.ts", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.UploadType = void 0;
-    ///<amd-module name='@scom/scom-image/config/interface.ts'/> 
-    var UploadType;
-    (function (UploadType) {
-        UploadType["UPLOAD"] = "upload";
-        UploadType["UNSPLASH"] = "unsplash";
-    })(UploadType = exports.UploadType || (exports.UploadType = {}));
-});
-define("@scom/scom-image/config/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/config/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/config/index.css.ts"], function (require, exports, components_3, interface_1, store_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_3.Styles.Theme.ThemeVars;
-    let ScomImageConfig = class ScomImageConfig extends components_3.Module {
-        constructor(parent, options) {
-            super(parent, options);
-            this.typeList = [
-                {
-                    type: interface_1.UploadType.UPLOAD,
-                    caption: 'Image upload or URL',
-                    icon: { name: 'image', width: 16, height: 16, fill: Theme.colors.primary.main }
-                },
-                {
-                    type: interface_1.UploadType.UNSPLASH,
-                    caption: 'Unsplash images',
-                    icon: { name: 'images', width: 16, height: 16, fill: Theme.colors.primary.main }
-                    // icon: {image: {url: assets.fullPath('img/unsplash.svg'),  width: 16, height: 16}}
-                }
-            ];
-            this.currentType = this.typeList[0];
-            this.photoList = [];
-            this.selectedPhoto = null;
-            this.currentPage = 1;
-            this.searchTimer = null;
-            this.onShowType = this.onShowType.bind(this);
-        }
-        get data() {
-            return this._data;
-        }
-        set data(value) {
-            this._data = value;
-        }
-        get url() {
-            return this._data.url ?? '';
-        }
-        set url(value) {
-            this._data.url = value ?? '';
-            this.updateImg();
-        }
-        async setData(value) {
-            this._data = value;
-            const unsplashRegex = /^https:\/\/images\.unsplash\.com\/\S*/g;
-            this.updateCurrentType(this.data.photoId || unsplashRegex.test(this.url) ? this.typeList[1] : this.typeList[0]);
-            await this.renderUI();
-        }
-        async renderType() {
-            this.typeMapper = new Map();
-            this.typeStack.clearInnerHTML();
-            this.typeStack.appendChild(this.$render("i-label", { caption: 'Image', font: { weight: 600, color: Theme.text.secondary } }));
-            for (let type of this.typeList) {
-                const hstack = (this.$render("i-hstack", { verticalAlignment: 'center', gap: "0.5rem", class: `${type.type === this.currentType.type ? 'type-item is-actived' : 'type-item'}`, padding: { left: '0.5rem', right: '0.5rem' }, border: { radius: '0.375rem' }, onClick: (source) => this.onTypeSelected(source, type) },
-                    this.$render("i-icon", { name: "check", width: 14, height: 14, fill: Theme.text.primary, opacity: 0, class: "check-icon" }),
-                    this.$render("i-button", { width: "100%", padding: { top: '0.5rem', bottom: '0.5rem', left: '0.75rem', right: '0.75rem' }, border: { width: '1px', style: 'none', color: Theme.divider, radius: '0.375rem' }, icon: type.icon, caption: type.caption, boxShadow: 'none', background: { color: 'transparent' } })));
-                this.typeStack.appendChild(hstack);
-                this.typeMapper.set(type.type, hstack);
-            }
-            this.typeButton.caption = this.currentType.caption;
-            this.typeButton.icon = await components_3.Icon.create({ ...this.currentType.icon });
-        }
-        async onTypeSelected(source, data) {
-            this.typeModal.visible = false;
-            this.updateCurrentType(data);
-            this.renderUI();
-        }
-        async updateCurrentType(type) {
-            const oldType = this.typeMapper.get(this.currentType.type);
-            if (oldType)
-                oldType.classList.remove('is-actived');
-            this.currentType = { ...type };
-            const currentType = this.typeMapper.get(this.currentType.type);
-            if (currentType)
-                currentType.classList.add('is-actived');
-            this.typeButton.caption = this.currentType.caption;
-            this.typeButton.icon = await components_3.Icon.create({ ...this.currentType.icon });
-        }
-        onShowType(target, event) {
-            event.preventDefault();
-            this.typeModal.visible = !this.typeModal.visible;
-        }
-        async renderUI() {
-            if (this.currentType.type === interface_1.UploadType.UNSPLASH) {
-                this.searchInput.value = this.data.keyword || '';
-                await this.onFetchPhotos();
-                this.unsplashPnl.visible = true;
-                this.normalPnl.visible = false;
-            }
-            else {
-                this.unsplashPnl.visible = false;
-                this.normalPnl.visible = true;
-                this.onToggleImage(!!this.data.url);
-            }
-            this.updateImg();
-            this.pnlUpload.visible = this._data.canUpload === true;
-            this.typeModal.refresh();
-        }
-        updateImg() {
-            if (this.currentType.type === interface_1.UploadType.UPLOAD) {
-                if (this.data.url) {
-                    const url = this.getImgSrc();
-                    this.imgEl.url = url;
-                }
-                else {
-                    this.imgUploader.clear();
-                    this.imgLinkInput.value = '';
-                    this.goButton.enabled = false;
-                }
-            }
-        }
-        getImgSrc() {
-            let url = '';
-            if (this.data.cid) {
-                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
-                url = ipfsGatewayUrl + this.data.cid;
-            }
-            else if (this.data.url?.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
-                url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
-            }
-            else {
-                url = this.data.url || 'https://placehold.co/600x400?text=No+Image';
-            }
-            return url;
-        }
-        async renderGrid(photoList) {
-            const placeholders = this.imageGrid.querySelectorAll('.image-placeholder');
-            for (let placeholder of placeholders)
-                placeholder.remove();
-            if (!photoList?.length)
-                return;
-            for (let photo of photoList) {
-                this.imageGrid.appendChild(this.$render("i-panel", { border: { radius: '0.25rem' }, height: 100, background: { image: photo.urls.thumb }, onClick: (source) => this.onPhotoSelected(source, photo), class: `${this._data?.photoId && photo.id === this._data.photoId ? 'image-item img-actived' : 'image-item'}` },
-                    this.$render("i-vstack", { border: { radius: '0.25rem' }, position: 'absolute', width: "100%", height: "100%", left: "0px", bottom: "0px", zIndex: 90, background: { color: 'rgba(0, 0, 0, 0.5)' }, horizontalAlignment: "center", verticalAlignment: "center", class: "img-fade" },
-                        this.$render("i-icon", { name: "check", fill: "#fff", width: "14px", height: "14px" })),
-                    this.$render("i-vstack", { position: 'absolute', width: "100%", height: "100%", left: "0px", bottom: "0px", zIndex: 99, verticalAlignment: "end", class: "image-content" },
-                        this.$render("i-hstack", { verticalAlignment: "center", gap: "0.25rem", padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }, background: { color: 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 100%)' }, class: "overflow" },
-                            this.$render("i-label", { link: { href: `https://unsplash.com/@${photo.user.username}` } },
-                                this.$render("i-icon", { name: 'external-link-alt', width: 12, height: 12, fill: '#fff' })),
-                            this.$render("i-label", { caption: photo.user.name, font: { color: '#fff', size: '0.75rem' }, class: "overflow" })))));
-            }
-        }
-        onPhotoSelected(source, photo) {
-            if (this.selectedPhoto)
-                this.selectedPhoto.classList.remove('img-actived');
-            this.url = photo.urls.regular;
-            this.data.altText = photo.alt_description;
-            this.data.photoId = photo.id;
-            source.classList.add('img-actived');
-            this.selectedPhoto = source;
-        }
-        async onLoadMore() {
-            ++this.currentPage;
-            this.renderPlaceholders();
-            const newData = await (0, store_1.getUnsplashPhotos)({ page: this.currentPage });
-            this.renderGrid([...newData]);
-        }
-        onSearchPhoto() {
-            if (this.searchTimer)
-                clearTimeout(this.searchTimer);
-            this.searchTimer = setTimeout(() => this.onFetchPhotos(), 1000);
-        }
-        async onFetchPhotos(keyword) {
-            this.data.keyword = keyword || this.searchInput.value;
-            this.imageGrid.clearInnerHTML();
-            this.renderPlaceholders();
-            const response = await (0, store_1.filterUnsplashPhotos)({ query: this.data.keyword });
-            this.imageGrid.clearInnerHTML();
-            this.photoList = response?.results || [];
-            this.renderGrid([...this.photoList]);
-        }
-        renderPlaceholders() {
-            for (let i = 0; i < 18; i++) {
-                this.imageGrid.appendChild(this.$render("i-panel", { class: "image-placeholder", height: "100px", border: { radius: '0.25rem' } }));
-            }
-        }
-        async onSurpriseClicked() {
-            this.onFetchPhotos((0, store_1.getRandomKeyword)());
-        }
-        // For uploader
-        onToggleImage(value) {
-            this.pnlEditor.visible = !value;
-            this.pnlImage.visible = value;
-        }
-        onGoClicked() {
-            this.url = this.imgLinkInput.value;
-            this.data.photoId = '';
-            this.onToggleImage(true);
-        }
-        async onChangedImage(control, files) {
-            let newUrl = '';
-            if (files && files[0]) {
-                newUrl = (await this.imgUploader.toBase64(files[0]));
-                this.data.photoId = '';
-                this.onToggleImage(true);
-            }
-            this.url = newUrl;
-        }
-        onReplaceImage() {
-            this.imgUploader.clear();
-            this.url = '';
-            this.onToggleImage(false);
-        }
-        onChangedLink() {
-            this.goButton.enabled = this.imgLinkInput.value;
-        }
-        disconnecedCallback() {
-            super.disconnectedCallback();
-            if (this.searchTimer)
-                clearTimeout(this.searchTimer);
-        }
-        async init() {
-            super.init();
-            this.renderType();
-            const cid = this.getAttribute('cid', true);
-            const url = this.getAttribute('url', true);
-            const keyword = this.getAttribute('keyword', true);
-            const photoId = this.getAttribute('photoId', true);
-            await this.setData({ cid, url, keyword, photoId });
-        }
-        render() {
-            return (this.$render("i-panel", null,
-                this.$render("i-vstack", null,
-                    this.$render("i-panel", { margin: { bottom: '1.5rem' }, class: "type-pnl", stack: { grow: '1' } },
-                        this.$render("i-button", { id: "typeButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, background: { color: 'transparent' }, rightIcon: { name: 'angle-down', width: 16, height: 16, fill: Theme.text.primary, margin: { left: 'auto' } }, onClick: this.onShowType, padding: { left: 12, right: 12 }, class: "shadow-btn" }),
-                        this.$render("i-modal", { id: "typeModal", showBackdrop: false, width: '100%', minWidth: 200, popupPlacement: "bottomLeft", visible: false },
-                            this.$render("i-vstack", { id: "typeStack", gap: "0.5rem", padding: { left: '1rem', right: '1rem' } }))),
-                    this.$render("i-panel", null,
-                        this.$render("i-panel", { id: "unsplashPnl", visible: false },
-                            this.$render("i-hstack", { gap: 12, verticalAlignment: 'center', justifyContent: "space-between", height: 40, width: "100%", padding: { left: 12, right: 12 }, border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' } },
-                                this.$render("i-icon", { name: 'search', width: 16, height: 16, fill: Theme.text.primary }),
-                                this.$render("i-input", { id: "searchInput", placeholder: 'Find an image', border: { style: 'none' }, height: "100%", width: "100%", onKeyUp: this.onSearchPhoto.bind(this) }),
-                                this.$render("i-button", { icon: { name: 'surprise', width: 16, height: 16, fill: Theme.colors.primary.main }, border: { radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider }, font: { weight: 600 }, background: { color: 'transparent' }, tooltip: { content: 'Surprise me' }, onClick: this.onSurpriseClicked.bind(this), class: "hover-btn" })),
-                            this.$render("i-grid-layout", { id: "imageGrid", margin: { top: '1rem' }, templateColumns: ['repeat(auto-fill, minmax(min(122px, 100%), 1fr))'], grid: { horizontalAlignment: 'center' }, gap: { row: '0.5rem', column: '0.5rem' } }),
-                            this.$render("i-hstack", { horizontalAlignment: "center", margin: { top: '1rem' } },
-                                this.$render("i-button", { id: "loadMoreButton", height: 40, width: "45%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, font: { color: Theme.text.primary }, caption: 'Load more', background: { color: 'transparent' }, class: "shadow-btn", onClick: this.onLoadMore.bind(this) })),
-                            this.$render("i-hstack", { horizontalAlignment: 'center', gap: "4px", padding: { top: 30, bottom: 10 } },
-                                this.$render("i-label", { caption: 'Photos from' }),
-                                this.$render("i-label", { caption: 'Unsplash', link: { href: 'https://unsplash.com/' } }))),
-                        this.$render("i-panel", { id: "normalPnl", visible: false },
-                            this.$render("i-vstack", { id: "pnlEditor", gap: "1rem" },
-                                this.$render("i-vstack", { gap: "1rem" },
-                                    this.$render("i-label", { caption: 'URL', font: { size: '1.25rem', weight: 'bold' } }),
-                                    this.$render("i-hstack", { gap: "0.5rem", verticalAlignment: "center", horizontalAlignment: "space-between" },
-                                        this.$render("i-input", { id: 'imgLinkInput', width: '100%', height: 40, border: { radius: '0.375rem' }, placeholder: 'Paste on enter image URL', onChanged: this.onChangedLink.bind(this) }),
-                                        this.$render("i-button", { id: "goButton", border: { radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider }, font: { weight: 600 }, background: { color: 'transparent' }, height: "40px", caption: 'Go', enabled: false, padding: { left: '0.5rem', right: '0.5rem' }, onClick: this.onGoClicked.bind(this), class: "hover-btn" }))),
-                                this.$render("i-vstack", { id: "pnlUpload", gap: "1rem", visible: false },
-                                    this.$render("i-label", { caption: 'Upload', font: { size: '1.25rem', weight: 'bold' } }),
-                                    this.$render("i-upload", { id: 'imgUploader', multiple: false, height: '100%', caption: 'Drag a file or click to upload', minWidth: "auto", draggable: true, onChanged: this.onChangedImage }))),
-                            this.$render("i-vstack", { id: 'pnlImage', gap: "1rem", visible: false },
-                                this.$render("i-image", { id: 'imgEl', url: 'https://placehold.co/600x400?text=No+Image', maxHeight: "100%", maxWidth: "100%", class: "custom-img" }),
-                                this.$render("i-button", { id: "replaceButton", height: 40, width: "100%", border: { width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem' }, font: { color: Theme.text.primary }, caption: 'Replace Image', background: { color: 'transparent' }, class: "shadow-btn", onClick: this.onReplaceImage.bind(this) })))))));
-        }
-    };
-    ScomImageConfig = __decorate([
-        components_3.customModule,
-        (0, components_3.customElements)('i-scom-image-config')
-    ], ScomImageConfig);
-    exports.default = ScomImageConfig;
-});
-define("@scom/scom-image/crop/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_4) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_4.Styles.Theme.ThemeVars;
     const maskStyle = `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px) 50% 100% / 100% 100% no-repeat, linear-gradient(rgba(0, 0, 0, 0.4) 0px, rgba(0, 0, 0, 0.4) 0px)`;
-    components_4.Styles.cssRule('i-scom-image-crop', {
+    components_2.Styles.cssRule('i-scom-image-crop', {
         $nest: {
             '.custom-img img': {
                 objectFit: 'fill',
@@ -652,28 +273,28 @@ define("@scom/scom-image/crop/index.css.ts", ["require", "exports", "@ijstech/co
         }
     });
 });
-define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/crop/index.css.ts"], function (require, exports, components_5, interface_2, store_2) {
+define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/crop/index.css.ts"], function (require, exports, components_3, interface_1, store_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_5.Styles.Theme.ThemeVars;
+    const Theme = components_3.Styles.Theme.ThemeVars;
     const MIN_WIDTH = 50;
     const DEFAULT_ASPECT_RATIO = '1:1';
     const cropTypeOptions = [
         {
-            value: interface_2.CropType.PREEFORM,
+            value: interface_1.CropType.PREEFORM,
             label: 'Freeform'
         },
         {
-            value: interface_2.CropType.CIRCLE,
+            value: interface_1.CropType.CIRCLE,
             label: 'Circle'
         }
     ];
-    let ScomImageCrop = class ScomImageCrop extends components_5.Module {
+    let ScomImageCrop = class ScomImageCrop extends components_3.Module {
         constructor(parent, options) {
             super(parent, options);
             this._data = { url: '' };
             this.isResizing = false;
-            this._cropType = interface_2.CropType.PREEFORM;
+            this._cropType = interface_1.CropType.PREEFORM;
             this._isLockedRatio = false;
             this.isShown = true;
             this._mouseMoveHandler = this.handleMouseMove.bind(this);
@@ -914,7 +535,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
         updateMaskImage(cropData) {
             let { left, top, width, height, type } = cropData || this.getPercentValues();
             let maskStyle = '';
-            if (type === interface_2.CropType.CIRCLE) {
+            if (type === interface_1.CropType.CIRCLE) {
                 const x = left + width / 2;
                 height = (this.pnlCropMask.offsetHeight / this.pnlCropWrap.offsetHeight) * 100;
                 const y = top + height / 2;
@@ -967,7 +588,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
                 return;
             }
             if (this.data.url?.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
@@ -979,11 +600,11 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
         }
         set cropData(value) {
             this.data.cropData = value;
-            this._cropType = value.type ?? interface_2.CropType.PREEFORM;
+            this._cropType = value.type ?? interface_1.CropType.PREEFORM;
             this.renderCropUI();
         }
         get isCircleType() {
-            return this._cropType === interface_2.CropType.CIRCLE;
+            return this._cropType === interface_1.CropType.CIRCLE;
         }
         get isFixedRatio() {
             return this._isLockedRatio || this.isCircleType;
@@ -1002,7 +623,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
         }
         set data(value) {
             this._data = value;
-            this._cropType = value?.cropData?.type ?? interface_2.CropType.PREEFORM;
+            this._cropType = value?.cropData?.type ?? interface_1.CropType.PREEFORM;
             this.renderUI();
         }
         renderUI() {
@@ -1020,7 +641,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
                 this.pnlResizeWrap.refresh();
                 this.pnlCropMask.style.left = `${left}%`;
                 this.pnlCropMask.style.top = `${top}%`;
-                this.updateMaskImage({ width, height, left, top, type: type || interface_2.CropType.PREEFORM, aspectRatio });
+                this.updateMaskImage({ width, height, left, top, type: type || interface_1.CropType.PREEFORM, aspectRatio });
             }
             else {
                 this.resetMask();
@@ -1037,7 +658,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             this.pnlCropMask.style.top = `calc(50% - ${this.pnlCropMask.offsetHeight / 2}px)`;
         }
         updateFormUI() {
-            const { aspectRatio = DEFAULT_ASPECT_RATIO, type = interface_2.CropType.PREEFORM, locked = false } = this.data.cropData || {};
+            const { aspectRatio = DEFAULT_ASPECT_RATIO, type = interface_1.CropType.PREEFORM, locked = false } = this.data.cropData || {};
             const findedType = cropTypeOptions.find(item => item.value === type);
             this.typeCombobox.selectedItem = findedType;
             this.renderTypeUI(aspectRatio);
@@ -1047,11 +668,11 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
         getImgSrc() {
             let url = '';
             if (this.data.cid) {
-                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
                 url = ipfsGatewayUrl + this.data.cid;
             }
             else if (this.data.url?.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
                 url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
@@ -1130,19 +751,20 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
         }
     };
     __decorate([
-        (0, components_5.observable)()
+        (0, components_3.observable)()
     ], ScomImageCrop.prototype, "isShown", void 0);
     ScomImageCrop = __decorate([
-        components_5.customModule,
-        (0, components_5.customElements)('i-scom-image-crop')
+        components_3.customModule,
+        (0, components_3.customElements)('i-scom-image-crop')
     ], ScomImageCrop);
     exports.default = ScomImageCrop;
 });
-define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/data.json.ts", "@scom/scom-image/crop/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_6, interface_3, store_3, data_json_1, index_1) {
+define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/data.json.ts", "@scom/scom-image/crop/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_4, interface_2, store_2, data_json_1, index_1) {
     "use strict";
+    var ScomImage_1;
     Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_6.Styles.Theme.ThemeVars;
-    let ScomImage = class ScomImage extends components_6.Module {
+    const Theme = components_4.Styles.Theme.ThemeVars;
+    let ScomImage = ScomImage_1 = class ScomImage extends components_4.Module {
         constructor(parent, options) {
             super(parent, options);
             this.data = {
@@ -1155,7 +777,113 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             this.isInitedLink = false;
             this.tag = {};
             if (data_json_1.default)
-                (0, store_3.setDataFromSCConfig)(data_json_1.default);
+                (0, store_2.setDataFromSCConfig)(data_json_1.default);
+        }
+        addBlock(blocknote, executeFn, callbackFn) {
+            function getData(element) {
+                if (element?.nodeName === 'IMG') {
+                    return {
+                        url: element.getAttribute('src'),
+                        altText: element.getAttribute('alt')
+                    };
+                }
+                return false;
+            }
+            const ImageBlock = blocknote.createBlockSpec({
+                type: "imageWidget",
+                propSchema: {
+                    ...blocknote.defaultProps,
+                    url: { default: '' },
+                    cid: { default: '' },
+                    link: { default: '' },
+                    altText: { default: '', },
+                    keyword: { default: '' },
+                    photoId: { default: '' },
+                    width: { default: 512 },
+                    height: { default: 'auto' }
+                },
+                content: "none"
+            }, {
+                render: (block) => {
+                    const wrapper = new components_4.Panel();
+                    const { url, cid, link, altText, keyword, photoId, backgroundColor } = JSON.parse(JSON.stringify(block.props));
+                    const customElm = new ScomImage_1(wrapper, { url, cid, link, altText, keyword, photoId, backgroundColor });
+                    if (callbackFn)
+                        callbackFn(customElm, block);
+                    wrapper.appendChild(customElm);
+                    return {
+                        dom: wrapper
+                    };
+                },
+                parseFn: () => {
+                    return [
+                        {
+                            tag: "div[data-content-type=imageWidget]",
+                            contentElement: "[data-editable]"
+                        },
+                        {
+                            tag: "p",
+                            getAttrs: (element) => {
+                                if (typeof element === "string")
+                                    return false;
+                                const child = element.firstChild;
+                                if (!child)
+                                    return false;
+                                return getData(child);
+                            },
+                            priority: 400,
+                            node: 'imageWidget'
+                        },
+                        {
+                            tag: "img",
+                            getAttrs: (element) => {
+                                if (typeof element === "string")
+                                    return false;
+                                return getData(element);
+                            },
+                            priority: 401,
+                            node: 'imageWidget'
+                        }
+                    ];
+                },
+                toExternalHTML: (block, editor) => {
+                    const imageTag = document.createElement("img");
+                    const src = block.props.url || "";
+                    const alt = block.props.altText || "";
+                    imageTag.setAttribute("src", src);
+                    imageTag.setAttribute("alt", alt);
+                    const wrapper = document.createElement("p");
+                    wrapper.appendChild(imageTag);
+                    return {
+                        dom: wrapper
+                    };
+                },
+                pasteRules: [
+                    {
+                        find: /https:\/\/\S+\.(jpg|jpeg|png|gif|webp|svg)/g,
+                        handler(props) {
+                            const { state, chain, range } = props;
+                            const textContent = state.doc.resolve(range.from).nodeAfter?.textContent;
+                            chain().BNUpdateBlock(state.selection.from, {
+                                type: "imageWidget",
+                                props: {
+                                    url: textContent
+                                },
+                            }).setTextSelection(range.from + 1);
+                        }
+                    },
+                ]
+            });
+            const ImageSlashItem = {
+                name: "Image Widget",
+                execute: (editor) => {
+                    const block = { type: "imageWidget", props: { url: "" } };
+                    if (typeof executeFn === 'function')
+                        executeFn(editor, block);
+                },
+                aliases: ["image", "media"]
+            };
+            return { block: ImageBlock, slashItem: ImageSlashItem };
         }
         init() {
             super.init();
@@ -1163,7 +891,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             const lazyLoad = this.getAttribute('lazyLoad', true, false);
             if (!lazyLoad) {
                 let cid = this.getAttribute('cid', true);
-                const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.url = this.getAttribute('url', true) || (cid ? ipfsGatewayUrl + cid : "");
                 this.altText = this.getAttribute('altText', true);
                 const cropData = this.getAttribute('cropData', true);
@@ -1190,7 +918,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 return;
             }
             if (this.data.url?.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
@@ -1336,13 +1064,13 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                     },
                     customUI: {
                         render: (data, onConfirm) => {
-                            const vstack = new components_6.VStack(null, { gap: '1rem' });
+                            const vstack = new components_4.VStack(null, { gap: '1rem' });
                             const config = new index_1.default(null, { ...this.data });
-                            const hstack = new components_6.HStack(null, {
+                            const hstack = new components_4.HStack(null, {
                                 verticalAlignment: 'center',
                                 horizontalAlignment: 'end'
                             });
-                            const button = new components_6.Button(null, {
+                            const button = new components_4.Button(null, {
                                 caption: 'Confirm',
                                 width: '100%',
                                 height: 40,
@@ -1503,11 +1231,11 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             if (!this.img)
                 return;
             if (this.data.cid) {
-                const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.img.url = ipfsGatewayUrl + this.data.cid;
             }
             else if (this.data.url?.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
@@ -1529,13 +1257,13 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             if (!imgTag)
                 return;
             if (cropData) {
-                const { left, top, width, height, aspectRatio, type = interface_3.CropType.PREEFORM } = cropData;
+                const { left, top, width, height, aspectRatio, type = interface_2.CropType.PREEFORM } = cropData;
                 this.pnlImage.classList.add('cropped-pnl');
                 const parentWidth = this.pnlImage.offsetWidth;
                 const right = left + width;
                 const bottom = top + height;
                 const scale = parentWidth / (width / 100 * parentWidth);
-                if (type === interface_3.CropType.CIRCLE) {
+                if (type === interface_2.CropType.CIRCLE) {
                     imgTag.style.transform = `scale(${scale}) translate(-${left}%, -${top}%)`;
                     const x = left + width / 2;
                     const y = top + height / 2;
@@ -1623,9 +1351,9 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                         class: "custom-img", fallbackUrl: "https://placehold.co/600x400?text=No+Image", onClick: this.onImageClick.bind(this) }))));
         }
     };
-    ScomImage = __decorate([
-        components_6.customModule,
-        (0, components_6.customElements)('i-scom-image')
+    ScomImage = ScomImage_1 = __decorate([
+        components_4.customModule,
+        (0, components_4.customElements)('i-scom-image')
     ], ScomImage);
     exports.default = ScomImage;
 });

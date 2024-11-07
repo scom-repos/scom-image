@@ -78,101 +78,6 @@ declare module "@scom/scom-image/data.json.ts" {
 }
 /// <amd-module name="@scom/scom-image/index.css.ts" />
 declare module "@scom/scom-image/index.css.ts" { }
-/// <amd-module name="@scom/scom-image/config/index.css.ts" />
-declare module "@scom/scom-image/config/index.css.ts" {
-    const _default_1: void;
-    export default _default_1;
-}
-/// <amd-module name="@scom/scom-image/config/interface.ts" />
-declare module "@scom/scom-image/config/interface.ts" {
-    export enum UploadType {
-        'UPLOAD' = "upload",
-        'UNSPLASH' = "unsplash"
-    }
-    export interface IType {
-        type: UploadType;
-        caption: string;
-        icon: any;
-    }
-    export interface IUnsplashPhoto {
-        id: string;
-        slug: string;
-        alt_description: string;
-        user: any;
-        urls: any;
-    }
-}
-/// <amd-module name="@scom/scom-image/config/index.tsx" />
-declare module "@scom/scom-image/config/index.tsx" {
-    import { Module, ControlElement, Container } from '@ijstech/components';
-    import "@scom/scom-image/config/index.css.ts";
-    import { IImage } from "@scom/scom-image/interface.ts";
-    interface ScomImageConfigElement extends ControlElement {
-        cid?: string;
-        url: string;
-        photoId?: string;
-        keyword?: string;
-    }
-    global {
-        namespace JSX {
-            interface IntrinsicElements {
-                ["i-scom-image-config"]: ScomImageConfigElement;
-            }
-        }
-    }
-    export default class ScomImageConfig extends Module {
-        private typeButton;
-        private imageGrid;
-        private typeModal;
-        private typeStack;
-        private unsplashPnl;
-        private normalPnl;
-        private imgEl;
-        private pnlEditor;
-        private pnlImage;
-        private imgUploader;
-        private imgLinkInput;
-        private goButton;
-        private searchInput;
-        private pnlUpload;
-        private typeList;
-        private currentType;
-        private typeMapper;
-        private photoList;
-        private selectedPhoto;
-        private currentPage;
-        private _data;
-        private searchTimer;
-        constructor(parent?: Container, options?: any);
-        get data(): IImage;
-        set data(value: IImage);
-        get url(): string;
-        set url(value: string);
-        setData(value: IImage): Promise<void>;
-        private renderType;
-        private onTypeSelected;
-        private updateCurrentType;
-        private onShowType;
-        private renderUI;
-        private updateImg;
-        private getImgSrc;
-        private renderGrid;
-        private onPhotoSelected;
-        private onLoadMore;
-        private onSearchPhoto;
-        private onFetchPhotos;
-        private renderPlaceholders;
-        private onSurpriseClicked;
-        private onToggleImage;
-        private onGoClicked;
-        private onChangedImage;
-        private onReplaceImage;
-        private onChangedLink;
-        disconnecedCallback(): void;
-        init(): Promise<void>;
-        render(): any;
-    }
-}
 /// <amd-module name="@scom/scom-image/crop/index.css.ts" />
 declare module "@scom/scom-image/crop/index.css.ts" { }
 /// <amd-module name="@scom/scom-image/crop/index.tsx" />
@@ -270,7 +175,14 @@ declare module "@scom/scom-image" {
             }
         }
     }
-    export default class ScomImage extends Module {
+    type executeFnType = (editor: any, block: any) => void;
+    interface BlockSpecs {
+        addBlock: (blocknote: any, executeFn: executeFnType, callbackFn?: any) => {
+            block: any;
+            slashItem: any;
+        };
+    }
+    export default class ScomImage extends Module implements BlockSpecs {
         private data;
         private img;
         private pnlImage;
@@ -286,6 +198,14 @@ declare module "@scom/scom-image" {
         confirm: () => Promise<void>;
         discard: () => Promise<void>;
         constructor(parent?: Container, options?: any);
+        addBlock(blocknote: any, executeFn: executeFnType, callbackFn?: any): {
+            block: any;
+            slashItem: {
+                name: string;
+                execute: (editor: any) => void;
+                aliases: string[];
+            };
+        };
         init(): void;
         static create(options?: ScomImageElement, parent?: Container): Promise<ScomImage>;
         get url(): string;
