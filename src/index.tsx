@@ -17,7 +17,7 @@ import { CropType, ICropData, IImage } from './interface'
 import { getIPFSGatewayUrl, setDataFromSCConfig } from './store'
 import configData from './data.json'
 import './index.css'
-import ScomImageConfig from './config/index'
+// import ScomImageConfig from './config/index'
 import ScomImageCrop from './crop/index'
 const Theme = Styles.Theme.ThemeVars
 
@@ -38,9 +38,14 @@ declare global {
   }
 }
 
+type executeFnType = (editor: any, block: any) => void;
+interface BlockSpecs {
+  addBlock: (blocknote: any, executeFn: executeFnType, callbackFn?: any) => { block: any, slashItem: any };
+}
+
 @customModule
 @customElements('i-scom-image')
-export default class ScomImage extends Module {
+export default class ScomImage extends Module implements BlockSpecs {
   private data: IImage = {
     cid: '',
     url: '',
@@ -71,6 +76,112 @@ export default class ScomImage extends Module {
     super(parent, options);
     if (configData)
       setDataFromSCConfig(configData);
+  }
+
+  addBlock(blocknote: any, executeFn: executeFnType, callbackFn?: any) {
+    function getData(element: HTMLElement) {
+      if (element?.nodeName === 'IMG') {
+        return {
+          url: element.getAttribute('src'),
+          altText: element.getAttribute('alt')
+        };
+      }
+      return false;
+    }
+
+    const ImageBlock = blocknote.createBlockSpec({
+      type: "imageWidget",
+      propSchema: {
+        ...blocknote.defaultProps,
+        url: {default: ''},
+        cid: {default: ''},
+        link: {default: ''},
+        altText: {default: '',},
+        keyword: {default: ''},
+        photoId: {default: ''},
+        width: {default: 512},
+        height: {default: 'auto'}
+      },
+      content: "none"
+    },
+    {
+      render: (block: any) => {
+        const wrapper = new Panel();
+        const { url, cid, link, altText, keyword, photoId, backgroundColor } = JSON.parse(JSON.stringify(block.props))
+        const customElm = new ScomImage(wrapper, { url, cid, link, altText, keyword, photoId, backgroundColor });
+        if (callbackFn) callbackFn(customElm, block);
+        wrapper.appendChild(customElm);
+        return {
+          dom: wrapper
+        };
+      },
+      parseFn: () => {
+        return [
+          {
+            tag: "div[data-content-type=imageWidget]",
+            contentElement: "[data-editable]"
+          },
+          {
+            tag: "p",
+            getAttrs: (element: string | HTMLElement) => {
+              if (typeof element === "string") return false;
+              const child = element.firstChild as HTMLElement;
+              if (!child) return false;
+              return getData(child);
+            },
+            priority: 400,
+            node: 'imageWidget'
+          },
+          {
+            tag: "img",
+            getAttrs: (element: string | HTMLElement) => {
+              if (typeof element === "string") return false;
+              return getData(element);
+            },
+            priority: 401,
+            node: 'imageWidget'
+          }
+        ]
+      },
+      toExternalHTML: (block: any, editor: any) => {
+        const imageTag = document.createElement("img");
+        const src = block.props.url || "";
+        const alt = block.props.altText || "";
+        imageTag.setAttribute("src", src);
+        imageTag.setAttribute("alt", alt);
+        const wrapper = document.createElement("p");
+        wrapper.appendChild(imageTag);
+        return {
+          dom: wrapper
+        }
+      },
+      pasteRules: [
+        {
+          find: /https:\/\/\S+\.(jpg|jpeg|png|gif|webp|svg)/g,
+          handler(props: any) {
+            const { state, chain, range } = props;
+            const textContent = state.doc.resolve(range.from).nodeAfter?.textContent;
+  
+            chain().BNUpdateBlock(state.selection.from, {
+              type: "imageWidget",
+              props: {
+                url: textContent
+              },
+            }).setTextSelection(range.from + 1);
+          }
+        },
+      ]
+    });
+    const ImageSlashItem = {
+      name: "Image Widget",
+      execute: (editor: any) => {
+        const block = { type: "imageWidget", props: { url: "" }};
+        if (typeof executeFn === 'function') executeFn(editor, block);
+      },
+      aliases: ["image", "media"]
+    }
+
+    return { block: ImageBlock, slashItem: ImageSlashItem };
   }
 
   init() {
