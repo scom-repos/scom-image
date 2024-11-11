@@ -780,6 +780,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 (0, store_2.setDataFromSCConfig)(data_json_1.default);
         }
         addBlock(blocknote, executeFn, callbackFn) {
+            const blockType = 'imageWidget';
             function getData(element) {
                 if (element?.nodeName === 'IMG') {
                     return {
@@ -790,7 +791,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 return false;
             }
             const ImageBlock = blocknote.createBlockSpec({
-                type: "imageWidget",
+                type: blockType,
                 propSchema: {
                     ...blocknote.defaultProps,
                     url: { default: '' },
@@ -818,7 +819,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 parseFn: () => {
                     return [
                         {
-                            tag: "div[data-content-type=imageWidget]",
+                            tag: `div[data-content-type=${blockType}]`,
                             contentElement: "[data-editable]"
                         },
                         {
@@ -832,7 +833,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                                 return getData(child);
                             },
                             priority: 400,
-                            node: 'imageWidget'
+                            node: blockType
                         },
                         {
                             tag: "img",
@@ -842,7 +843,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                                 return getData(element);
                             },
                             priority: 401,
-                            node: 'imageWidget'
+                            node: blockType
                         }
                     ];
                 },
@@ -865,7 +866,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                             const { state, chain, range } = props;
                             const textContent = state.doc.resolve(range.from).nodeAfter?.textContent;
                             chain().BNUpdateBlock(state.selection.from, {
-                                type: "imageWidget",
+                                type: blockType,
                                 props: {
                                     url: textContent
                                 },
@@ -877,13 +878,20 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             const ImageSlashItem = {
                 name: "Image Widget",
                 execute: (editor) => {
-                    const block = { type: "imageWidget", props: { url: "" } };
+                    const block = { type: blockType, props: { url: "" } };
                     if (typeof executeFn === 'function')
                         executeFn(editor, block);
                 },
-                aliases: ["image", "media"]
+                aliases: ["image", "media"],
+                group: "Media",
+                icon: { name: 'image' },
+                hint: "Insert an image",
             };
-            return { block: ImageBlock, slashItem: ImageSlashItem };
+            const moduleData = {
+                name: '@scom/scom-image',
+                localPath: 'scom-image'
+            };
+            return { block: ImageBlock, slashItem: ImageSlashItem, moduleData };
         }
         init() {
             super.init();
@@ -949,7 +957,6 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             this.updateCropUI();
         }
         getConfigurators() {
-            const self = this;
             return [
                 {
                     name: 'Builder Configurator',

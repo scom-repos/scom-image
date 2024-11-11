@@ -204,6 +204,15 @@ declare module "@scom/scom-image" {
                 name: string;
                 execute: (editor: any) => void;
                 aliases: string[];
+                group: string;
+                icon: {
+                    name: string;
+                };
+                hint: string;
+            };
+            moduleData: {
+                name: string;
+                localPath: string;
             };
         };
         init(): void;
