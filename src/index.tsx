@@ -79,6 +79,8 @@ export default class ScomImage extends Module implements BlockSpecs {
   }
 
   addBlock(blocknote: any, executeFn: executeFnType, callbackFn?: any) {
+    const blockType = 'imageWidget';
+
     function getData(element: HTMLElement) {
       if (element?.nodeName === 'IMG') {
         return {
@@ -90,7 +92,7 @@ export default class ScomImage extends Module implements BlockSpecs {
     }
 
     const ImageBlock = blocknote.createBlockSpec({
-      type: "imageWidget",
+      type: blockType,
       propSchema: {
         ...blocknote.defaultProps,
         url: {default: ''},
@@ -118,7 +120,7 @@ export default class ScomImage extends Module implements BlockSpecs {
       parseFn: () => {
         return [
           {
-            tag: "div[data-content-type=imageWidget]",
+            tag: `div[data-content-type=${blockType}]`,
             contentElement: "[data-editable]"
           },
           {
@@ -130,7 +132,7 @@ export default class ScomImage extends Module implements BlockSpecs {
               return getData(child);
             },
             priority: 400,
-            node: 'imageWidget'
+            node: blockType
           },
           {
             tag: "img",
@@ -139,7 +141,7 @@ export default class ScomImage extends Module implements BlockSpecs {
               return getData(element);
             },
             priority: 401,
-            node: 'imageWidget'
+            node: blockType
           }
         ]
       },
@@ -163,7 +165,7 @@ export default class ScomImage extends Module implements BlockSpecs {
             const textContent = state.doc.resolve(range.from).nodeAfter?.textContent;
   
             chain().BNUpdateBlock(state.selection.from, {
-              type: "imageWidget",
+              type: blockType,
               props: {
                 url: textContent
               },
@@ -172,16 +174,25 @@ export default class ScomImage extends Module implements BlockSpecs {
         },
       ]
     });
+
     const ImageSlashItem = {
       name: "Image Widget",
       execute: (editor: any) => {
-        const block = { type: "imageWidget", props: { url: "" }};
+        const block = { type: blockType, props: { url: "" }};
         if (typeof executeFn === 'function') executeFn(editor, block);
       },
-      aliases: ["image", "media"]
+      aliases: ["image", "media"],
+      group: "Media",
+      icon: { name: 'image' },
+      hint: "Insert an image",
     }
 
-    return { block: ImageBlock, slashItem: ImageSlashItem };
+    const moduleData = {
+      name: '@scom/scom-image',
+      localPath: 'scom-image'
+    }
+
+    return { block: ImageBlock, slashItem: ImageSlashItem, moduleData };
   }
 
   init() {
@@ -250,7 +261,6 @@ export default class ScomImage extends Module implements BlockSpecs {
   }
 
   getConfigurators() {
-    const self = this;
     return [
       {
         name: 'Builder Configurator',
