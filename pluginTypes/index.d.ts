@@ -1,3 +1,4 @@
+/// <reference path="@ijstech/components/index.d.ts" />
 /// <amd-module name="@scom/scom-image/interface.ts" />
 declare module "@scom/scom-image/interface.ts" {
     import { IDataSchema } from "@ijstech/components";
@@ -52,6 +53,7 @@ declare module "@scom/scom-image/interface.ts" {
         type: CropType;
         locked?: boolean;
     }
+    export type executeFnType = (editor: any, block: any) => void;
 }
 /// <amd-module name="@scom/scom-image/store.ts" />
 declare module "@scom/scom-image/store.ts" {
@@ -68,6 +70,8 @@ declare module "@scom/scom-image/store.ts" {
     export const filterUnsplashPhotos: (params?: any) => Promise<any>;
     export const getRandomKeyword: () => string;
 }
+/// <amd-module name="@scom/scom-image/index.css.ts" />
+declare module "@scom/scom-image/index.css.ts" { }
 /// <amd-module name="@scom/scom-image/data.json.ts" />
 declare module "@scom/scom-image/data.json.ts" {
     const _default: {
@@ -76,8 +80,94 @@ declare module "@scom/scom-image/data.json.ts" {
     };
     export default _default;
 }
-/// <amd-module name="@scom/scom-image/index.css.ts" />
-declare module "@scom/scom-image/index.css.ts" { }
+/// <amd-module name="@scom/scom-image/model.ts" />
+declare module "@scom/scom-image/model.ts" {
+    import { IDataSchema, IUISchema, Module } from '@ijstech/components';
+    import { ICropData, IImage } from "@scom/scom-image/interface.ts";
+    interface IModelOptions {
+        updateImg: () => void;
+        updateImgByTag: () => void;
+    }
+    export class Model {
+        private module;
+        private _data;
+        private options;
+        constructor(module: Module, options: IModelOptions);
+        get url(): string;
+        set url(value: string);
+        get altText(): string;
+        set altText(value: string);
+        get link(): string;
+        set link(value: string);
+        get cropData(): ICropData;
+        set cropData(value: ICropData);
+        get photoId(): string;
+        set photoId(value: string);
+        get keyword(): string;
+        set keyword(value: string);
+        get backgroundColor(): string;
+        getConfigurators(formAction: any): ({
+            name: string;
+            target: string;
+            getActions: () => ({
+                name: string;
+                icon: string;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => void;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                userInputDataSchema: {
+                    type: string;
+                    properties: {
+                        url: {
+                            required: boolean;
+                            type: string;
+                        };
+                    };
+                };
+            } | {
+                name: string;
+                icon: string;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => void;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                customUI: any;
+            } | {
+                userInputDataSchema: IDataSchema;
+                userInputUISchema: IUISchema;
+                name: string;
+                icon: string;
+                command?: undefined;
+                customUI?: undefined;
+            })[];
+            getData: any;
+            setData: any;
+            getTag: any;
+            setTag: any;
+        } | {
+            name: string;
+            target: string;
+            getData: any;
+            setData: any;
+            getTag: any;
+            setTag: any;
+            getActions?: undefined;
+        })[];
+        private _getActions;
+        private getWidgetSchemas;
+        setData(value: IImage): Promise<void>;
+        getData(): IImage;
+        getTag(): any;
+        setTag(value: any): void;
+        private updateTag;
+        private updateStyle;
+        private updateTheme;
+        getUrlImage(checkCid?: boolean): string;
+    }
+}
 /// <amd-module name="@scom/scom-image/crop/index.css.ts" />
 declare module "@scom/scom-image/crop/index.css.ts" { }
 /// <amd-module name="@scom/scom-image/crop/index.tsx" />
@@ -158,7 +248,7 @@ declare module "@scom/scom-image/crop/index.tsx" {
 /// <amd-module name="@scom/scom-image" />
 declare module "@scom/scom-image" {
     import { Module, Container, ControlElement } from '@ijstech/components';
-    import { ICropData } from "@scom/scom-image/interface.ts";
+    import { executeFnType, ICropData, IImage } from "@scom/scom-image/interface.ts";
     import "@scom/scom-image/index.css.ts";
     interface ScomImageElement extends ControlElement {
         lazyLoad?: boolean;
@@ -175,7 +265,6 @@ declare module "@scom/scom-image" {
             }
         }
     }
-    type executeFnType = (editor: any, block: any) => void;
     interface BlockSpecs {
         addBlock: (blocknote: any, executeFn: executeFnType, callbackFn?: any) => {
             block: any;
@@ -183,7 +272,7 @@ declare module "@scom/scom-image" {
         };
     }
     export default class ScomImage extends Module implements BlockSpecs {
-        private data;
+        private model;
         private img;
         private pnlImage;
         private pnlImgWrap;
@@ -215,7 +304,6 @@ declare module "@scom/scom-image" {
                 localPath: string;
             };
         };
-        init(): void;
         static create(options?: ScomImageElement, parent?: Container): Promise<ScomImage>;
         get url(): string;
         set url(value: string);
@@ -225,10 +313,44 @@ declare module "@scom/scom-image" {
         set link(value: string);
         get cropData(): ICropData;
         set cropData(value: ICropData);
+        private customUI;
         getConfigurators(): ({
             name: string;
             target: string;
-            getActions: () => any[];
+            getActions: () => ({
+                name: string;
+                icon: string;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => void;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                userInputDataSchema: {
+                    type: string;
+                    properties: {
+                        url: {
+                            required: boolean;
+                            type: string;
+                        };
+                    };
+                };
+            } | {
+                name: string;
+                icon: string;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => void;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                customUI: any;
+            } | {
+                userInputDataSchema: import("@ijstech/components").IDataSchema;
+                userInputUISchema: import("@ijstech/components").IUISchema;
+                name: string;
+                icon: string;
+                command?: undefined;
+                customUI?: undefined;
+            })[];
             getData: any;
             setData: any;
             getTag: any;
@@ -242,16 +364,19 @@ declare module "@scom/scom-image" {
             setTag: any;
             getActions?: undefined;
         })[];
-        private _getActions;
-        private getWidgetSchemas;
-        private getData;
-        private setData;
+        getData(): IImage;
+        setData(value: IImage): void;
+        getTag(): any;
+        setTag(value: any): Promise<void>;
         private updateImg;
+        private updateImgByUrl;
+        private updateAltText;
+        private updateImageByTag;
         private updateCropUI;
         connectedCallback(): Promise<void>;
-        private getTag;
-        private setTag;
         private onImageClick;
+        private initModel;
+        init(): void;
         render(): any;
     }
 }

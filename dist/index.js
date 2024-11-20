@@ -95,15 +95,6 @@ define("@scom/scom-image/store.ts", ["require", "exports"], function (require, e
     };
     exports.getRandomKeyword = getRandomKeyword;
 });
-define("@scom/scom-image/data.json.ts", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    ///<amd-module name='@scom/scom-image/data.json.ts'/> 
-    exports.default = {
-        ipfsGatewayUrl: "https://ipfs.scom.dev/ipfs/",
-        unsplashApiKey: 'ylMtikqlCAZdDIxGz-SV15TOfqzf03epdOoE_5hBBUo'
-    };
-});
 define("@scom/scom-image/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -137,6 +128,346 @@ define("@scom/scom-image/index.css.ts", ["require", "exports", "@ijstech/compone
             }
         }
     });
+});
+define("@scom/scom-image/data.json.ts", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    ///<amd-module name='@scom/scom-image/data.json.ts'/> 
+    exports.default = {
+        ipfsGatewayUrl: "https://ipfs.scom.dev/ipfs/",
+        unsplashApiKey: 'ylMtikqlCAZdDIxGz-SV15TOfqzf03epdOoE_5hBBUo'
+    };
+});
+define("@scom/scom-image/model.ts", ["require", "exports", "@scom/scom-image/data.json.ts", "@scom/scom-image/store.ts"], function (require, exports, data_json_1, store_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Model = void 0;
+    class Model {
+        constructor(module, options) {
+            this._data = { url: '' };
+            this.options = {
+                updateImg: () => { },
+                updateImgByTag: () => { }
+            };
+            this.module = module;
+            this.options = options;
+            if (data_json_1.default) {
+                (0, store_1.setDataFromSCConfig)(data_json_1.default);
+            }
+        }
+        get url() {
+            return this._data.url ?? '';
+        }
+        set url(value) {
+            this._data.url = value;
+        }
+        get altText() {
+            return this._data.altText ?? '';
+        }
+        set altText(value) {
+            this._data.altText = value;
+        }
+        get link() {
+            return this._data.link ?? '';
+        }
+        set link(value) {
+            this._data.link = value;
+        }
+        get cropData() {
+            return this._data.cropData;
+        }
+        set cropData(value) {
+            this._data.cropData = value;
+        }
+        get photoId() {
+            return this._data.photoId ?? '';
+        }
+        set photoId(value) {
+            this._data.photoId = value;
+        }
+        get keyword() {
+            return this._data.keyword ?? '';
+        }
+        set keyword(value) {
+            this._data.keyword = value;
+        }
+        get backgroundColor() {
+            return this._data.backgroundColor ?? '';
+        }
+        getConfigurators(formAction) {
+            return [
+                {
+                    name: 'Builder Configurator',
+                    target: 'Builders',
+                    getActions: () => {
+                        return this._getActions('Builders', formAction);
+                    },
+                    getData: this.getData.bind(this),
+                    setData: this.setData.bind(this),
+                    getTag: this.getTag.bind(this),
+                    setTag: this.setTag.bind(this)
+                },
+                {
+                    name: 'Emdedder Configurator',
+                    target: 'Embedders',
+                    getData: this.getData.bind(this),
+                    setData: this.setData.bind(this),
+                    getTag: this.getTag.bind(this),
+                    setTag: this.setTag.bind(this)
+                },
+                {
+                    name: 'Editor',
+                    target: 'Editor',
+                    getActions: () => {
+                        return this._getActions('Editor', formAction);
+                    },
+                    getData: this.getData.bind(this),
+                    setData: this.setData.bind(this),
+                    getTag: this.getTag.bind(this),
+                    setTag: this.setTag.bind(this)
+                }
+            ];
+        }
+        _getActions(target, formAction) {
+            const editAction = {
+                name: 'Edit',
+                icon: 'edit',
+                command: (builder, userInputData) => {
+                    let oldData = { url: '' };
+                    return {
+                        execute: () => {
+                            oldData = JSON.parse(JSON.stringify(this._data));
+                            if (builder?.setData)
+                                builder.setData(userInputData);
+                            this.setData(userInputData);
+                        },
+                        undo: () => {
+                            if (builder?.setData)
+                                builder.setData(oldData);
+                            this.setData(oldData);
+                        },
+                        redo: () => { }
+                    };
+                },
+                userInputDataSchema: {
+                    type: 'object',
+                    properties: {
+                        url: {
+                            required: true,
+                            type: 'string'
+                        }
+                    }
+                }
+            };
+            if (target === 'Editor')
+                return [editAction];
+            return [
+                {
+                    name: 'Crop',
+                    icon: 'crop',
+                    command: (builder, userInputData) => {
+                        let oldData = { url: '' };
+                        return {
+                            execute: () => {
+                                oldData = JSON.parse(JSON.stringify(this._data));
+                                if (builder?.setData)
+                                    builder.setData(userInputData);
+                                this.setData(userInputData);
+                            },
+                            undo: () => {
+                                if (builder?.setData)
+                                    builder.setData(oldData);
+                                this.setData(oldData);
+                            },
+                            redo: () => { }
+                        };
+                    },
+                    customUI: formAction
+                },
+                editAction,
+                {
+                    name: 'Widget Settings',
+                    icon: 'edit',
+                    ...this.getWidgetSchemas()
+                }
+            ];
+        }
+        getWidgetSchemas() {
+            const propertiesSchema = {
+                type: 'object',
+                properties: {
+                    pt: {
+                        title: 'Top',
+                        type: 'number'
+                    },
+                    pb: {
+                        title: 'Bottom',
+                        type: 'number'
+                    },
+                    pl: {
+                        title: 'Left',
+                        type: 'number'
+                    },
+                    pr: {
+                        title: 'Right',
+                        type: 'number'
+                    },
+                    align: {
+                        type: 'string',
+                        title: 'Alignment',
+                        enum: [
+                            'left',
+                            'center',
+                            'right'
+                        ]
+                    },
+                    maxWidth: {
+                        type: 'number'
+                    },
+                    link: {
+                        title: 'URL',
+                        type: 'string'
+                    }
+                }
+            };
+            const themesSchema = {
+                type: 'VerticalLayout',
+                elements: [
+                    {
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Group',
+                                label: 'Padding (px)',
+                                elements: [
+                                    {
+                                        type: 'VerticalLayout',
+                                        elements: [
+                                            {
+                                                type: 'HorizontalLayout',
+                                                elements: [
+                                                    {
+                                                        type: 'Control',
+                                                        scope: '#/properties/pt',
+                                                    },
+                                                    {
+                                                        type: 'Control',
+                                                        scope: '#/properties/pb',
+                                                    },
+                                                    {
+                                                        type: 'Control',
+                                                        scope: '#/properties/pl',
+                                                    },
+                                                    {
+                                                        type: 'Control',
+                                                        scope: '#/properties/pr',
+                                                    },
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Control',
+                                label: 'Max Width',
+                                scope: '#/properties/maxWidth',
+                            }
+                        ]
+                    },
+                    {
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Control',
+                                label: 'Alignment',
+                                scope: '#/properties/align',
+                            }
+                        ]
+                    },
+                    {
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Control',
+                                label: 'URL',
+                                scope: '#/properties/link',
+                            }
+                        ]
+                    }
+                ]
+            };
+            return {
+                userInputDataSchema: propertiesSchema,
+                userInputUISchema: themesSchema
+            };
+        }
+        async setData(value) {
+            this._data = value;
+            this.options.updateImg();
+        }
+        getData() {
+            return this._data;
+        }
+        getTag() {
+            return this.module.tag;
+        }
+        setTag(value) {
+            this.module.tag = value;
+            const newValue = value || {};
+            for (let prop in newValue) {
+                if (newValue.hasOwnProperty(prop)) {
+                    if (prop === 'light' || prop === 'dark')
+                        this.updateTag(prop, newValue[prop]);
+                    else
+                        this.module.tag[prop] = newValue[prop];
+                }
+            }
+            this.updateTheme();
+            this.options.updateImgByTag();
+        }
+        updateTag(type, value) {
+            this.module.tag[type] = this.module.tag[type] ?? {};
+            for (let prop in value) {
+                if (value.hasOwnProperty(prop))
+                    this.module.tag[type][prop] = value[prop];
+            }
+        }
+        updateStyle(name, value) {
+            if (value) {
+                this.module.style.setProperty(name, value);
+            }
+            else {
+                this.module.style.removeProperty(name);
+            }
+        }
+        updateTheme() {
+            const themeVar = document.body.style.getPropertyValue('--theme') || 'light';
+            this.updateStyle('--text-primary', this.module.tag[themeVar]?.fontColor);
+            this.updateStyle('--background-main', this.module.tag[themeVar]?.backgroundColor);
+        }
+        getUrlImage(checkCid) {
+            let url = 'https://placehold.co/600x400?text=No+Image';
+            if (checkCid && this._data.cid) {
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+                url = ipfsGatewayUrl + this._data.cid;
+            }
+            else if (this._data.url?.startsWith('ipfs://')) {
+                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+                url = this._data.url.replace('ipfs://', ipfsGatewayUrl);
+            }
+            else {
+                url = this._data.url || 'https://placehold.co/600x400?text=No+Image';
+            }
+            return url;
+        }
+    }
+    exports.Model = Model;
 });
 define("@scom/scom-image/crop/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
     "use strict";
@@ -273,7 +604,7 @@ define("@scom/scom-image/crop/index.css.ts", ["require", "exports", "@ijstech/co
         }
     });
 });
-define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/crop/index.css.ts"], function (require, exports, components_3, interface_1, store_1) {
+define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/crop/index.css.ts"], function (require, exports, components_3, interface_1, store_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_3.Styles.Theme.ThemeVars;
@@ -588,7 +919,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
                 return;
             }
             if (this.data.url?.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
@@ -668,11 +999,11 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
         getImgSrc() {
             let url = '';
             if (this.data.cid) {
-                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 url = ipfsGatewayUrl + this.data.cid;
             }
             else if (this.data.url?.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_1.getIPFSGatewayUrl)();
+                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
                 url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
             }
             else {
@@ -759,7 +1090,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
     ], ScomImageCrop);
     exports.default = ScomImageCrop;
 });
-define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/data.json.ts", "@scom/scom-image/crop/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_4, interface_2, store_2, data_json_1, index_1) {
+define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/model.ts", "@scom/scom-image/crop/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_4, interface_2, store_3, model_1, index_1) {
     "use strict";
     var ScomImage_1;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -767,17 +1098,9 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
     let ScomImage = ScomImage_1 = class ScomImage extends components_4.Module {
         constructor(parent, options) {
             super(parent, options);
-            this.data = {
-                cid: '',
-                url: '',
-                altText: '',
-                backgroundColor: '',
-                link: ''
-            };
             this.isInitedLink = false;
             this.tag = {};
-            if (data_json_1.default)
-                (0, store_2.setDataFromSCConfig)(data_json_1.default);
+            this.initModel();
         }
         addBlock(blocknote, executeFn, callbackFn) {
             const blockType = 'imageWidget';
@@ -893,373 +1216,163 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             };
             return { block: ImageBlock, slashItem: ImageSlashItem, moduleData };
         }
-        init() {
-            super.init();
-            this.setTag({ width: '100%', height: 'auto' });
-            const lazyLoad = this.getAttribute('lazyLoad', true, false);
-            if (!lazyLoad) {
-                let cid = this.getAttribute('cid', true);
-                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
-                this.url = this.getAttribute('url', true) || (cid ? ipfsGatewayUrl + cid : "");
-                this.altText = this.getAttribute('altText', true);
-                const cropData = this.getAttribute('cropData', true);
-                if (cropData)
-                    this.cropData = cropData;
-                this.data.photoId = this.options?.photoId || '';
-                this.data.keyword = this.options?.keyword || '';
-            }
-        }
         static async create(options, parent) {
             let self = new this(parent, options);
             await self.ready();
             return self;
         }
         get url() {
-            return this.data.url ?? '';
+            return this.model.url;
         }
         set url(value) {
-            this.data.url = value;
-            if (!this.img)
-                return;
-            if (!value) {
-                this.img.url = 'https://placehold.co/600x400?text=No+Image';
-                return;
-            }
-            if (this.data.url?.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
-                this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
-            }
-            else {
-                this.img.url = this.data.url;
-            }
+            this.model.url = value;
+            this.updateImgByUrl();
         }
         get altText() {
-            return this.data.altText ?? '';
+            return this.model.altText;
         }
         set altText(value) {
-            this.data.altText = value;
-            if (!this.img)
-                return;
-            const imgElm = this.img.querySelector('img');
-            imgElm && imgElm.setAttribute('alt', this.data.altText || '');
+            this.model.altText = value;
+            this.updateAltText();
         }
         get link() {
-            return this.data.link ?? '';
+            return this.model.link;
         }
         set link(value) {
-            this.data.link = value;
+            this.model.link = value;
         }
         get cropData() {
-            return this.data.cropData;
+            return this.model.cropData;
         }
         set cropData(value) {
-            this.data.cropData = value;
+            this.model.cropData = value;
             this.updateCropUI();
+        }
+        customUI() {
+            const self = this;
+            const parentToolbar = this.closest('ide-toolbar');
+            return {
+                render: (data, onConfirm) => {
+                    const vstack = new components_4.VStack(null, { gap: '1rem' });
+                    const config = new index_1.default(null, { ...this.model.getData() });
+                    const hstack = new components_4.HStack(null, {
+                        verticalAlignment: 'center',
+                        horizontalAlignment: 'end'
+                    });
+                    const button = new components_4.Button(null, {
+                        caption: 'Confirm',
+                        width: '100%',
+                        height: 40,
+                        font: { color: Theme.colors.primary.contrastText }
+                    });
+                    hstack.append(button);
+                    vstack.append(config);
+                    vstack.append(hstack);
+                    if (parentToolbar)
+                        parentToolbar.classList.add('is-editing');
+                    button.onClick = async () => {
+                        if (onConfirm) {
+                            config.onCrop();
+                            onConfirm(true, { ...this.model.getData(), ...config.data });
+                            self.updateCropUI();
+                            if (parentToolbar)
+                                parentToolbar.classList.remove('is-editing');
+                        }
+                    };
+                    return vstack;
+                }
+            };
         }
         getConfigurators() {
-            return [
-                {
-                    name: 'Builder Configurator',
-                    target: 'Builders',
-                    getActions: () => {
-                        return this._getActions('Builders');
-                    },
-                    getData: this.getData.bind(this),
-                    setData: this.setData.bind(this),
-                    getTag: this.getTag.bind(this),
-                    setTag: this.setTag.bind(this)
-                },
-                {
-                    name: 'Emdedder Configurator',
-                    target: 'Embedders',
-                    getData: this.getData.bind(this),
-                    setData: this.setData.bind(this),
-                    getTag: this.getTag.bind(this),
-                    setTag: this.setTag.bind(this)
-                },
-                {
-                    name: 'Editor',
-                    target: 'Editor',
-                    getActions: () => {
-                        return this._getActions('Editor');
-                    },
-                    getData: this.getData.bind(this),
-                    setData: this.setData.bind(this),
-                    getTag: this.getTag.bind(this),
-                    setTag: this.setTag.bind(this)
-                }
-            ];
-        }
-        _getActions(target) {
-            const self = this;
-            const parentToolbar = self.closest('ide-toolbar');
-            const editAction = {
-                name: 'Edit',
-                icon: 'edit',
-                command: (builder, userInputData) => {
-                    let oldData = { url: '' };
-                    return {
-                        execute: () => {
-                            oldData = JSON.parse(JSON.stringify(this.data));
-                            if (builder?.setData)
-                                builder.setData(userInputData);
-                            this.setData(userInputData);
-                        },
-                        undo: () => {
-                            if (builder?.setData)
-                                builder.setData(oldData);
-                            this.setData(oldData);
-                        },
-                        redo: () => { }
-                    };
-                },
-                userInputDataSchema: {
-                    type: 'object',
-                    properties: {
-                        url: {
-                            required: true,
-                            type: 'string'
-                        }
-                    }
-                }
-                // customUI: {
-                //   render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
-                //     const vstack = new VStack(null, {gap: '1rem'});
-                //     const config = new ScomImageConfig(null, {...this.data, canUpload: target !== 'Editor'});
-                //     const hstack = new HStack(null, {
-                //       verticalAlignment: 'center',
-                //       horizontalAlignment: 'end'
-                //     });
-                //     const button = new Button(null, {
-                //       caption: 'Confirm',
-                //       width: '100%',
-                //       height: 40,
-                //       font: {color: Theme.colors.primary.contrastText}
-                //     });
-                //     hstack.append(button);
-                //     vstack.append(config);
-                //     vstack.append(hstack);
-                //     button.onClick = async () => {
-                //       if (onConfirm) onConfirm(true, {...this.data, ...config.data});
-                //     }
-                //     return vstack;
-                //   }
-                // }
-            };
-            if (target === 'Editor')
-                return [editAction];
-            return [
-                {
-                    name: 'Crop',
-                    icon: 'crop',
-                    command: (builder, userInputData) => {
-                        let oldData = { url: '' };
-                        return {
-                            execute: () => {
-                                oldData = JSON.parse(JSON.stringify(this.data));
-                                if (builder?.setData)
-                                    builder.setData(userInputData);
-                                this.setData(userInputData);
-                            },
-                            undo: () => {
-                                if (builder?.setData)
-                                    builder.setData(oldData);
-                                this.setData(oldData);
-                            },
-                            redo: () => { }
-                        };
-                    },
-                    customUI: {
-                        render: (data, onConfirm) => {
-                            const vstack = new components_4.VStack(null, { gap: '1rem' });
-                            const config = new index_1.default(null, { ...this.data });
-                            const hstack = new components_4.HStack(null, {
-                                verticalAlignment: 'center',
-                                horizontalAlignment: 'end'
-                            });
-                            const button = new components_4.Button(null, {
-                                caption: 'Confirm',
-                                width: '100%',
-                                height: 40,
-                                font: { color: Theme.colors.primary.contrastText }
-                            });
-                            hstack.append(button);
-                            vstack.append(config);
-                            vstack.append(hstack);
-                            if (parentToolbar)
-                                parentToolbar.classList.add('is-editing');
-                            button.onClick = async () => {
-                                if (onConfirm) {
-                                    config.onCrop();
-                                    onConfirm(true, { ...this.data, ...config.data });
-                                    self.updateCropUI();
-                                    if (parentToolbar)
-                                        parentToolbar.classList.remove('is-editing');
-                                }
-                            };
-                            return vstack;
-                        }
-                    }
-                },
-                editAction,
-                {
-                    name: 'Widget Settings',
-                    icon: 'edit',
-                    ...this.getWidgetSchemas()
-                }
-            ];
-        }
-        getWidgetSchemas() {
-            const propertiesSchema = {
-                type: 'object',
-                properties: {
-                    pt: {
-                        title: 'Top',
-                        type: 'number'
-                    },
-                    pb: {
-                        title: 'Bottom',
-                        type: 'number'
-                    },
-                    pl: {
-                        title: 'Left',
-                        type: 'number'
-                    },
-                    pr: {
-                        title: 'Right',
-                        type: 'number'
-                    },
-                    align: {
-                        type: 'string',
-                        title: 'Alignment',
-                        enum: [
-                            'left',
-                            'center',
-                            'right'
-                        ]
-                    },
-                    maxWidth: {
-                        type: 'number'
-                    },
-                    link: {
-                        title: 'URL',
-                        type: 'string'
-                    }
-                }
-            };
-            const themesSchema = {
-                type: 'VerticalLayout',
-                elements: [
-                    {
-                        type: 'HorizontalLayout',
-                        elements: [
-                            {
-                                type: 'Group',
-                                label: 'Padding (px)',
-                                elements: [
-                                    {
-                                        type: 'VerticalLayout',
-                                        elements: [
-                                            {
-                                                type: 'HorizontalLayout',
-                                                elements: [
-                                                    {
-                                                        type: 'Control',
-                                                        scope: '#/properties/pt',
-                                                    },
-                                                    {
-                                                        type: 'Control',
-                                                        scope: '#/properties/pb',
-                                                    },
-                                                    {
-                                                        type: 'Control',
-                                                        scope: '#/properties/pl',
-                                                    },
-                                                    {
-                                                        type: 'Control',
-                                                        scope: '#/properties/pr',
-                                                    },
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        type: 'HorizontalLayout',
-                        elements: [
-                            {
-                                type: 'Control',
-                                label: 'Max Width',
-                                scope: '#/properties/maxWidth',
-                            }
-                        ]
-                    },
-                    {
-                        type: 'HorizontalLayout',
-                        elements: [
-                            {
-                                type: 'Control',
-                                label: 'Alignment',
-                                scope: '#/properties/align',
-                            }
-                        ]
-                    },
-                    {
-                        type: 'HorizontalLayout',
-                        elements: [
-                            {
-                                type: 'Control',
-                                label: 'URL',
-                                scope: '#/properties/link',
-                            }
-                        ]
-                    }
-                ]
-            };
-            return {
-                userInputDataSchema: propertiesSchema,
-                userInputUISchema: themesSchema
-            };
+            this.initModel();
+            return this.model.getConfigurators(this.customUI());
         }
         getData() {
-            return this.data;
+            return this.model.getData();
         }
         setData(value) {
-            this.data = value;
-            this.updateImg();
-            this.updateCropUI();
-            if (this.pnlImage)
-                this.pnlImage.background.color = value.backgroundColor || '';
+            this.model.setData(value);
+        }
+        getTag() {
+            return this.tag;
+        }
+        async setTag(value) {
+            this.model.setTag(value);
         }
         updateImg() {
             if (!this.img)
                 return;
-            if (this.data.cid) {
-                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
-                this.img.url = ipfsGatewayUrl + this.data.cid;
+            this.img.url = this.model.getUrlImage(true);
+            const { width, height } = this.tag;
+            if (width || height) {
+                this.img.display = 'block';
+                if (width) {
+                    this.img.width = this.tag.width;
+                }
+                if (height) {
+                    this.img.height = this.tag.height;
+                }
             }
-            else if (this.data.url?.startsWith('ipfs://')) {
-                const ipfsGatewayUrl = (0, store_2.getIPFSGatewayUrl)();
-                this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl);
+            if (this.pnlImage) {
+                this.pnlImage.background.color = this.model.backgroundColor;
+            }
+            this.updateAltText();
+            this.updateCropUI();
+        }
+        updateImgByUrl() {
+            if (!this.img)
+                return;
+            this.img.url = this.model.getUrlImage();
+        }
+        updateAltText() {
+            if (!this.img)
+                return;
+            const imgElm = this.img.querySelector('img');
+            if (imgElm) {
+                imgElm.setAttribute('alt', this.model.altText);
+            }
+        }
+        updateImageByTag() {
+            const { width, height, maxWidth, align, link } = this.tag;
+            if (this.pnlImage) {
+                this.pnlImage.style.removeProperty('aspectRatio');
+                if (maxWidth !== undefined) {
+                    this.pnlImage.maxWidth = maxWidth;
+                }
+                else {
+                    this.pnlImage.maxWidth = '100%';
+                }
+                if (align !== undefined) {
+                    let customMargin = {};
+                    if (align === 'left')
+                        customMargin = { right: 'auto' };
+                    else if (align === 'right')
+                        customMargin = { left: 'auto' };
+                    else
+                        customMargin = { right: 'auto', left: 'auto' };
+                    this.pnlImage.margin = customMargin;
+                }
+                else {
+                    this.pnlImage.style.removeProperty('margin');
+                }
+            }
+            if (this.img) {
+                this.img.display = "block";
+                this.img.width = width;
+                this.img.height = height;
+                this.updateCropUI();
+            }
+            if (link) {
+                this.classList.add('pointer');
             }
             else {
-                this.img.url = this.data.url || 'https://placehold.co/600x400?text=No+Image';
+                this.classList.remove('pointer');
             }
-            if (this.tag.width || this.tag.height) {
-                this.img.display = 'block';
-                this.tag.width && (this.img.width = this.tag.width);
-                this.tag.width && (this.img.height = this.tag.height);
-            }
-            const imgElm = this.img.querySelector('img');
-            imgElm && imgElm.setAttribute('alt', this.data.altText || '');
         }
         updateCropUI() {
             if (!this.img)
                 return;
-            const cropData = this.data.cropData;
+            const cropData = this.cropData;
             const imgTag = this.img.querySelector('img');
             if (!imgTag)
                 return;
@@ -1298,57 +1411,40 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             super.connectedCallback();
             if (!this.isConnected)
                 return;
-            const link = this.data.link || this.getAttribute('link', true);
+            const link = this.link || this.getAttribute('link', true);
             if (link !== undefined && !this.isInitedLink) {
                 this.isInitedLink = true;
                 this.link = link;
-            }
-        }
-        getTag() {
-            return this.tag;
-        }
-        async setTag(value) {
-            this.tag = value;
-            const { width, height, maxWidth, align, link } = this.tag;
-            if (this.pnlImage) {
-                this.pnlImage.style.removeProperty('aspectRatio');
-                if (maxWidth !== undefined) {
-                    this.pnlImage.maxWidth = maxWidth;
-                }
-                else {
-                    this.pnlImage.maxWidth = '100%';
-                }
-                if (align !== undefined) {
-                    let customMargin = {};
-                    if (align === 'left')
-                        customMargin = { right: 'auto' };
-                    else if (align === 'right')
-                        customMargin = { left: 'auto' };
-                    else
-                        customMargin = { right: 'auto', left: 'auto' };
-                    this.pnlImage.margin = customMargin;
-                }
-                else {
-                    this.pnlImage.style.removeProperty('margin');
-                }
-            }
-            if (this.img) {
-                this.img.display = "block";
-                this.img.width = width;
-                this.img.height = height;
-                this.updateCropUI();
-            }
-            if (link) {
-                this.classList.add('pointer');
-            }
-            else {
-                this.classList.remove('pointer');
             }
         }
         onImageClick() {
             if (!this.tag.link)
                 return;
             window.open(this.tag.link, '_blank');
+        }
+        initModel() {
+            if (!this.model) {
+                this.model = new model_1.Model(this, {
+                    updateImg: this.updateImg.bind(this),
+                    updateImgByTag: this.updateImageByTag.bind(this)
+                });
+            }
+        }
+        init() {
+            super.init();
+            this.setTag({ width: '100%', height: 'auto' });
+            const lazyLoad = this.getAttribute('lazyLoad', true, false);
+            if (!lazyLoad) {
+                let cid = this.getAttribute('cid', true);
+                const ipfsGatewayUrl = (0, store_3.getIPFSGatewayUrl)();
+                this.url = this.getAttribute('url', true) || (cid ? ipfsGatewayUrl + cid : "");
+                this.altText = this.getAttribute('altText', true);
+                const cropData = this.getAttribute('cropData', true);
+                if (cropData)
+                    this.cropData = cropData;
+                this.model.photoId = this.options?.photoId || '';
+                this.model.keyword = this.options?.keyword || '';
+            }
         }
         render() {
             return (this.$render("i-panel", { id: 'pnlImgWrap', height: "100%" },

@@ -62,3 +62,5 @@ export interface ICropData {
   type: CropType;
   locked?: boolean;
 }
+
+export type executeFnType = (editor: any, block: any) => void;
