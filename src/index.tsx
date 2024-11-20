@@ -3,23 +3,20 @@ import {
   Panel,
   Image,
   customModule,
-  IDataSchema,
   Container,
   ControlElement,
   customElements,
   VStack,
-  Button,
   HStack,
-  Styles,
-  IUISchema
-} from '@ijstech/components'
-import { CropType, ICropData, IImage } from './interface'
-import { getIPFSGatewayUrl, setDataFromSCConfig } from './store'
-import configData from './data.json'
-import './index.css'
-// import ScomImageConfig from './config/index'
-import ScomImageCrop from './crop/index'
-const Theme = Styles.Theme.ThemeVars
+  Button,
+  Styles
+} from '@ijstech/components';
+import { CropType, executeFnType, ICropData, IImage } from './interface';
+import { getIPFSGatewayUrl } from './store';
+import './index.css';
+import { Model } from './model';
+import ScomImageCrop from './crop/index';
+const Theme = Styles.Theme.ThemeVars;
 
 interface ScomImageElement extends ControlElement {
   lazyLoad?: boolean;
@@ -38,7 +35,6 @@ declare global {
   }
 }
 
-type executeFnType = (editor: any, block: any) => void;
 interface BlockSpecs {
   addBlock: (blocknote: any, executeFn: executeFnType, callbackFn?: any) => { block: any, slashItem: any };
 }
@@ -46,14 +42,7 @@ interface BlockSpecs {
 @customModule
 @customElements('i-scom-image')
 export default class ScomImage extends Module implements BlockSpecs {
-  private data: IImage = {
-    cid: '',
-    url: '',
-    altText: '',
-    backgroundColor: '',
-    link: ''
-  }
-
+  private model: Model;
   private img: Image;
   private pnlImage: Panel;
   private pnlImgWrap: Panel;
@@ -74,8 +63,7 @@ export default class ScomImage extends Module implements BlockSpecs {
 
   constructor(parent?: Container, options?: any) {
     super(parent, options);
-    if (configData)
-      setDataFromSCConfig(configData);
+    this.initModel();
   }
 
   addBlock(blocknote: any, executeFn: executeFnType, callbackFn?: any) {
@@ -195,22 +183,6 @@ export default class ScomImage extends Module implements BlockSpecs {
     return { block: ImageBlock, slashItem: ImageSlashItem, moduleData };
   }
 
-  init() {
-    super.init()
-    this.setTag({ width: '100%', height: 'auto' });
-    const lazyLoad = this.getAttribute('lazyLoad', true, false);
-    if (!lazyLoad) {
-      let cid = this.getAttribute('cid', true);
-      const ipfsGatewayUrl = getIPFSGatewayUrl()
-      this.url = this.getAttribute('url', true) || (cid ? ipfsGatewayUrl + cid : "");
-      this.altText = this.getAttribute('altText', true);
-      const cropData = this.getAttribute('cropData', true);
-      if (cropData) this.cropData = cropData;
-      this.data.photoId = this.options?.photoId || '';
-      this.data.keyword = this.options?.keyword || '';
-    }
-  }
-
   static async create(options?: ScomImageElement, parent?: Container) {
     let self = new this(parent, options);
     await self.ready();
@@ -218,347 +190,159 @@ export default class ScomImage extends Module implements BlockSpecs {
   }
 
   get url() {
-    return this.data.url ?? '';
+    return this.model.url;
   }
   set url(value: string) {
-    this.data.url = value;
-    if(!this.img) return;
-    if (!value) {
-      this.img.url = 'https://placehold.co/600x400?text=No+Image'
-      return
-    }
-    if (this.data.url?.startsWith('ipfs://')) {
-      const ipfsGatewayUrl = getIPFSGatewayUrl()
-      this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
-    } else {
-      this.img.url = this.data.url
-    }
+    this.model.url = value;
+    this.updateImgByUrl();
   }
 
   get altText() {
-    return this.data.altText ?? '';
+    return this.model.altText;
   }
   set altText(value: string) {
-    this.data.altText = value;
-    if (!this.img) return;
-    const imgElm = this.img.querySelector('img')
-    imgElm && imgElm.setAttribute('alt', this.data.altText || '')
+    this.model.altText = value;
+    this.updateAltText();
   }
 
   get link() {
-    return this.data.link ?? '';
+    return this.model.link;
   }
   set link(value: string) {
-    this.data.link = value;
+    this.model.link = value;
   }
 
   get cropData() {
-    return this.data.cropData;
+    return this.model.cropData;
   }
   set cropData(value: ICropData) {
-    this.data.cropData = value;
+    this.model.cropData = value;
     this.updateCropUI()
+  }
+
+  private customUI() {
+    const self = this;
+    const parentToolbar = this.closest('ide-toolbar');
+    return {
+      render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
+        const vstack = new VStack(null, { gap: '1rem' });
+        const config = new ScomImageCrop(null, { ...this.model.getData() });
+        const hstack = new HStack(null, {
+          verticalAlignment: 'center',
+          horizontalAlignment: 'end'
+        });
+        const button = new Button(null, {
+          caption: 'Confirm',
+          width: '100%',
+          height: 40,
+          font: { color: Theme.colors.primary.contrastText }
+        });
+        hstack.append(button);
+        vstack.append(config);
+        vstack.append(hstack);
+        if (parentToolbar) parentToolbar.classList.add('is-editing');
+        button.onClick = async () => {
+          if (onConfirm) {
+            config.onCrop();
+            onConfirm(true, { ...this.model.getData(), ...config.data });
+            self.updateCropUI()
+            if (parentToolbar) parentToolbar.classList.remove('is-editing');
+          }
+        }
+        return vstack;
+      }
+    }
   }
 
   getConfigurators() {
-    return [
-      {
-        name: 'Builder Configurator',
-        target: 'Builders',
-        getActions: () => {
-          return this._getActions('Builders');
-        },
-        getData: this.getData.bind(this),
-        setData: this.setData.bind(this),
-        getTag: this.getTag.bind(this),
-        setTag: this.setTag.bind(this)
-      },
-      {
-        name: 'Emdedder Configurator',
-        target: 'Embedders',
-        getData: this.getData.bind(this),
-        setData: this.setData.bind(this),
-        getTag: this.getTag.bind(this),
-        setTag: this.setTag.bind(this)
-      },
-      {
-        name: 'Editor',
-        target: 'Editor',
-        getActions: () => {
-          return this._getActions('Editor')
-        },
-        getData: this.getData.bind(this),
-        setData: this.setData.bind(this),
-        getTag: this.getTag.bind(this),
-        setTag: this.setTag.bind(this)
-      }
-    ]
+    this.initModel();
+    return this.model.getConfigurators(this.customUI());
   }
 
-  private _getActions(target?: string) {
-    const self = this;
-    const parentToolbar = self.closest('ide-toolbar');
-    const editAction = {
-      name: 'Edit',
-      icon: 'edit',
-      command: (builder: any, userInputData: any) => {
-        let oldData: IImage = { url: '' };
-        return {
-          execute: () => {
-            oldData = JSON.parse(JSON.stringify(this.data));
-            if (builder?.setData) builder.setData(userInputData);
-            this.setData(userInputData);
-          },
-          undo: () => {
-            if (builder?.setData) builder.setData(oldData);
-            this.setData(oldData);
-          },
-          redo: () => { }
-        }
-      },
-      userInputDataSchema: {
-        type: 'object',
-        properties: {
-          url: {
-            required: true,
-            type: 'string'
-          }
-        }
-      }
-      // customUI: {
-      //   render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
-      //     const vstack = new VStack(null, {gap: '1rem'});
-      //     const config = new ScomImageConfig(null, {...this.data, canUpload: target !== 'Editor'});
-      //     const hstack = new HStack(null, {
-      //       verticalAlignment: 'center',
-      //       horizontalAlignment: 'end'
-      //     });
-      //     const button = new Button(null, {
-      //       caption: 'Confirm',
-      //       width: '100%',
-      //       height: 40,
-      //       font: {color: Theme.colors.primary.contrastText}
-      //     });
-      //     hstack.append(button);
-      //     vstack.append(config);
-      //     vstack.append(hstack);
-      //     button.onClick = async () => {
-      //       if (onConfirm) onConfirm(true, {...this.data, ...config.data});
-      //     }
-      //     return vstack;
-      //   }
-      // }
-    };
-    if (target === 'Editor') return [editAction];
-    return [
-      {
-        name: 'Crop',
-        icon: 'crop',
-        command: (builder: any, userInputData: any) => {
-          let oldData: IImage = { url: '' };
-          return {
-            execute: () => {
-              oldData = JSON.parse(JSON.stringify(this.data));
-              if (builder?.setData) builder.setData(userInputData);
-              this.setData(userInputData);
-            },
-            undo: () => {
-              if (builder?.setData) builder.setData(oldData);
-              this.setData(oldData);
-            },
-            redo: () => { }
-          }
-        },
-        customUI: {
-          render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
-            const vstack = new VStack(null, {gap: '1rem'});
-            const config = new ScomImageCrop(null, {...this.data});
-            const hstack = new HStack(null, {
-              verticalAlignment: 'center',
-              horizontalAlignment: 'end'
-            });
-            const button = new Button(null, {
-              caption: 'Confirm',
-              width: '100%',
-              height: 40,
-              font: {color: Theme.colors.primary.contrastText}
-            });
-            hstack.append(button);
-            vstack.append(config);
-            vstack.append(hstack);
-            if (parentToolbar) parentToolbar.classList.add('is-editing');
-            button.onClick = async () => {
-              if (onConfirm) {
-                config.onCrop();
-                onConfirm(true, {...this.data, ...config.data});
-                self.updateCropUI()
-                if (parentToolbar) parentToolbar.classList.remove('is-editing');
-              }
-            }
-            return vstack;
-          }
-        }
-      },
-      editAction,
-      {
-        name: 'Widget Settings',
-        icon: 'edit',
-        ...this.getWidgetSchemas()
-      }
-    ];
+  getData() {
+    return this.model.getData();
   }
 
-  private getWidgetSchemas(): any {
-    const propertiesSchema: IDataSchema = {
-      type: 'object',
-      properties: {
-        pt: {
-          title: 'Top',
-          type: 'number'
-        },
-        pb: {
-          title: 'Bottom',
-          type: 'number'
-        },
-        pl: {
-          title: 'Left',
-          type: 'number'
-        },
-        pr: {
-          title: 'Right',
-          type: 'number'
-        },
-        align: {
-          type: 'string',
-          title: 'Alignment',
-          enum: [
-            'left',
-            'center',
-            'right'
-          ]
-        },
-        maxWidth: {
-          type: 'number'
-        },
-        link: {
-          title: 'URL',
-          type: 'string'
-        }
-      }
-    };
-    const themesSchema: IUISchema = {
-      type: 'VerticalLayout',
-      elements: [
-        {
-          type: 'HorizontalLayout',
-          elements: [
-            {
-              type: 'Group',
-              label: 'Padding (px)',
-              elements: [
-                {
-                  type: 'VerticalLayout',
-                  elements: [
-                    {
-                      type: 'HorizontalLayout',
-                      elements: [
-                        {
-                          type: 'Control',
-                          scope: '#/properties/pt',
-                        },
-                        {
-                          type: 'Control',
-                          scope: '#/properties/pb',
-                        },
-                        {
-                          type: 'Control',
-                          scope: '#/properties/pl',
-                        },
-                        {
-                          type: 'Control',
-                          scope: '#/properties/pr',
-                        },
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          type: 'HorizontalLayout',
-          elements: [
-            {
-              type: 'Control',
-              label: 'Max Width',
-              scope: '#/properties/maxWidth',
-            }
-          ]
-        },
-        {
-          type: 'HorizontalLayout',
-          elements: [
-            {
-              type: 'Control',
-              label: 'Alignment',
-              scope: '#/properties/align',
-            }
-          ]
-        },
-        {
-          type: 'HorizontalLayout',
-          elements: [
-            {
-              type: 'Control',
-              label: 'URL',
-              scope: '#/properties/link',
-            }
-          ]
-        }
-      ]
-    };
-    return {
-      userInputDataSchema: propertiesSchema,
-      userInputUISchema: themesSchema
-    }
+  setData(value: IImage) {
+    this.model.setData(value);
   }
 
-  private getData() {
-    return this.data
+  getTag() {
+    return this.tag;
   }
 
-  private setData(value: IImage) {
-    this.data = value;
-    this.updateImg()
-    this.updateCropUI()
-    if (this.pnlImage)
-      this.pnlImage.background.color = value.backgroundColor || '';
+  async setTag(value: any) {
+    this.model.setTag(value);
   }
 
   private updateImg() {
-    if(!this.img) return;
-    if (this.data.cid) {
-      const ipfsGatewayUrl = getIPFSGatewayUrl()
-      this.img.url = ipfsGatewayUrl + this.data.cid;
-    } else if (this.data.url?.startsWith('ipfs://')) {
-      const ipfsGatewayUrl = getIPFSGatewayUrl()
-      this.img.url = this.data.url.replace('ipfs://', ipfsGatewayUrl)
-    } else {
-      this.img.url = this.data.url || 'https://placehold.co/600x400?text=No+Image'
-    }
-    if (this.tag.width || this.tag.height) {
+    if (!this.img) return;
+    this.img.url = this.model.getUrlImage(true);
+    const { width, height } = this.tag;
+    if (width || height) {
       this.img.display = 'block';
-      this.tag.width && (this.img.width = this.tag.width)
-      this.tag.width && (this.img.height = this.tag.height)
+      if (width) {
+        this.img.width = this.tag.width;
+      }
+      if (height) {
+        this.img.height = this.tag.height;
+      }
     }
-    const imgElm = this.img.querySelector('img')
-    imgElm && imgElm.setAttribute('alt', this.data.altText || '')
+    if (this.pnlImage) {
+      this.pnlImage.background.color = this.model.backgroundColor;
+    }
+    this.updateAltText();
+    this.updateCropUI();
+  }
+
+  private updateImgByUrl() {
+    if (!this.img) return;
+    this.img.url = this.model.getUrlImage();
+  }
+
+  private updateAltText() {
+    if (!this.img) return;
+    const imgElm = this.img.querySelector('img');
+    if (imgElm) {
+      imgElm.setAttribute('alt', this.model.altText);
+    }
+  }
+
+  private updateImageByTag() {
+    const { width, height, maxWidth, align, link } = this.tag;
+    if (this.pnlImage) {
+      this.pnlImage.style.removeProperty('aspectRatio');
+      if (maxWidth !== undefined) {
+        this.pnlImage.maxWidth = maxWidth;
+      } else {
+        this.pnlImage.maxWidth = '100%';
+      }
+      if (align !== undefined) {
+        let customMargin = {};
+        if (align === 'left') customMargin = { right: 'auto' };
+        else if (align === 'right') customMargin = { left: 'auto' };
+        else customMargin = { right: 'auto', left: 'auto' };
+        this.pnlImage.margin = customMargin;
+      } else {
+        this.pnlImage.style.removeProperty('margin')
+      }
+    }
+    if (this.img) {
+      this.img.display = "block";
+      this.img.width = width;
+      this.img.height = height;
+      this.updateCropUI();
+    }
+    if (link) {
+      this.classList.add('pointer');
+    } else {
+      this.classList.remove('pointer');
+    }
   }
 
   private updateCropUI() {
     if (!this.img) return;
-    const cropData = this.data.cropData
+    const cropData = this.cropData;
     const imgTag = this.img.querySelector('img')
     if (!imgTag) return
     if (cropData) {
@@ -578,7 +362,7 @@ export default class ScomImage extends Module implements BlockSpecs {
       } else {
         imgTag.style.transform = `scale(${scale}) translate(-${left}%, -${top}%)`;
         imgTag.style.clipPath = `polygon(${left}% ${top}%, ${right}% ${top}%, ${right}% ${bottom}%, ${left}% ${bottom}%)`
-        if (this.pnlImage && typeof(aspectRatio) == 'string')
+        if (this.pnlImage && typeof (aspectRatio) == 'string')
           this.pnlImage.style.aspectRatio = `${aspectRatio.replace(':', '/')}`
         else
           this.pnlImage.style.aspectRatio = `${aspectRatio}/1`
@@ -594,53 +378,41 @@ export default class ScomImage extends Module implements BlockSpecs {
   async connectedCallback() {
     super.connectedCallback();
     if (!this.isConnected) return;
-    const link = this.data.link || this.getAttribute('link', true);
+    const link = this.link || this.getAttribute('link', true);
     if (link !== undefined && !this.isInitedLink) {
       this.isInitedLink = true;
       this.link = link;
     }
   }
 
-  private getTag() {
-    return this.tag
-  }
-
-  private async setTag(value: any) {
-    this.tag = value;
-    const { width, height, maxWidth, align, link } = this.tag
-    if (this.pnlImage) {
-      this.pnlImage.style.removeProperty('aspectRatio');
-      if (maxWidth !== undefined) {
-        this.pnlImage.maxWidth = maxWidth;
-      } else {
-        this.pnlImage.maxWidth = '100%';
-      }
-      if (align !== undefined) {
-        let customMargin = {};
-        if (align === 'left') customMargin = {right: 'auto'};
-        else if (align === 'right') customMargin = {left: 'auto'};
-        else customMargin = {right: 'auto', left: 'auto'};
-        this.pnlImage.margin = customMargin;
-      } else {
-        this.pnlImage.style.removeProperty('margin')
-      }
-    }
-    if (this.img) {
-      this.img.display = "block";
-      this.img.width = width;
-      this.img.height = height;
-      this.updateCropUI();
-    }
-    if (link) {
-      this.classList.add('pointer');
-    } else {
-      this.classList.remove('pointer');
-    }
-  }
-  
   private onImageClick() {
     if (!this.tag.link) return;
     window.open(this.tag.link, '_blank');
+  }
+
+  private initModel() {
+    if (!this.model) {
+      this.model = new Model(this, {
+        updateImg: this.updateImg.bind(this),
+        updateImgByTag: this.updateImageByTag.bind(this)
+      });
+    }
+  }
+
+  init() {
+    super.init();
+    this.setTag({ width: '100%', height: 'auto' });
+    const lazyLoad = this.getAttribute('lazyLoad', true, false);
+    if (!lazyLoad) {
+      let cid = this.getAttribute('cid', true);
+      const ipfsGatewayUrl = getIPFSGatewayUrl();
+      this.url = this.getAttribute('url', true) || (cid ? ipfsGatewayUrl + cid : "");
+      this.altText = this.getAttribute('altText', true);
+      const cropData = this.getAttribute('cropData', true);
+      if (cropData) this.cropData = cropData;
+      this.model.photoId = this.options?.photoId || '';
+      this.model.keyword = this.options?.keyword || '';
+    }
   }
 
   render() {
