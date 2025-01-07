@@ -254,6 +254,7 @@ define("@scom/scom-image/model.ts", ["require", "exports", "@scom/scom-image/dat
                     properties: {
                         url: {
                             required: true,
+                            title: 'URL',
                             type: 'string'
                         }
                     }
@@ -604,7 +605,71 @@ define("@scom/scom-image/crop/index.css.ts", ["require", "exports", "@ijstech/co
         }
     });
 });
-define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/crop/index.css.ts"], function (require, exports, components_3, interface_1, store_2) {
+define("@scom/scom-image/translations.json.ts", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    ///<amd-module name='@scom/scom-image/translations.json.ts'/> 
+    exports.default = {
+        "en": {
+            "confirm": "Confirm",
+            "insert_an_image": "Insert an image",
+            "aspect_ratio": "Aspect ratio",
+            "lock_aspect_ratio": "Lock aspect ratio",
+            "image_upload_or_url": "Image upload or URL",
+            "unsplash_images": "Unsplash images",
+            "image": "Image",
+            "find_an_image": "Find an image",
+            "surprise_me": "Surprise me",
+            "load_more": "Load more",
+            "photos_from": "Photos from",
+            "unsplash": "Unsplash",
+            "paste_on_enter_image_url": "Paste on enter image URL",
+            "go": "Go",
+            "upload": "Upload",
+            "drag_a_file_or_click_to_upload": "Drag a file or click to upload",
+            "replace_image": "Replace Image",
+        },
+        "zh-hant": {
+            "confirm": "確認",
+            "insert_an_image": "插入圖片",
+            "aspect_ratio": "寬高比",
+            "lock_aspect_ratio": "鎖定寬高比",
+            "image_upload_or_url": "圖片上傳或網址",
+            "unsplash_images": "Unsplash 圖片",
+            "image": "圖片",
+            "find_an_image": "尋找圖片",
+            "surprise_me": "給我驚喜",
+            "load_more": "載入更多",
+            "photos_from": "來自",
+            "unsplash": "Unsplash",
+            "paste_on_enter_image_url": "貼上圖片網址",
+            "go": "前往",
+            "upload": "上傳",
+            "drag_a_file_or_click_to_upload": "拖曳檔案或點擊上傳",
+            "replace_image": "替換圖片",
+        },
+        "vi": {
+            "confirm": "Xác nhận",
+            "insert_an_image": "Chèn hình ảnh",
+            "aspect_ratio": "Tỷ lệ khung hình",
+            "lock_aspect_ratio": "Khóa tỷ lệ khung hình",
+            "image_upload_or_url": "Tải lên hình ảnh hoặc URL",
+            "unsplash_images": "Hình ảnh Unsplash",
+            "image": "Hình ảnh",
+            "find_an_image": "Tìm hình ảnh",
+            "surprise_me": "Làm tôi ngạc nhiên",
+            "load_more": "Tải thêm",
+            "photos_from": "Hình ảnh từ",
+            "unsplash": "Unsplash",
+            "paste_on_enter_image_url": "Dán URL hình ảnh",
+            "go": "Đi",
+            "upload": "Tải lên",
+            "drag_a_file_or_click_to_upload": "Kéo tệp hoặc nhấp để tải lên",
+            "replace_image": "Thay thế hình ảnh",
+        }
+    };
+});
+define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/translations.json.ts", "@scom/scom-image/crop/index.css.ts"], function (require, exports, components_3, interface_1, store_2, translations_json_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_3.Styles.Theme.ThemeVars;
@@ -637,6 +702,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
             return self;
         }
         init() {
+            this.i18n.init({ ...translations_json_1.default });
             super.init();
             const cid = this.getAttribute('cid', true);
             const url = this.getAttribute('url', true);
@@ -1061,10 +1127,10 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
                     this.$render("i-grid-layout", { columnsPerRow: 3, gap: { column: '1rem', row: '1rem' }, horizontalAlignment: "stretch" },
                         this.$render("i-combo-box", { id: "typeCombobox", height: 40, items: cropTypeOptions, selectedItem: cropTypeOptions[0], onChanged: this.onTypeChanged }),
                         this.$render("i-hstack", { verticalAlignment: "center", gap: "0.5rem" },
-                            this.$render("i-label", { caption: "Aspect ratio " }),
+                            this.$render("i-label", { caption: "$aspect_ratio" }),
                             this.$render("i-input", { id: "ratioInput", placeholder: DEFAULT_ASPECT_RATIO, stack: { grow: '1', basis: '0%', shrink: '1' }, border: { width: '1px', style: 'solid', color: Theme.divider }, onChanged: this.onInputChanged, height: 40 })),
                         this.$render("i-hstack", { verticalAlignment: "center", gap: "0.5rem" },
-                            this.$render("i-checkbox", { id: "lockedCheck", caption: 'Lock aspect ratio', onChanged: this.onLockChanged })))),
+                            this.$render("i-checkbox", { id: "lockedCheck", caption: "$lock_aspect_ratio", onChanged: this.onLockChanged })))),
                 this.$render("i-vstack", { position: "relative", width: '100%', height: '100%' },
                     this.$render("i-vstack", { id: "pnlResizeWrap", width: '100%' },
                         this.$render("i-panel", { id: 'pnlCropMask', width: '50%', height: "auto", maxWidth: '100%', maxHeight: '100%', position: 'absolute', zIndex: 1 },
@@ -1090,7 +1156,7 @@ define("@scom/scom-image/crop/index.tsx", ["require", "exports", "@ijstech/compo
     ], ScomImageCrop);
     exports.default = ScomImageCrop;
 });
-define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/model.ts", "@scom/scom-image/crop/index.tsx", "@scom/scom-image/index.css.ts"], function (require, exports, components_4, interface_2, store_3, model_1, index_1) {
+define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/scom-image/interface.ts", "@scom/scom-image/store.ts", "@scom/scom-image/model.ts", "@scom/scom-image/crop/index.tsx", "@scom/scom-image/translations.json.ts", "@scom/scom-image/index.css.ts"], function (require, exports, components_4, interface_2, store_3, model_1, index_1, translations_json_2) {
     "use strict";
     var ScomImage_1;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1208,7 +1274,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 aliases: ["image", "media"],
                 group: "Media",
                 icon: { name: 'image' },
-                hint: "Insert an image",
+                hint: this.i18n.get('$insert_an_image'),
             };
             const moduleData = {
                 name: '@scom/scom-image',
@@ -1260,7 +1326,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                         horizontalAlignment: 'end'
                     });
                     const button = new components_4.Button(null, {
-                        caption: 'Confirm',
+                        caption: this.i18n.get('$confirm'),
                         width: '100%',
                         height: 40,
                         font: { color: Theme.colors.primary.contrastText }
@@ -1431,6 +1497,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             }
         }
         init() {
+            this.i18n.init({ ...translations_json_2.default });
             super.init();
             this.setTag({ width: '100%', height: 'auto' });
             const lazyLoad = this.getAttribute('lazyLoad', true, false);
