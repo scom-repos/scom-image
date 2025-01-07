@@ -59,12 +59,12 @@ export default class ScomImageConfig extends Module {
   private typeList = [
     {
       type: UploadType.UPLOAD,
-      caption: 'Image upload or URL',
+      caption: this.i18n.get('$image_upload_or_url'),
       icon: {name: 'image' as any, width: 16, height: 16, fill: Theme.colors.primary.main}
     },
     {
       type: UploadType.UNSPLASH,
-      caption: 'Unsplash images',
+      caption: this.i18n.get('$unsplash_images'),
       icon: {name: 'images' as any, width: 16, height: 16, fill: Theme.colors.primary.main}
       // icon: {image: {url: assets.fullPath('img/unsplash.svg'),  width: 16, height: 16}}
     }
@@ -109,7 +109,7 @@ export default class ScomImageConfig extends Module {
   private async renderType() {
     this.typeMapper = new Map();
     this.typeStack.clearInnerHTML();
-    this.typeStack.appendChild(<i-label caption='Image' font={{weight: 600, color: Theme.text.secondary}}></i-label>)
+    this.typeStack.appendChild(<i-label caption={this.i18n.get('$image')} font={{weight: 600, color: Theme.text.secondary}}></i-label>)
     for (let type of this.typeList) {
       const hstack = (
         <i-hstack
@@ -382,7 +382,7 @@ export default class ScomImageConfig extends Module {
                 <i-icon name='search' width={16} height={16} fill={Theme.text.primary}></i-icon>
                 <i-input
                   id="searchInput"
-                  placeholder='Find an image'
+                  placeholder="$find_an_image"
                   border={{style: 'none'}}
                   height="100%" width="100%"
                   onKeyUp={this.onSearchPhoto.bind(this)}
@@ -392,7 +392,7 @@ export default class ScomImageConfig extends Module {
                   border={{radius: '0.375rem', style: 'none', width: '1px', color: Theme.divider}}
                   font={{weight: 600}}
                   background={{color: 'transparent'}}
-                  tooltip={{content: 'Surprise me'}}
+                  tooltip={{content: '$surprise_me'}}
                   onClick={this.onSurpriseClicked.bind(this)}
                   class="hover-btn"
                 ></i-button>
@@ -410,15 +410,15 @@ export default class ScomImageConfig extends Module {
                   height={40} width="45%"
                   border={{width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem'}}
                   font={{color: Theme.text.primary}}
-                  caption='Load more'
+                  caption="$load_more"
                   background={{color: 'transparent'}}
                   class="shadow-btn"
                   onClick={this.onLoadMore.bind(this)}
                 ></i-button>
               </i-hstack>
               <i-hstack horizontalAlignment='center' gap="4px" padding={{top: 30, bottom: 10}}>
-                <i-label caption='Photos from'></i-label>
-                <i-label caption='Unsplash' link={{href: 'https://unsplash.com/'}}></i-label>
+                <i-label caption='$photos_from'></i-label>
+                <i-label caption='$unsplash' link={{href: 'https://unsplash.com/'}}></i-label>
               </i-hstack>
             </i-panel>
             <i-panel id="normalPnl" visible={false}>
@@ -434,7 +434,7 @@ export default class ScomImageConfig extends Module {
                       id='imgLinkInput'
                       width='100%' height={40}
                       border={{radius: '0.375rem'}}
-                      placeholder='Paste on enter image URL'
+                      placeholder='$paste_on_enter_image_url'
                       onChanged={this.onChangedLink.bind(this)}
                     ></i-input>
                     <i-button
@@ -443,7 +443,7 @@ export default class ScomImageConfig extends Module {
                       font={{weight: 600}}
                       background={{color: 'transparent'}}
                       height="40px"
-                      caption='Go'
+                      caption='$go'
                       enabled={false}
                       padding={{left: '0.5rem', right: '0.5rem'}}
                       onClick={this.onGoClicked.bind(this)}
@@ -452,12 +452,12 @@ export default class ScomImageConfig extends Module {
                   </i-hstack>
                 </i-vstack>
                 <i-vstack id="pnlUpload" gap="1rem" visible={false}>
-                  <i-label caption='Upload' font={{size: '1.25rem', weight: 'bold'}}></i-label>
+                  <i-label caption='$upload' font={{size: '1.25rem', weight: 'bold'}}></i-label>
                   <i-upload
                     id={'imgUploader'}
                     multiple={false}
                     height={'100%'}
-                    caption='Drag a file or click to upload'
+                    caption='$drag_a_file_or_click_to_upload'
                     minWidth="auto"
                     draggable={true}
                     onChanged={this.onChangedImage}
@@ -476,7 +476,7 @@ export default class ScomImageConfig extends Module {
                   height={40} width="100%"
                   border={{width: '1px', style: 'solid', color: Theme.divider, radius: '0.375rem'}}
                   font={{color: Theme.text.primary}}
-                  caption='Replace Image'
+                  caption='$replace_image'
                   background={{color: 'transparent'}}
                   class="shadow-btn"
                   onClick={this.onReplaceImage.bind(this)}

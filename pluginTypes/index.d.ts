@@ -122,6 +122,7 @@ declare module "@scom/scom-image/model.ts" {
                     properties: {
                         url: {
                             required: boolean;
+                            title: string;
                             type: string;
                         };
                     };
@@ -170,6 +171,69 @@ declare module "@scom/scom-image/model.ts" {
 }
 /// <amd-module name="@scom/scom-image/crop/index.css.ts" />
 declare module "@scom/scom-image/crop/index.css.ts" { }
+/// <amd-module name="@scom/scom-image/translations.json.ts" />
+declare module "@scom/scom-image/translations.json.ts" {
+    const _default_1: {
+        en: {
+            confirm: string;
+            insert_an_image: string;
+            aspect_ratio: string;
+            lock_aspect_ratio: string;
+            image_upload_or_url: string;
+            unsplash_images: string;
+            image: string;
+            find_an_image: string;
+            surprise_me: string;
+            load_more: string;
+            photos_from: string;
+            unsplash: string;
+            paste_on_enter_image_url: string;
+            go: string;
+            upload: string;
+            drag_a_file_or_click_to_upload: string;
+            replace_image: string;
+        };
+        "zh-hant": {
+            confirm: string;
+            insert_an_image: string;
+            aspect_ratio: string;
+            lock_aspect_ratio: string;
+            image_upload_or_url: string;
+            unsplash_images: string;
+            image: string;
+            find_an_image: string;
+            surprise_me: string;
+            load_more: string;
+            photos_from: string;
+            unsplash: string;
+            paste_on_enter_image_url: string;
+            go: string;
+            upload: string;
+            drag_a_file_or_click_to_upload: string;
+            replace_image: string;
+        };
+        vi: {
+            confirm: string;
+            insert_an_image: string;
+            aspect_ratio: string;
+            lock_aspect_ratio: string;
+            image_upload_or_url: string;
+            unsplash_images: string;
+            image: string;
+            find_an_image: string;
+            surprise_me: string;
+            load_more: string;
+            photos_from: string;
+            unsplash: string;
+            paste_on_enter_image_url: string;
+            go: string;
+            upload: string;
+            drag_a_file_or_click_to_upload: string;
+            replace_image: string;
+        };
+    };
+    export default _default_1;
+}
 /// <amd-module name="@scom/scom-image/crop/index.tsx" />
 declare module "@scom/scom-image/crop/index.tsx" {
     import { Module, Container, ControlElement } from '@ijstech/components';
@@ -330,6 +394,7 @@ declare module "@scom/scom-image" {
                     properties: {
                         url: {
                             required: boolean;
+                            title: string;
                             type: string;
                         };
                     };

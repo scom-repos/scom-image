@@ -17,6 +17,7 @@ import {
 import './index.css'
 import { IImage, ICropData, CropType } from '../interface'
 import { getIPFSGatewayUrl } from '../store'
+import translations from '../translations.json'
 const Theme = Styles.Theme.ThemeVars
 
 interface ScomImageCropElement extends ControlElement {
@@ -89,6 +90,7 @@ export default class ScomImageCrop extends Module {
   }
 
   init() {
+    this.i18n.init({ ...translations });
     super.init()
     const cid = this.getAttribute('cid', true)
     const url = this.getAttribute('url', true)
@@ -552,7 +554,7 @@ export default class ScomImageCrop extends Module {
               onChanged={this.onTypeChanged}
             ></i-combo-box>
             <i-hstack verticalAlignment="center" gap="0.5rem">
-              <i-label caption="Aspect ratio "></i-label>
+              <i-label caption="$aspect_ratio"></i-label>
               <i-input
                 id="ratioInput"
                 placeholder={DEFAULT_ASPECT_RATIO}
@@ -565,7 +567,7 @@ export default class ScomImageCrop extends Module {
             <i-hstack verticalAlignment="center" gap="0.5rem">
               <i-checkbox
                 id="lockedCheck"
-                caption='Lock aspect ratio'
+                caption="$lock_aspect_ratio"
                 onChanged={this.onLockChanged}
               ></i-checkbox>
             </i-hstack>

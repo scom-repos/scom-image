@@ -16,6 +16,7 @@ import { getIPFSGatewayUrl } from './store';
 import './index.css';
 import { Model } from './model';
 import ScomImageCrop from './crop/index';
+import translations from './translations.json';
 const Theme = Styles.Theme.ThemeVars;
 
 interface ScomImageElement extends ControlElement {
@@ -172,7 +173,7 @@ export default class ScomImage extends Module implements BlockSpecs {
       aliases: ["image", "media"],
       group: "Media",
       icon: { name: 'image' },
-      hint: "Insert an image",
+      hint: this.i18n.get('$insert_an_image'),
     }
 
     const moduleData = {
@@ -232,7 +233,7 @@ export default class ScomImage extends Module implements BlockSpecs {
           horizontalAlignment: 'end'
         });
         const button = new Button(null, {
-          caption: 'Confirm',
+          caption: this.i18n.get('$confirm'),
           width: '100%',
           height: 40,
           font: { color: Theme.colors.primary.contrastText }
@@ -400,6 +401,7 @@ export default class ScomImage extends Module implements BlockSpecs {
   }
 
   init() {
+    this.i18n.init({ ...translations });
     super.init();
     this.setTag({ width: '100%', height: 'auto' });
     const lazyLoad = this.getAttribute('lazyLoad', true, false);

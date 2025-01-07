@@ -129,6 +129,7 @@ export class Model {
         properties: {
           url: {
             required: true,
+            title: 'URL',
             type: 'string'
           }
         }
