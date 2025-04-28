@@ -52,16 +52,6 @@ export default class ScomImage extends Module implements BlockSpecs {
 
   tag: any = {};
 
-  readonly onConfirm: () => Promise<void>;
-  readonly onDiscard: () => Promise<void>;
-  readonly onEdit: () => Promise<void>;
-
-  defaultEdit?: boolean;
-  validate?: () => boolean;
-  edit: () => Promise<void>;
-  confirm: () => Promise<void>;
-  discard: () => Promise<void>;
-
   constructor(parent?: Container, options?: any) {
     super(parent, options);
     this.initModel();
@@ -198,6 +188,15 @@ export default class ScomImage extends Module implements BlockSpecs {
     this.updateImgByUrl();
   }
 
+  get fallbackUrl() {
+    return this.model.fallbackUrl;
+  }
+  set fallbackUrl(value: string) {
+    this.model.fallbackUrl = value;
+    if (!this.img) return;
+    this.img.fallbackUrl = value;
+  }
+
   get altText() {
     return this.model.altText;
   }
@@ -279,6 +278,7 @@ export default class ScomImage extends Module implements BlockSpecs {
   private updateImg() {
     if (!this.img) return;
     this.img.url = this.model.getUrlImage(true);
+    this.img.fallbackUrl = this.model.fallbackUrl;
     const { width, height } = this.tag;
     if (width || height) {
       this.img.display = 'block';

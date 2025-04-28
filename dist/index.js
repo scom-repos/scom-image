@@ -194,6 +194,12 @@ define("@scom/scom-image/model.ts", ["require", "exports", "@scom/scom-image/dat
         get backgroundColor() {
             return this._data.backgroundColor ?? '';
         }
+        get fallbackUrl() {
+            return this._data.fallbackUrl ?? '';
+        }
+        set fallbackUrl(value) {
+            this._data.fallbackUrl = value;
+        }
         getConfigurators(formAction) {
             return [
                 {
@@ -1294,6 +1300,15 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             this.model.url = value;
             this.updateImgByUrl();
         }
+        get fallbackUrl() {
+            return this.model.fallbackUrl;
+        }
+        set fallbackUrl(value) {
+            this.model.fallbackUrl = value;
+            if (!this.img)
+                return;
+            this.img.fallbackUrl = value;
+        }
         get altText() {
             return this.model.altText;
         }
@@ -1369,6 +1384,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             if (!this.img)
                 return;
             this.img.url = this.model.getUrlImage(true);
+            this.img.fallbackUrl = this.model.fallbackUrl;
             const { width, height } = this.tag;
             if (width || height) {
                 this.img.display = 'block';
