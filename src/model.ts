@@ -70,6 +70,13 @@ export class Model {
     return this._data.backgroundColor ?? '';
   }
 
+  get fallbackUrl() {
+    return this._data.fallbackUrl ?? '';
+  }
+  set fallbackUrl(value: string) {
+    this._data.fallbackUrl = value;
+  }
+
   getConfigurators(formAction: any) {
     return [
       {

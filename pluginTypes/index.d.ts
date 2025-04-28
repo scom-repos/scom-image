@@ -32,6 +32,7 @@ declare module "@scom/scom-image/interface.ts" {
     export interface IImage {
         cid?: string;
         url: string;
+        fallbackUrl?: string;
         altText?: string;
         backgroundColor?: string;
         link?: string;
@@ -106,6 +107,8 @@ declare module "@scom/scom-image/model.ts" {
         get keyword(): string;
         set keyword(value: string);
         get backgroundColor(): string;
+        get fallbackUrl(): string;
+        set fallbackUrl(value: string);
         getConfigurators(formAction: any): ({
             name: string;
             target: string;
@@ -342,14 +345,6 @@ declare module "@scom/scom-image" {
         private pnlImgWrap;
         private isInitedLink;
         tag: any;
-        readonly onConfirm: () => Promise<void>;
-        readonly onDiscard: () => Promise<void>;
-        readonly onEdit: () => Promise<void>;
-        defaultEdit?: boolean;
-        validate?: () => boolean;
-        edit: () => Promise<void>;
-        confirm: () => Promise<void>;
-        discard: () => Promise<void>;
         constructor(parent?: Container, options?: any);
         addBlock(blocknote: any, executeFn: executeFnType, callbackFn?: any): {
             block: any;
@@ -371,6 +366,8 @@ declare module "@scom/scom-image" {
         static create(options?: ScomImageElement, parent?: Container): Promise<ScomImage>;
         get url(): string;
         set url(value: string);
+        get fallbackUrl(): string;
+        set fallbackUrl(value: string);
         get altText(): string;
         set altText(value: string);
         get link(): string;
