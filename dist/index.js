@@ -1421,7 +1421,7 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
             }
         }
         updateImageByTag() {
-            const { width, height, maxWidth, align, link, margin, border } = this.tag;
+            const { width, height, maxWidth, align, link, margin, padding, border } = this.tag;
             if (this.pnlImage) {
                 this.pnlImage.style.removeProperty('aspectRatio');
                 if (maxWidth !== undefined) {
@@ -1445,6 +1445,9 @@ define("@scom/scom-image", ["require", "exports", "@ijstech/components", "@scom/
                 }
                 if (margin) {
                     this.pnlImage.margin = margin;
+                }
+                if (padding) {
+                    this.pnlImage.padding = padding;
                 }
             }
             if (this.img) {

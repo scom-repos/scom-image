@@ -1,8 +1,7 @@
 {
     "name": "@scom/scom-image",
     "type": "widget",
-    "hash": "sha256-IHv9vbL86KHMI3o5I6WVt9B101fwanFDcv+tpgwWtU0=",
-    "version": "0.1.25",
+    "version": "0.1.26",
     "dependencies": [
         "@ijstech/components"
     ]
