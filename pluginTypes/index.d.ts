@@ -374,6 +374,8 @@ declare module "@scom/scom-image" {
         set link(value: string);
         get cropData(): ICropData;
         set cropData(value: ICropData);
+        get data(): IImage;
+        set data(value: IImage);
         private customUI;
         getConfigurators(): ({
             name: string;

@@ -41,7 +41,43 @@ interface BlockSpecs {
 }
 
 @customModule
-@customElements('i-scom-image')
+@customElements('i-scom-image', {
+  icon: 'stop',
+  props: {
+    cid: { type: 'string', default: '' },
+    url: { type: 'string', default: '' },
+    altText: { type: 'string', default: '' },
+    link: { type: 'string', default: '' },
+    cropData: { type: 'object', default: {} },
+    data: {type: 'object'}
+  },
+  className: 'ScomImage',
+  events: {},
+  dataSchema: {
+    type: 'object',
+    properties: {
+      url: {
+        type: 'string'
+      },
+      cid: {
+        type: 'string',
+        required: false
+      },
+      link: {
+        type: 'string',
+        required: false
+      },
+      altText: {
+        type: 'string',
+        required: false
+      },
+      cropData: {
+        type: 'object',
+        required: false
+      }
+    }
+  }
+})
 export default class ScomImage extends Module implements BlockSpecs {
   private model: Model;
   private img: Image;
@@ -220,6 +256,14 @@ export default class ScomImage extends Module implements BlockSpecs {
     this.updateCropUI()
   }
 
+  get data() {
+    return this.model.getData();
+  }
+
+  set data(value: IImage) {
+    this.model.setData(value);
+  }
+
   private customUI() {
     const self = this;
     const parentToolbar = this.closest('ide-toolbar');
@@ -310,7 +354,7 @@ export default class ScomImage extends Module implements BlockSpecs {
   }
 
   private updateImageByTag() {
-    const { width, height, maxWidth, align, link } = this.tag;
+    const { width, height, maxWidth, align, link, margin, padding, border } = this.tag;
     if (this.pnlImage) {
       this.pnlImage.style.removeProperty('aspectRatio');
       if (maxWidth !== undefined) {
@@ -327,11 +371,18 @@ export default class ScomImage extends Module implements BlockSpecs {
       } else {
         this.pnlImage.style.removeProperty('margin')
       }
+      if (margin) {
+        this.pnlImage.margin = margin;
+      }
+      if (padding) {
+        this.pnlImage.padding = padding;
+      }
     }
     if (this.img) {
       this.img.display = "block";
       this.img.width = width;
       this.img.height = height;
+      if (border) this.img.border = border;
       this.updateCropUI();
     }
     if (link) {
@@ -414,6 +465,9 @@ export default class ScomImage extends Module implements BlockSpecs {
       if (cropData) this.cropData = cropData;
       this.model.photoId = this.options?.photoId || '';
       this.model.keyword = this.options?.keyword || '';
+
+      const tag = this.getAttribute('tag', true);
+      if (tag) this.setTag(tag);
     }
   }
 
@@ -423,7 +477,6 @@ export default class ScomImage extends Module implements BlockSpecs {
         <i-vstack id={'pnlImage'} class="img-wrapper">
           <i-image
             id={'img'}
-            // url={'https://placehold.co/600x400?text=No+Image'}
             class="custom-img"
             fallbackUrl="https://placehold.co/600x400?text=No+Image"
             onClick={this.onImageClick.bind(this)}
