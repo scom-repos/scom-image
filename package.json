@@ -1,6 +1,6 @@
 {
     "name": "@scom/scom-image",
-    "version": "0.1.26",
+    "version": "0.1.27",
     "main": "dist/index.js",
     "plugin": "dist",
     "pluginTypes": "pluginTypes/index.d.ts",
@@ -15,8 +15,7 @@
     },
     "keywords": [],
     "dependencies": {
-        "@ijstech/components": "^0.1.115",
-        "@scom/scom-blocknote-sdk": "https://github.com/scom-repos/scom-blocknote-sdk"
+        "@ijstech/components": "^0.1.115"
     },
     "devDependencies": {
         "@ijstech/cli": "^0.1.26",
